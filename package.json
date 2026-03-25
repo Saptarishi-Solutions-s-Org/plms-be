@@ -1,0 +1,21 @@
+{
+  "name": "plms-be",
+  "version": "1.0.0",
+  "description": "Welcome to your new CAP project.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Saptarishi-Solutions-s-Org/plms-be.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Saptarishi-Solutions-s-Org/plms-be/issues"
+  },
+  "homepage": "https://github.com/Saptarishi-Solutions-s-Org/plms-be#readme"
+}
