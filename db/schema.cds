@@ -121,17 +121,15 @@ entity LeadActivity : cuid, managed {
     notes               : LargeString;
     call_status         : String;
     next_follow_up_date : Date;
-    created_by_user     : Association to Users;
 }
 
 entity Offer : cuid, managed {
-    organization    : Association to Organization;
-    title           : String;
-    description     : LargeString;
-    valid_from      : Date;
-    valid_to        : Date;
-    is_global       : Boolean;
-    created_by_user : Association to Users;
+    organization : Association to Organization;
+    title        : String;
+    description  : LargeString;
+    valid_from   : Date;
+    valid_to     : Date;
+    is_global    : Boolean;
 }
 
 entity OfferAssignment : cuid {
