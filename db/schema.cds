@@ -48,6 +48,7 @@ entity Roles : cuid, managed {
 }
 
 entity RoleModulePermissions : cuid, managed {
+    role              : Association to Roles;
     module_permission : Association to ModulePermissions;
     access            : Boolean;
 }
