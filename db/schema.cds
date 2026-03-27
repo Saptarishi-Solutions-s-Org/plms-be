@@ -5,120 +5,144 @@ using {
 
 namespace crm;
 
-type TrailType  : String enum {
-    FREE;
-    PREMIUM;
-    TEMP;
+type TrailType        : String enum {
+    Free;
+    Premium;
+    Temp;
 }
 
-type Gender     : String enum {
+type Gender           : String enum {
     Male;
     Female;
     Other;
 }
 
-type LeadStatus : String enum {
+type LeadStatus       : String enum {
     New;
     Contacted;
     Qualified;
     Lost;
 }
 
-type ImportType : String enum {
+type ImportType       : String enum {
     Manual;
     Import;
 }
 
+type LeadActivityType : String enum {
+    Call;
+    SMS;
+    Email;
+    In_Person;
+    Other;
+}
+
 entity Modules : cuid, managed {
-    name : String;
+    name : String not null;
 }
 
 entity Permissions : cuid, managed {
-    name : String;
+    name : String not null;
 }
 
 entity ModulePermissions : cuid, managed {
-    module     : Association to Modules;
-    permission : Association to Permissions;
+    module     : Association to Modules not null;
+    permission : Association to Permissions not null;
 }
 
 entity Roles : cuid, managed {
-    name    : String;
-    default : Boolean;
+    name        : String not null;
+    default     : Boolean not null;
+
+    permissions : Composition of many RoleModulePermissions
+                      on permissions.role = $self;
 }
 
 entity RoleModulePermissions : cuid, managed {
-    role              : Association to Roles;
-    module_permission : Association to ModulePermissions;
-    access            : Boolean;
+    role              : Association to Roles not null;
+    module_permission : Association to ModulePermissions not null;
+    access            : Boolean not null;
 }
 
 entity Organization : managed {
-    key id         : Integer  @cds.autoIncrement  @cds.persistence.skip: 'insert';
-        name       : String;
-        code       : String   @assert.unique;
-        is_active  : Boolean;
-        email      : String;
-        phone      : String;
-        address    : String;
-        state      : Association to States;
-        country    : Association to Countries;
-        start_date : Date;
-        end_date   : Date;
-        trail      : TrailType;
+    key id           : Integer  @cds.autoIncrement  @cds.persistence.skip: 'insert';
+        name         : String not null;
+        code         : String   @assert.unique not null;
+        is_active    : Boolean not null;
+        email        : String;
+        phone        : String;
+        address      : String;
+        state        : Association to State;
+        country      : Association to Country;
+        start_date   : Date;
+        end_date     : Date;
+        trail        : TrailType;
+
+        roles        : Composition of many OrganizationRoles
+                           on roles.organization = $self;
+
+        users        : Composition of many User
+                           on users.organization = $self;
+
+        rmpOverrides : Composition of many OrganizationRoleModulePermissions
+                           on rmpOverrides.organization = $self;
 }
 
 entity OrganizationRoles : cuid, managed {
-    organization : Association to Organization;
-    role         : Association to Roles;
+    organization : Association to Organization not null;
+    role         : Association to Roles not null;
 }
 
 entity OrganizationRoleModulePermissions : cuid, managed {
-    organization : Association to Organization;
-    rmp          : Association to RoleModulePermissions;
-    access       : Boolean;
+    organization : Association to Organization not null;
+    rmp          : Association to RoleModulePermissions not null;
+    access       : Boolean not null;
 }
 
-entity Users : cuid, managed {
-    name              : String;
-    email             : String;
-    phone             : String;
-    gender            : Gender;
-    dob               : Date;
-    organization      : Association to Organization;
-    role              : Association to Roles;
-    reporting_manager : Association to Users;
-    state             : Association to States;
-    country           : Association to Countries;
-    is_active         : Boolean;
+entity User : cuid, managed {
+    name              : String not null;
+    email             : String not null;
+    phone             : String not null;
+    gender            : Gender not null;
+    dob               : Date not null;
+    organization      : Association to Organization not null;
+    role              : Association to Roles not null;
+    reporting_manager : Association to User;
+    state             : Association to State not null;
+    country           : Association to Country not null;
+    is_active         : Boolean not null;
 }
 
 entity PasswordResetToken : cuid, managed {
-    user       : Association to Users;
-    token      : LargeString;
-    expires_at : Timestamp;
-    is_used    : Boolean;
+    user       : Association to User not null;
+    token      : LargeString not null;
+    expires_at : Timestamp not null;
+    is_used    : Boolean not null;
 }
 
 entity Leads : cuid, managed {
-    organization : Association to Organization;
-    name         : String;
-    gender       : Gender;
+    organization : Association to Organization not null;
+    name         : String not null;
+    gender       : Gender not null;
     dob          : Date;
     phone        : String;
     email        : String;
-    status       : LeadStatus;
+    status       : LeadStatus not null;
     source       : String;
     import_type  : ImportType;
-    assigned_to  : Association to Users;
+    assigned_to  : Association to User;
     address      : String;
-    state        : Association to States;
-    country      : Association to Countries;
+    state        : Association to State;
+    country      : Association to Country;
+
+    activities   : Composition of many LeadActivity
+                       on activities.lead = $self;
 }
 
 entity LeadActivity : cuid, managed {
-    lead                : Association to Leads;
-    type                : String;
+    lead                : Association to Leads not null;
+    type                : LeadActivityType;
+    freetext            : String;
     notes               : LargeString;
     call_status         : String;
     next_follow_up_date : Date;
@@ -126,26 +150,29 @@ entity LeadActivity : cuid, managed {
 
 entity Offer : cuid, managed {
     organization : Association to Organization;
-    title        : String;
+    title        : String not null;
     description  : LargeString;
     valid_from   : Date;
     valid_to     : Date;
-    is_global    : Boolean;
+    is_global    : Boolean not null;
+
+    assignments  : Composition of many OfferAssignment
+                       on assignments.offer = $self;
 }
 
-entity OfferAssignment : cuid {
-    offer : Association to Offer;
-    user  : Association to Users;
+entity OfferAssignment : cuid, managed {
+    offer : Association to Offer not null;
+    user  : Association to User not null;
 }
 
-entity Countries : cuid, managed {
-    name      : String;
+entity Country : cuid, managed {
+    name      : String not null;
     isocode   : String;
     phonecode : String;
 }
 
-entity States : cuid, managed {
-    name      : String;
+entity State : cuid, managed {
+    name      : String not null;
     statecode : String;
-    country   : Association to Countries;
+    country   : Association to Country not null;
 }
