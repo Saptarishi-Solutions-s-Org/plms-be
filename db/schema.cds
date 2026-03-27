@@ -8,7 +8,6 @@ namespace crm;
 type TrailType        : String enum {
     Free;
     Premium;
-    Temp;
 }
 
 type Gender           : String enum {
@@ -64,28 +63,27 @@ entity RoleModulePermissions : cuid, managed {
     access            : Boolean not null;
 }
 
-entity Organization : managed {
-    key id           : Integer  @cds.autoIncrement  @cds.persistence.skip: 'insert';
-        name         : String not null;
-        code         : String   @assert.unique not null;
-        is_active    : Boolean not null;
-        email        : String;
-        phone        : String;
-        address      : String;
-        state        : Association to State;
-        country      : Association to Country;
-        start_date   : Date;
-        end_date     : Date;
-        trail        : TrailType;
+entity Organization : cuid, managed {
+    name         : String not null;
+    code         : String @assert.unique not null;
+    is_active    : Boolean not null;
+    email        : String;
+    phone        : String;
+    address      : String;
+    state        : Association to State;
+    country      : Association to Country;
+    start_date   : Date;
+    end_date     : Date;
+    trial        : TrailType;
 
-        roles        : Composition of many OrganizationRoles
-                           on roles.organization = $self;
+    roles        : Composition of many OrganizationRoles
+                       on roles.organization = $self;
 
-        users        : Composition of many User
-                           on users.organization = $self;
+    users        : Composition of many User
+                       on users.organization = $self;
 
-        rmpOverrides : Composition of many OrganizationRoleModulePermissions
-                           on rmpOverrides.organization = $self;
+    rmpOverrides : Composition of many OrganizationRoleModulePermissions
+                       on rmpOverrides.organization = $self;
 }
 
 entity OrganizationRoles : cuid, managed {
@@ -94,9 +92,10 @@ entity OrganizationRoles : cuid, managed {
 }
 
 entity OrganizationRoleModulePermissions : cuid, managed {
-    organization : Association to Organization not null;
-    rmp          : Association to RoleModulePermissions not null;
-    access       : Boolean not null;
+    organization     : Association to Organization not null;
+    organizationRole : Association to OrganizationRoles not null;
+    rmp              : Association to RoleModulePermissions not null;
+    access           : Boolean not null;
 }
 
 entity User : cuid, managed {
@@ -106,7 +105,7 @@ entity User : cuid, managed {
     gender            : Gender not null;
     dob               : Date not null;
     organization      : Association to Organization not null;
-    role              : Association to Roles not null;
+    role              : Association to OrganizationRoles not null;
     reporting_manager : Association to User;
     state             : Association to State not null;
     country           : Association to Country not null;
@@ -124,6 +123,7 @@ entity Leads : cuid, managed {
     organization : Association to Organization not null;
     name         : String not null;
     gender       : Gender not null;
+    code         : String @assert.unique not null;
     dob          : Date;
     phone        : String;
     email        : String;
@@ -151,6 +151,7 @@ entity LeadActivity : cuid, managed {
 entity Offer : cuid, managed {
     organization : Association to Organization;
     title        : String not null;
+    code         : String not null;
     description  : LargeString;
     valid_from   : Date;
     valid_to     : Date;
