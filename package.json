@@ -2,14 +2,42 @@
   "name": "plms-be",
   "version": "1.0.0",
   "description": "Welcome to your new CAP project.",
-  "main": "index.js",
+  "private": true,
+  "dependencies": {
+    "@cap-js/postgres": "^2.2.0",
+    "@sap/cds": "^9.8.2",
+    "express": "^4.22.1",
+    "pg": "^8.20.0"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2.2.0",
+    "cds-plugin-ui5": "^0.16.3",
+    "dotenv": "^17.3.1"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "deploy": "node deploy.js",
+    "deploy:fresh": "node deploy-fresh.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Saptarishi-Solutions-s-Org/plms-be.git"
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "postgres",
+        "impl": "@cap-js/postgres",
+        "schema_evolution": "off"
+      },
+      "postgres": {
+        "kind": "postgres",
+        "impl": "@cap-js/postgres",
+        "schema_evolution": "off"
+      },
+      "sql": {
+        "native_hana_types": false,
+        "sql_mapping": "plain"
+      }
+    }
   },
+  "main": "deploy.js",
   "keywords": [],
   "author": "",
   "license": "ISC",

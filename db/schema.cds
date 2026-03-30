@@ -37,35 +37,27 @@ type LeadActivityType : String enum {
 }
 
 entity Modules : cuid, managed {
-    name    : String not null @assert.unique;
+    name    : String not null;
     default : Boolean not null;
 }
 
 entity Permissions : cuid, managed {
-    name : String not null @assert.unique;
+    name : String not null;
 }
 
-@assert.unique: [
-    'module',
-    'permission'
-]
 entity ModulePermissions : cuid, managed {
     module     : Association to Modules not null;
     permission : Association to Permissions not null;
 }
 
 entity Roles : cuid, managed {
-    name        : String not null @assert.unique;
+    name        : String not null;
     default     : Boolean not null;
 
     permissions : Composition of many RoleModulePermissions
                       on permissions.role = $self;
 }
 
-@assert.unique: [
-    'role',
-    'module_permission'
-]
 entity RoleModulePermissions : cuid, managed {
     role              : Association to Roles not null;
     module_permission : Association to ModulePermissions not null;
@@ -74,7 +66,7 @@ entity RoleModulePermissions : cuid, managed {
 
 entity Organization : cuid, managed {
     name         : String not null;
-    code         : String @assert.unique not null;
+    code         : String not null;
     is_active    : Boolean not null;
     email        : String;
     phone        : String;
@@ -87,38 +79,24 @@ entity Organization : cuid, managed {
 
     roles        : Composition of many OrganizationRoles
                        on roles.organization = $self;
-
     users        : Composition of many User
                        on users.organization = $self;
-
     rmpOverrides : Composition of many OrganizationRoleModulePermissions
                        on rmpOverrides.organization = $self;
     modules      : Composition of many OrganizationModules
                        on modules.organization = $self;
 }
 
-@assert.unique: [
-    'organization',
-    'role'
-]
 entity OrganizationRoles : cuid, managed {
     organization : Association to Organization not null;
     role         : Association to Roles not null;
 }
 
-@assert.unique: [
-    'organization',
-    'module'
-]
 entity OrganizationModules : cuid, managed {
     organization : Association to Organization not null;
     module       : Association to Modules not null;
 }
 
-@assert.unique: [
-    'organizationRole',
-    'rmp'
-]
 entity OrganizationRoleModulePermissions : cuid, managed {
     organization     : Association to Organization not null;
     organizationRole : Association to OrganizationRoles not null;
@@ -142,7 +120,7 @@ entity User : cuid, managed {
 
 entity PasswordResetToken : cuid, managed {
     user       : Association to User not null;
-    token      : LargeString not null;
+    token      : String(5000) not null;
     expires_at : Timestamp not null;
     is_used    : Boolean not null;
 }
@@ -151,7 +129,7 @@ entity Leads : cuid, managed {
     organization : Association to Organization not null;
     name         : String not null;
     gender       : Gender not null;
-    code         : String @assert.unique not null;
+    code         : String not null;
     dob          : Date;
     phone        : String;
     email        : String;
@@ -171,7 +149,7 @@ entity LeadActivity : cuid, managed {
     lead                : Association to Leads not null;
     type                : LeadActivityType;
     free_text           : String;
-    notes               : LargeString;
+    notes               : String(5000);
     call_status         : String;
     next_follow_up_date : Date;
 }
@@ -179,8 +157,8 @@ entity LeadActivity : cuid, managed {
 entity Offer : cuid, managed {
     organization : Association to Organization;
     title        : String not null;
-    code         : String not null @assert.unique;
-    description  : LargeString;
+    code         : String not null;
+    description  : String(5000);
     valid_from   : Date;
     valid_to     : Date;
     is_global    : Boolean not null;
@@ -204,4 +182,8 @@ entity State : cuid, managed {
     name      : String not null;
     statecode : String;
     country   : Association to Country not null;
+}
+
+entity Settings : cuid {
+    maintenance_mode : Boolean not null;
 }

@@ -20,3 +20,17 @@ File or Folder | Purpose
 ## Learn More
 
 Learn more at <https://cap.cloud.sap>.
+
+---
+
+## Quick reference
+```
+First time:
+  node deploy-fresh.js       ← wipes DB, creates everything from scratch
+
+Added new entity/field in schema.cds:
+  node deploy.js             ← safe, non-destructive
+
+Renamed/changed column type/added index:
+  1. Add entry to MIGRATIONS[] in deploy-migrate.js
+  2. node deploy-migrate.js  ← runs only new migrations, skips old ones
