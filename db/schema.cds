@@ -170,7 +170,7 @@ entity Leads : cuid, managed {
 entity LeadActivity : cuid, managed {
     lead                : Association to Leads not null;
     type                : LeadActivityType;
-    freetext            : String;
+    free_text           : String;
     notes               : LargeString;
     call_status         : String;
     next_follow_up_date : Date;
