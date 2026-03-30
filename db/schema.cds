@@ -37,26 +37,35 @@ type LeadActivityType : String enum {
 }
 
 entity Modules : cuid, managed {
-    name : String not null;
+    name    : String not null @assert.unique;
+    default : Boolean not null;
 }
 
 entity Permissions : cuid, managed {
-    name : String not null;
+    name : String not null @assert.unique;
 }
 
+@assert.unique: [
+    'module',
+    'permission'
+]
 entity ModulePermissions : cuid, managed {
     module     : Association to Modules not null;
     permission : Association to Permissions not null;
 }
 
 entity Roles : cuid, managed {
-    name        : String not null;
+    name        : String not null @assert.unique;
     default     : Boolean not null;
 
     permissions : Composition of many RoleModulePermissions
                       on permissions.role = $self;
 }
 
+@assert.unique: [
+    'role',
+    'module_permission'
+]
 entity RoleModulePermissions : cuid, managed {
     role              : Association to Roles not null;
     module_permission : Association to ModulePermissions not null;
@@ -84,13 +93,32 @@ entity Organization : cuid, managed {
 
     rmpOverrides : Composition of many OrganizationRoleModulePermissions
                        on rmpOverrides.organization = $self;
+    modules      : Composition of many OrganizationModules
+                       on modules.organization = $self;
 }
 
+@assert.unique: [
+    'organization',
+    'role'
+]
 entity OrganizationRoles : cuid, managed {
     organization : Association to Organization not null;
     role         : Association to Roles not null;
 }
 
+@assert.unique: [
+    'organization',
+    'module'
+]
+entity OrganizationModules : cuid, managed {
+    organization : Association to Organization not null;
+    module       : Association to Modules not null;
+}
+
+@assert.unique: [
+    'organizationRole',
+    'rmp'
+]
 entity OrganizationRoleModulePermissions : cuid, managed {
     organization     : Association to Organization not null;
     organizationRole : Association to OrganizationRoles not null;
@@ -151,7 +179,7 @@ entity LeadActivity : cuid, managed {
 entity Offer : cuid, managed {
     organization : Association to Organization;
     title        : String not null;
-    code         : String not null;
+    code         : String not null @assert.unique;
     description  : LargeString;
     valid_from   : Date;
     valid_to     : Date;
