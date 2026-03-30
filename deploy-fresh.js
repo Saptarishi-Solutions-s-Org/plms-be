@@ -33,7 +33,7 @@ const UNIQUE_CONSTRAINTS = [
     cols: "module_ID, permission_ID",
   },
   {
-    table: "crm_rolemodulpermissions",
+    table: "crm_rolemodulepermissions",
     name: "uq_role_module_perms",
     cols: "role_ID, module_permission_ID",
   },
@@ -48,7 +48,7 @@ const UNIQUE_CONSTRAINTS = [
     cols: "organization_ID, module_ID",
   },
   {
-    table: "crm_organizationrolemodulpermissions",
+    table: "crm_organizationrolemodulepermissions",
     name: "uq_org_role_rmp",
     cols: "organizationRole_ID, rmp_ID",
   },
