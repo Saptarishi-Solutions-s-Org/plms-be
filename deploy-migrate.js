@@ -597,7 +597,20 @@ async function main() {
   await client.connect();
 
   console.log("Loading CDS model...");
-  const model = await cds.load(["db/schema.cds", "srv/service.cds"]);
+  const rawModel = await cds.load(["db/schema.cds", "srv/service.cds"]);
+  // Compile to inferred flavor — expands includes, generates FK columns (state_ID etc.),
+  // resolves named enum types (TrailType → cds.String) so column diff is accurate.
+  // API varies by @sap/cds version — try each flavor in order.
+  let model;
+  if (typeof cds.compile?.for?.inferred === "function") {
+    model = cds.compile.for.inferred(rawModel);
+  } else if (typeof cds.compile?.to?.inferred === "function") {
+    model = cds.compile.to.inferred(rawModel);
+  } else if (typeof cds.linked === "function") {
+    model = cds.linked(rawModel);
+  } else {
+    model = rawModel;
+  }
   console.log("Reading current DB schema...");
 
   await dropRemovedTables(client, model); // Step 1 — drop removed tables
