@@ -32,5 +32,4 @@ Added new entity/field in schema.cds:
   node deploy.js             ← safe, non-destructive
 
 Renamed/changed column type/added index:
-  1. Add entry to MIGRATIONS[] in deploy-migrate.js
-  2. node deploy-migrate.js  ← runs only new migrations, skips old ones
+  node deploy-migrate.js  ← runs only new migrations, skips old ones

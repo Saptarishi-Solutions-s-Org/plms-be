@@ -65,26 +65,27 @@ entity RoleModulePermissions : cuid, managed {
 }
 
 entity Organization : cuid, managed {
-    name         : String not null;
-    code         : String not null;
-    is_active    : Boolean not null;
-    email        : String;
-    phone        : String;
-    address      : String;
-    state        : Association to State;
-    country      : Association to Country;
-    start_date   : Date;
-    end_date     : Date;
-    trial        : TrailType;
+    name                  : String not null;
+    code                  : String not null;
+    is_active             : Boolean not null;
+    email                 : String;
+    phone                 : String;
+    address               : String;
+    state                 : Association to State;
+    country               : Association to Country;
+    start_date            : Date;
+    end_date              : Date;
+    trial                 : TrailType;
+    is_super_organization : Boolean not null;
 
-    roles        : Composition of many OrganizationRoles
-                       on roles.organization = $self;
-    users        : Composition of many User
-                       on users.organization = $self;
-    rmpOverrides : Composition of many OrganizationRoleModulePermissions
-                       on rmpOverrides.organization = $self;
-    modules      : Composition of many OrganizationModules
-                       on modules.organization = $self;
+    roles                 : Composition of many OrganizationRoles
+                                on roles.organization = $self;
+    users                 : Composition of many User
+                                on users.organization = $self;
+    rmpOverrides          : Composition of many OrganizationRoleModulePermissions
+                                on rmpOverrides.organization = $self;
+    modules               : Composition of many OrganizationModules
+                                on modules.organization = $self;
 }
 
 entity OrganizationRoles : cuid, managed {

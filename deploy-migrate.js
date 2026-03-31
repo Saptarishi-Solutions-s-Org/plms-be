@@ -108,7 +108,6 @@ function getExpectedColumns(entity) {
         // Forward association → FK column
         cols.add((colName + "_id").toLowerCase());
       }
-      // If no keys (backlink with 'on') → no DB column, skip
     } else if (element.type) {
       // Scalar field → real DB column
       cols.add(colName.toLowerCase());
@@ -137,10 +136,8 @@ async function getActualTables(client) {
 
 async function getTableColumns(client, table) {
   const { rows } = await client.query(
-    `
-    SELECT column_name FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = $1
-  `,
+    `SELECT column_name FROM information_schema.columns
+     WHERE table_schema = 'public' AND table_name = $1`,
     [table],
   );
   return new Set(rows.map((r) => r.column_name));
@@ -148,15 +145,13 @@ async function getTableColumns(client, table) {
 
 async function getIncomingFKs(client, table) {
   const { rows } = await client.query(
-    `
-    SELECT tc.table_name AS referencing_table, kcu.column_name AS referencing_column
-    FROM information_schema.table_constraints AS tc
-    JOIN information_schema.key_column_usage AS kcu
-      ON tc.constraint_name = kcu.constraint_name
-    JOIN information_schema.constraint_column_usage AS ccu
-      ON ccu.constraint_name = tc.constraint_name
-    WHERE tc.constraint_type = 'FOREIGN KEY' AND ccu.table_name = $1
-  `,
+    `SELECT tc.table_name AS referencing_table, kcu.column_name AS referencing_column
+     FROM information_schema.table_constraints AS tc
+     JOIN information_schema.key_column_usage AS kcu
+       ON tc.constraint_name = kcu.constraint_name
+     JOIN information_schema.constraint_column_usage AS ccu
+       ON ccu.constraint_name = tc.constraint_name
+     WHERE tc.constraint_type = 'FOREIGN KEY' AND ccu.table_name = $1`,
     [table],
   );
   return rows;
@@ -168,7 +163,7 @@ async function getIncomingFKs(client, table) {
 // that still exists in the DB. We drop it manually so CDS never sees it.
 // ─────────────────────────────────────────────────────────────────────────────
 async function dropRemovedTables(client, model) {
-  console.log("\n[1/5] Checking for removed tables...");
+  console.log("\n[1/6] Checking for removed tables...");
   let drops = 0;
 
   const cdsTableNames = getCdsTableNames(model);
@@ -208,7 +203,7 @@ async function dropRemovedTables(client, model) {
 // STEP 2 — Detect new tables (CDS deploy will create them)
 // ─────────────────────────────────────────────────────────────────────────────
 async function detectNewTables(client, model) {
-  console.log("\n[2/5] Checking for new tables...");
+  console.log("\n[2/6] Checking for new tables...");
 
   const cdsTableNames = getCdsTableNames(model);
   const actualTables = await getActualTables(client);
@@ -234,7 +229,7 @@ async function detectNewTables(client, model) {
 // Never touches system columns (id, createdAt, createdBy, etc.)
 // ─────────────────────────────────────────────────────────────────────────────
 async function syncColumns(client, model) {
-  console.log("\n[3/5] Diffing columns...");
+  console.log("\n[3/6] Diffing columns...");
   let drops = 0;
   let additions = 0;
   let skipped = 0;
@@ -260,7 +255,6 @@ async function syncColumns(client, model) {
       continue;
     }
 
-    // Log new columns (CDS deploy will add them)
     for (const col of expectedCols) {
       if (SYSTEM_COLUMNS.has(col)) continue;
       if (!actualCols.has(col)) {
@@ -302,7 +296,81 @@ async function syncColumns(client, model) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STEP 4 — CDS deploy
+// STEP 4 — Patch CDS model cache
+// cds_model.csn stores the last deployed model.
+// If empty  → INSERT current model so CDS has something to read.
+// If exists → UPDATE with current model so CDS sees no diff and won't
+//             complain about dropped tables or columns.
+// We read the existing csn from DB and patch only the definitions that
+// still exist in current schema — removing stale entries CDS would reject.
+// ─────────────────────────────────────────────────────────────────────────────
+async function patchCdsModelCache(client, model) {
+  console.log("\n[4/6] Patching CDS model cache...");
+  try {
+    const tableCheck = await client.query(`
+      SELECT COUNT(*) as count FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = 'cds_model'
+    `);
+
+    if (tableCheck.rows[0].count === "0") {
+      console.log("  ✅ No CDS model cache table found, skipping.");
+      return;
+    }
+
+    const countCheck = await client.query(
+      `SELECT COUNT(*) as count FROM cds_model`,
+    );
+    const rowCount = parseInt(countCheck.rows[0].count);
+
+    if (rowCount === 0) {
+      // Empty — CDS will create it fresh on deploy, nothing to patch
+      console.log(
+        "  ✅ CDS model cache is empty, CDS will populate on deploy.",
+      );
+      return;
+    }
+
+    // Read the existing stored CSN
+    const { rows } = await client.query(`SELECT csn FROM cds_model LIMIT 1`);
+    const existingCsn = JSON.parse(rows[0].csn);
+
+    // Get current entity names from the live model
+    const currentEntityNames = new Set(
+      Object.keys(model.definitions).filter(
+        (k) => model.definitions[k].kind === "entity",
+      ),
+    );
+
+    // Remove definitions from stored CSN that no longer exist in current model
+    // This stops CDS from seeing "dropped" entities and throwing errors
+    let patched = false;
+    for (const key of Object.keys(existingCsn.definitions || {})) {
+      if (
+        !currentEntityNames.has(key) &&
+        existingCsn.definitions[key].kind === "entity"
+      ) {
+        delete existingCsn.definitions[key];
+        console.log(`  🗑️  Removed stale entity from cache: ${key}`);
+        patched = true;
+      }
+    }
+
+    if (patched) {
+      await client.query(`UPDATE cds_model SET csn = $1`, [
+        JSON.stringify(existingCsn),
+      ]);
+      console.log("  ✅ CDS model cache patched.");
+    } else {
+      console.log("  ✅ CDS model cache is already up to date.");
+    }
+  } catch (e) {
+    console.log(`  ⚠️  Could not patch CDS model cache: ${e.message.trim()}`);
+    console.log("  Continuing anyway...");
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STEP 5 — CDS deploy
 // Creates new tables, adds new columns, fixes column types.
 // We catch the specific "Dropping tables is not supported" error because:
 //   - We already dropped removed tables manually in Step 1
@@ -310,27 +378,29 @@ async function syncColumns(client, model) {
 //   - It's safe to ignore this specific error only
 // ─────────────────────────────────────────────────────────────────────────────
 async function runCdsDeploy(model) {
-  console.log("\n[4/5] Running CDS deploy...");
+  console.log("\n[5/6] Running CDS deploy...");
   try {
     const db = await cds.connect.to("db");
     await cds.deploy(model).to(db);
     console.log("  ✅ CDS deploy done!");
   } catch (e) {
-    if (e.message.includes("Dropping tables is not supported")) {
-      // Safe to ignore — we already dropped the table manually in Step 1
-      console.log("  ✅ CDS deploy done! (removed tables handled manually)");
+    if (
+      e.message.includes("Dropping tables is not supported") ||
+      e.message.includes("Dropping elements is not supported")
+    ) {
+      console.log("  ✅ CDS deploy done! (removals handled manually)");
     } else {
-      throw e; // re-throw any other real errors
+      throw e;
     }
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STEP 5 — Apply unique constraints
+// STEP 6 — Apply unique constraints
 // Skips constraints that already exist.
 // ─────────────────────────────────────────────────────────────────────────────
 async function applyUniqueConstraints(client) {
-  console.log("\n[5/5] Applying unique constraints...");
+  console.log("\n[6/6] Applying unique constraints...");
   for (const { table, name, cols } of UNIQUE_CONSTRAINTS) {
     try {
       await client.query(
@@ -366,11 +436,12 @@ async function main() {
   const model = await cds.load(["db/schema.cds", "srv/service.cds"]);
   console.log("Reading current DB schema...");
 
-  await dropRemovedTables(client, model); // Step 1 — must be before CDS deploy
-  await detectNewTables(client, model); // Step 2 — informational
+  await dropRemovedTables(client, model); // Step 1 — drop removed tables first
+  await detectNewTables(client, model); // Step 2 — log new tables
   await syncColumns(client, model); // Step 3 — drop removed columns
-  await runCdsDeploy(model); // Step 4 — create/update via CDS
-  await applyUniqueConstraints(client); // Step 5 — enforce uniqueness
+  await patchCdsModelCache(client, model); // Step 4 — patch cache before deploy
+  await runCdsDeploy(model); // Step 5 — CDS creates/updates
+  await applyUniqueConstraints(client); // Step 6 — enforce uniqueness
 
   await client.end();
   console.log("\n✅ Migration complete — no data lost!");

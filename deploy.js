@@ -105,6 +105,16 @@ function getExpectedColumns(entity) {
   return cols;
 }
 
+async function clearCdsModelCache(client) {
+  console.log("\nClearing CDS model cache...");
+  try {
+    await client.query(`DELETE FROM cds_model`);
+    console.log("  ✅ CDS model cache cleared.");
+  } catch (e) {
+    console.log("  ✅ No CDS model cache found, skipping.");
+  }
+}
+
 async function detectChanges(client, model) {
   console.log("\nDetecting changes...");
 
@@ -186,6 +196,7 @@ async function main() {
   console.log("Loading model...");
   const model = await cds.load(["db/schema.cds", "srv/service.cds"]);
 
+  await clearCdsModelCache(client);
   // Step 2: Detect and log what will change
   await detectChanges(client, model);
 

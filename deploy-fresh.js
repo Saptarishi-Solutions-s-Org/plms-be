@@ -59,11 +59,15 @@ async function applyUniqueConstraints(client) {
   for (const { table, name, cols } of UNIQUE_CONSTRAINTS) {
     try {
       await client.query(
-        `ALTER TABLE ${table} ADD CONSTRAINT ${name} UNIQUE (${cols})`,
+        `ALTER TABLE "${table}" ADD CONSTRAINT ${name} UNIQUE (${cols})`,
       );
       console.log(`  ✅ ${name}`);
     } catch (e) {
-      console.warn(`  ⚠️  ${name} failed: ${e.message.trim()}`);
+      if (e.message.includes("already exists")) {
+        console.log(`  ⏭️  ${name} already exists, skipping`);
+      } else {
+        console.warn(`  ⚠️  ${name} failed: ${e.message.trim()}`);
+      }
     }
   }
 }
@@ -80,7 +84,7 @@ async function main() {
 
   await client.connect();
 
-  // Step 1: Drop and recreate schema
+  // Step 1: Wipe and recreate schema (also clears cds_model automatically)
   console.log("Dropping schema...");
   await client.query("DROP SCHEMA public CASCADE");
   await client.query("CREATE SCHEMA public");
