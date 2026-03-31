@@ -89,6 +89,28 @@ const SYSTEM_COLUMNS = new Set([
 ]);
 
 // ─────────────────────────────────────────────────────────────────────────────
+// CDS type → SQL type mapping
+// Covers scalars + falls back to VARCHAR for named enum types
+// ─────────────────────────────────────────────────────────────────────────────
+function cdsTypeToSql(type) {
+  const map = {
+    "cds.String": "VARCHAR(5000)",
+    "cds.LargeString": "TEXT",
+    "cds.Integer": "INTEGER",
+    "cds.Integer64": "BIGINT",
+    "cds.Decimal": "DECIMAL",
+    "cds.Double": "DOUBLE PRECISION",
+    "cds.Boolean": "BOOLEAN",
+    "cds.Date": "DATE",
+    "cds.Time": "TIME",
+    "cds.DateTime": "TIMESTAMP",
+    "cds.Timestamp": "TIMESTAMP",
+    "cds.UUID": "VARCHAR(36)",
+  };
+  return map[type] || "VARCHAR(5000)"; // enums are String-based → VARCHAR
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -102,14 +124,10 @@ function getExpectedColumns(entity) {
   const cols = new Set();
   for (const [colName, element] of Object.entries(entity.elements || {})) {
     if (element.virtual) continue;
-    if (element.type === "cds.Composition") continue; // never a DB column
+    if (element.type === "cds.Composition") continue;
     if (element.type === "cds.Association") {
-      if (element.keys) {
-        // Forward association → FK column
-        cols.add((colName + "_id").toLowerCase());
-      }
+      if (element.keys) cols.add((colName + "_id").toLowerCase());
     } else if (element.type) {
-      // Scalar field → real DB column
       cols.add(colName.toLowerCase());
     }
   }
@@ -155,6 +173,29 @@ async function getIncomingFKs(client, table) {
     [table],
   );
   return rows;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Resolve the SQL type for any CDS element, including named enum types.
+// e.g.  trial: TrailType  →  model.definitions["crm.TrailType"].type = "cds.String"
+//                          →  cdsTypeToSql("cds.String") = "VARCHAR(5000)"
+// ─────────────────────────────────────────────────────────────────────────────
+function resolveSqlType(element, model) {
+  if (element.type === "cds.Association") return "VARCHAR(36)";
+
+  // Named type reference (e.g. "crm.TrailType")
+  const resolved = model.definitions[element.type];
+  if (resolved) {
+    // Enum types have a base `type` like "cds.String"
+    return cdsTypeToSql(resolved.type || "cds.String");
+  }
+
+  // length annotation on String → VARCHAR(n)
+  if (element.type === "cds.String" && element.length) {
+    return `VARCHAR(${element.length})`;
+  }
+
+  return cdsTypeToSql(element.type);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -320,10 +361,7 @@ async function patchCdsModelCache(client, model) {
     const countCheck = await client.query(
       `SELECT COUNT(*) as count FROM cds_model`,
     );
-    const rowCount = parseInt(countCheck.rows[0].count);
-
-    if (rowCount === 0) {
-      // Empty — CDS will create it fresh on deploy, nothing to patch
+    if (parseInt(countCheck.rows[0].count) === 0) {
       console.log(
         "  ✅ CDS model cache is empty, CDS will populate on deploy.",
       );
@@ -370,14 +408,127 @@ async function patchCdsModelCache(client, model) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STEP 5 — CDS deploy
-// Creates new tables, adds new columns, fixes column types.
-// We catch the specific "Dropping tables is not supported" error because:
-//   - We already dropped removed tables manually in Step 1
-//   - CDS compiler still complains if it detects a removed entity in the model
-//   - It's safe to ignore this specific error only
+// STEP 5 — CDS deploy + raw SQL fallback for enum type bug
+//
+// CDS compiler throws "Unexpected non-primitive type" when a named enum type
+// (e.g. TrailType, Gender) appears during incremental deploy diff.
+// Fallback: add new columns via raw ALTER TABLE, then update cds_model cache
+// manually so CDS knows about the new columns on next run.
 // ─────────────────────────────────────────────────────────────────────────────
-async function runCdsDeploy(model) {
+async function addNewColumnsRaw(client, model) {
+  const actualTables = await getActualTables(client);
+  const addedColumns = []; // track what we added for cache update
+
+  for (const [name, entity] of Object.entries(model.definitions)) {
+    if (entity.kind !== "entity") continue;
+    if (entity["@cds.persistence.skip"]) continue;
+
+    const table = name.replace(/\./g, "_").toLowerCase();
+    if (!actualTables.has(table)) continue;
+
+    const actualCols = await getTableColumns(client, table);
+    const elements = entity.elements || {};
+
+    for (const [colName, element] of Object.entries(elements)) {
+      if (element.virtual) continue;
+      if (element.type === "cds.Composition") continue;
+
+      let dbCol, sqlType;
+
+      if (element.type === "cds.Association") {
+        if (!element.keys) continue;
+        dbCol = (colName + "_id").toLowerCase();
+        sqlType = "VARCHAR(36)";
+      } else if (element.type) {
+        dbCol = colName.toLowerCase();
+        sqlType = resolveSqlType(element, model);
+      } else {
+        continue;
+      }
+
+      if (SYSTEM_COLUMNS.has(dbCol)) continue;
+      if (actualCols.has(dbCol)) continue;
+
+      console.log(`  ➕ Adding column: ${table}.${dbCol} (${sqlType})`);
+      try {
+        await client.query(
+          `ALTER TABLE "${table}" ADD COLUMN IF NOT EXISTS "${dbCol}" ${sqlType}`,
+        );
+        addedColumns.push({ entityName: name, colName, dbCol, element });
+      } catch (e) {
+        console.warn(
+          `  ⚠️  Could not add ${table}.${dbCol}: ${e.message.trim()}`,
+        );
+      }
+    }
+  }
+
+  return addedColumns;
+}
+
+async function updateCdsModelCacheWithNewColumns(client, model, addedColumns) {
+  if (addedColumns.length === 0) return;
+
+  console.log("\n  Updating CDS model cache with new columns...");
+  try {
+    const tableCheck = await client.query(`
+      SELECT COUNT(*) as count FROM information_schema.tables
+      WHERE table_schema = 'public' AND table_name = 'cds_model'
+    `);
+    if (tableCheck.rows[0].count === "0") {
+      console.log("  ⚠️  No cds_model table found, skipping cache update.");
+      return;
+    }
+
+    const countCheck = await client.query(
+      `SELECT COUNT(*) as count FROM cds_model`,
+    );
+    if (parseInt(countCheck.rows[0].count) === 0) {
+      console.log("  ⚠️  cds_model is empty, skipping cache update.");
+      return;
+    }
+
+    const { rows } = await client.query(`SELECT csn FROM cds_model LIMIT 1`);
+    const storedCsn = JSON.parse(rows[0].csn);
+
+    // For each added column, inject the element definition into the stored CSN
+    // so CDS sees the column as part of the model on next run.
+    for (const { entityName, colName, element } of addedColumns) {
+      const entityDef = storedCsn.definitions?.[entityName];
+      if (!entityDef) {
+        // Entity not yet in cache (new table) — inject minimal entity definition
+        storedCsn.definitions = storedCsn.definitions || {};
+        const liveEntity = model.definitions[entityName];
+        storedCsn.definitions[entityName] = JSON.parse(
+          JSON.stringify(liveEntity),
+        );
+        console.log(`  ✅ Injected new entity into cache: ${entityName}`);
+        continue;
+      }
+
+      // Entity exists in cache — just add the missing element
+      entityDef.elements = entityDef.elements || {};
+      if (!entityDef.elements[colName]) {
+        entityDef.elements[colName] = JSON.parse(
+          JSON.stringify(model.definitions[entityName].elements[colName]),
+        );
+        console.log(`  ✅ Injected into cache: ${entityName}.${colName}`);
+      }
+    }
+
+    await client.query(`UPDATE cds_model SET csn = $1`, [
+      JSON.stringify(storedCsn),
+    ]);
+    console.log("  ✅ CDS model cache updated with new columns.");
+  } catch (e) {
+    console.warn(`  ⚠️  Could not update CDS model cache: ${e.message.trim()}`);
+    console.log(
+      "  This is non-fatal — columns exist in DB, cache will self-heal on next fresh deploy.",
+    );
+  }
+}
+
+async function runCdsDeploy(client, model) {
   console.log("\n[5/6] Running CDS deploy...");
   try {
     const db = await cds.connect.to("db");
@@ -389,6 +540,19 @@ async function runCdsDeploy(model) {
       e.message.includes("Dropping elements is not supported")
     ) {
       console.log("  ✅ CDS deploy done! (removals handled manually)");
+    } else if (e.message.includes("Unexpected non-primitive type")) {
+      // Named enum type bug — CDS compiler can't handle the diff
+      // Fall back to raw SQL for new columns + update cache manually
+      console.log(
+        "  ⚠️  CDS compiler enum bug hit, falling back to raw SQL...",
+      );
+      const addedColumns = await addNewColumnsRaw(client, model);
+      await updateCdsModelCacheWithNewColumns(client, model, addedColumns);
+      if (addedColumns.length === 0) {
+        console.log("  ✅ No new columns needed, nothing to add.");
+      } else {
+        console.log(`  ✅ ${addedColumns.length} column(s) added via raw SQL.`);
+      }
     } else {
       throw e;
     }
@@ -436,11 +600,11 @@ async function main() {
   const model = await cds.load(["db/schema.cds", "srv/service.cds"]);
   console.log("Reading current DB schema...");
 
-  await dropRemovedTables(client, model); // Step 1 — drop removed tables first
+  await dropRemovedTables(client, model); // Step 1 — drop removed tables
   await detectNewTables(client, model); // Step 2 — log new tables
   await syncColumns(client, model); // Step 3 — drop removed columns
   await patchCdsModelCache(client, model); // Step 4 — patch cache before deploy
-  await runCdsDeploy(model); // Step 5 — CDS creates/updates
+  await runCdsDeploy(client, model); // Step 5 — CDS deploy or raw SQL fallback
   await applyUniqueConstraints(client); // Step 6 — enforce uniqueness
 
   await client.end();
