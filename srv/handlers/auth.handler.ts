@@ -12,28 +12,29 @@ export const loginHandler = async (req: any) => {
 
     const userRes = await pool.query(
       `
-  SELECT 
-    u.id,
-    u.name,
-    u.password,
-    u.organization_id as "orgId",
-    o.code as "orgCode",
-    o.name as "orgName",
-    o.is_super_organization as "isSuper",
-    u.role_id as "orgRoleId",
-    r.name as "role"
-  FROM crm_user u
-  JOIN crm_organization o ON o.id = u.organization_id
-  JOIN crm_organizationroles orr ON orr.id = u.role_id
-  JOIN crm_roles r ON r.id = orr.role_id
-  WHERE u.email = $1
-  `,
+      SELECT 
+        u.id,
+        u.name,
+        u.password,
+        u.organization_id as "orgId",
+        o.code as "orgCode",
+        o.name as "orgName",
+        o.is_super_organization as "isSuper",
+        u.role_id as "orgRoleId",
+        r.name as "role"
+      FROM crm_user u
+      JOIN crm_organization o ON o.id = u.organization_id
+      JOIN crm_organizationroles orr ON orr.id = u.role_id
+      JOIN crm_roles r ON r.id = orr.role_id
+      WHERE u.email = $1
+      `,
       [email],
     );
 
     const user = userRes.rows[0];
 
     if (!user) return req.error(401, "Invalid credentials");
+
     const valid = await bcrypt.compare(password, user.password || "");
 
     if (!valid) return req.error(401, "Invalid credentials");
@@ -41,13 +42,13 @@ export const loginHandler = async (req: any) => {
     const permRes = await pool.query(
       `
       SELECT 
-        mp.name as module,
+        m.name as module,
         p.name as permission
       FROM crm_organizationrolemodulepermissions ormp
       JOIN crm_rolemodulepermissions rmp ON rmp.id = ormp.rmp_id
-      JOIN crm_modulepermissions mp2 ON mp2.id = rmp.module_permission_id
-      JOIN crm_modules mp ON mp.id = mp2.module_id
-      JOIN crm_permissions p ON p.id = mp2.permission_id
+      JOIN crm_modulepermissions mp ON mp.id = rmp.module_permission_id
+      JOIN crm_modules m ON m.id = mp.module_id
+      JOIN crm_permissions p ON p.id = mp.permission_id
       WHERE ormp.organization_id = $1
         AND ormp.organizationrole_id = $2
         AND ormp.access = true
@@ -57,12 +58,16 @@ export const loginHandler = async (req: any) => {
 
     const permissionMap: Record<string, string[]> = {};
 
-    for (const r of permRes.rows) {
-      if (!permissionMap[r.module]) permissionMap[r.module] = [];
-      permissionMap[r.module].push(r.permission);
-    }
+    permRes.rows.forEach(({ module, permission }) => {
+      const mod = module.toUpperCase();
+      const perm = permission.toUpperCase();
 
-    console.log("PERMISSIONS:", permissionMap);
+      if (!permissionMap[mod]) permissionMap[mod] = [];
+
+      if (!permissionMap[mod].includes(perm)) {
+        permissionMap[mod].push(perm);
+      }
+    });
 
     const token = generateToken({
       userId: user.id,

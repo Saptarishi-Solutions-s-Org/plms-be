@@ -1,13 +1,18 @@
 import { verifyToken } from "../lib/jwt";
 import { AppUser } from "../types/appuser";
 
-export const withAuth = (handler: any, allowedRoles: string[] = []) => {
+export const withAuth = (
+  handler: any,
+  allowedRoles: string[] = [],
+  requiredPermissions: string[] = [],
+) => {
   return async (req: any) => {
     try {
-      const authHeader = req.headers?.authorization;
+      const authHeader =
+        req.headers?.authorization || req._?.req?.headers?.authorization;
 
       if (!authHeader) {
-        return req.error(401, "Unauthorized");
+        throw new Error("No auth header");
       }
 
       const token = authHeader.split(" ")[1];
@@ -15,23 +20,37 @@ export const withAuth = (handler: any, allowedRoles: string[] = []) => {
       const decoded = verifyToken(token) as AppUser;
 
       if (!decoded || typeof decoded === "string") {
-        return req.error(401, "Invalid token");
+        throw new Error("Invalid token");
       }
 
+      // ✅ ROLE CHECK
       if (
         allowedRoles.length &&
         !allowedRoles
           .map((r) => r.toUpperCase())
           .includes(decoded.role?.toUpperCase())
       ) {
-        return req.error(403, "Forbidden");
+        throw new Error("Forbidden");
+      }
+
+      // ✅ PERMISSION CHECK
+      if (requiredPermissions.length) {
+        const hasAccess = requiredPermissions.every((perm) => {
+          const [module, action] = perm.split(".");
+          return decoded.permissions?.[module]?.includes(action);
+        });
+
+        if (!hasAccess) {
+          throw new Error("Permission Denied");
+        }
       }
 
       req.user = decoded;
 
-      return handler(req);
-    } catch {
-      return req.error(401, "Unauthorized");
+      return await handler(req); // ✅ IMPORTANT
+    } catch (err) {
+      console.error("AUTH ERROR:", err);
+      return { error: "Unauthorized" }; // ✅ NEVER use req.error here
     }
   };
 };
