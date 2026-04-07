@@ -5,6 +5,7 @@ import cds from "@sap/cds";
 import http from "http";
 import { Server } from "socket.io";
 import { verifyToken } from "./lib/jwt";
+import { loginHandler } from "./handlers/auth.handler";
 import type { Express } from "express";
 
 cds.env.requires.db = {
@@ -12,7 +13,9 @@ cds.env.requires.db = {
   impl: "@cap-js/postgres",
   credentials: {
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
+    ssl: {
+      rejectUnauthorized: false,
+    },
   },
   pool: {
     min: 0,
@@ -47,8 +50,18 @@ cds.on("served", () => {
   const app = cds.server as Express;
   const server = http.createServer(app);
 
+  const authService = cds.services["AuthService"];
+  if (authService) {
+    authService.on("login", loginHandler);
+  } else {
+    console.error("❌ AuthService not found");
+  }
+
   io = new Server(server, {
-    cors: { origin: allowedOrigins },
+    cors: {
+      origin: allowedOrigins,
+      methods: ["GET", "POST"],
+    },
   });
 
   io.use((socket: any, next: (err?: Error) => void) => {
@@ -64,7 +77,12 @@ cds.on("served", () => {
 
   io.on("connection", (socket: any) => {
     const user = socket.data.user;
-    if (user?.orgId) socket.join(user.orgId);
+
+    if (user?.orgId) {
+      socket.join(user.orgId);
+    }
+
+    console.log("🔌 Socket connected:", user?.userId);
   });
 
   if (!cds.cli) {
@@ -75,3 +93,4 @@ cds.on("served", () => {
     });
   }
 });
+cds.server();
