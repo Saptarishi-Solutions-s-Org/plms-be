@@ -5,7 +5,7 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "start": "tsx srv/server.ts",
+    "start": "cds watch",
     "watch": "cds watch"
   },
   "dependencies": {
