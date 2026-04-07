@@ -109,6 +109,7 @@ entity User : cuid, managed {
     name              : String not null;
     email             : String not null;
     phone             : String not null;
+    password          : String not null;
     gender            : Gender not null;
     dob               : Date not null;
     organization      : Association to Organization not null;

@@ -1,39 +1,47 @@
 {
   "name": "plms-be",
   "version": "1.0.0",
-  "description": "Welcome to your new CAP project.",
+  "description": "CAP Backend",
   "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "tsx srv/server.ts",
+    "watch": "cds watch"
+  },
   "dependencies": {
     "@cap-js/postgres": "^2.2.0",
-    "@sap/cds": "^9.8.2",
+    "@sap/cds": "^9.8.4",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
     "express": "^4.22.1",
-    "pg": "^8.20.0"
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.20.0",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "@cap-js/sqlite": "^2.2.0",
+    "@types/bcrypt": "^6.0.0",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/pg": "^8.20.0",
+    "@types/socket.io": "^3.0.1",
     "cds-plugin-ui5": "^0.16.3",
-    "dotenv": "^17.3.1"
-  },
-  "scripts": {
-    "start": "node server.js",
-    "deploy": "node deploy.js",
-    "deploy:fresh": "node deploy-fresh.js"
+    "dotenv": "^17.4.1",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
   },
   "cds": {
     "requires": {
+      "auth": {
+        "kind": "mocked"
+      },
       "db": {
         "kind": "postgres",
+        "credentials": {
+          "url": "${DATABASE_URL}"
+        },
         "impl": "@cap-js/postgres",
         "schema_evolution": "off"
-      },
-      "postgres": {
-        "kind": "postgres",
-        "impl": "@cap-js/postgres",
-        "schema_evolution": "off"
-      },
-      "sql": {
-        "native_hana_types": false,
-        "sql_mapping": "plain"
       }
     }
   },
@@ -41,7 +49,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/Saptarishi-Solutions-s-Org/plms-be/issues"
   },

@@ -34,5 +34,3 @@ mta_archives/
 @cds-models
 
 .env*
-
-test-db.js

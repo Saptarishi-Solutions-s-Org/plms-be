@@ -199,6 +199,74 @@ function resolveSqlType(element, model) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Builds a minimal but accurate CSN from actual DB tables/columns.
+// This tells CDS "these tables already exist" so it won't try to CREATE them.
+// Used when cds_model is empty to avoid the "Cannot read properties of undefined"
+// crash that happens when CDS tries to read a non-existent csn row.
+// ─────────────────────────────────────────────────────────────────────────────
+async function buildCsnFromDb(client, model) {
+  const definitions = {};
+
+  for (const [name, def] of Object.entries(model.definitions)) {
+    if (def.kind !== "entity") continue;
+    if (def["@cds.persistence.skip"]) continue;
+
+    const table = name.replace(/\./g, "_").toLowerCase();
+
+    const { rows: tableRows } = await client.query(
+      `SELECT COUNT(*) as count FROM information_schema.tables
+       WHERE table_schema = 'public' AND table_name = $1`,
+      [table],
+    );
+    if (tableRows[0].count === "0") continue; // table doesn't exist yet
+
+    const { rows: colRows } = await client.query(
+      `SELECT column_name FROM information_schema.columns
+       WHERE table_schema = 'public' AND table_name = $1`,
+      [table],
+    );
+    const dbCols = new Set(colRows.map((r) => r.column_name));
+
+    const elements = {};
+    for (const [colName, element] of Object.entries(def.elements || {})) {
+      if (element.virtual) continue;
+      if (element.type === "cds.Composition") continue;
+
+      if (element.type === "cds.Association") {
+        if (!element.keys) continue;
+        const fkCol = (colName + "_id").toLowerCase();
+        if (dbCols.has(fkCol)) {
+          elements[colName] = {
+            type: "cds.Association",
+            target: element.target,
+            keys: element.keys,
+          };
+          elements[colName + "_ID"] = { type: "cds.String", length: 36 };
+        }
+      } else if (element.type) {
+        const dbCol = colName.toLowerCase();
+        if (dbCols.has(dbCol)) {
+          elements[colName] = { type: element.type };
+          if (element.length) elements[colName].length = element.length;
+        }
+      }
+    }
+
+    definitions[name] = {
+      kind: "entity",
+      elements,
+      "@cds.persistence.name": table.toUpperCase(),
+    };
+  }
+
+  return {
+    $version: "2.0",
+    definitions,
+    meta: { creator: "deploy-migrate.js bootstrap", flavor: "inferred" },
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // STEP 1 — Drop removed tables BEFORE CDS deploy
 // Must happen first because CDS compiler throws if it detects a removed entity
 // that still exists in the DB. We drop it manually so CDS never sees it.
@@ -339,11 +407,9 @@ async function syncColumns(client, model) {
 // ─────────────────────────────────────────────────────────────────────────────
 // STEP 4 — Patch CDS model cache
 // cds_model.csn stores the last deployed model.
-// If empty  → INSERT current model so CDS has something to read.
-// If exists → UPDATE with current model so CDS sees no diff and won't
-//             complain about dropped tables or columns.
-// We read the existing csn from DB and patch only the definitions that
-// still exist in current schema — removing stale entries CDS would reject.
+// If empty  → BUILD CSN from actual DB state so CDS knows what already exists.
+//             Empty table causes crash: "Cannot read properties of undefined"
+// If exists → Remove stale entity definitions so CDS sees no dropped tables.
 // ─────────────────────────────────────────────────────────────────────────────
 async function patchCdsModelCache(client, model) {
   console.log("\n[4/6] Patching CDS model cache...");
@@ -361,14 +427,19 @@ async function patchCdsModelCache(client, model) {
     const countCheck = await client.query(
       `SELECT COUNT(*) as count FROM cds_model`,
     );
-    if (parseInt(countCheck.rows[0].count) === 0) {
-      console.log(
-        "  ✅ CDS model cache is empty, CDS will populate on deploy.",
-      );
+    const rowCount = parseInt(countCheck.rows[0].count);
+
+    if (rowCount === 0) {
+      // Empty — build from actual DB state so CDS doesn't try to CREATE existing tables
+      const csn = await buildCsnFromDb(client, model);
+      await client.query(`INSERT INTO cds_model (csn) VALUES ($1)`, [
+        JSON.stringify(csn),
+      ]);
+      console.log("  ✅ CDS model cache bootstrapped from current DB state.");
       return;
     }
 
-    // Read the existing stored CSN
+    // Row exists — remove stale entity definitions
     const { rows } = await client.query(`SELECT csn FROM cds_model LIMIT 1`);
     const existingCsn = JSON.parse(rows[0].csn);
 
@@ -613,7 +684,7 @@ async function main() {
   }
   console.log("Reading current DB schema...");
 
-  await dropRemovedTables(client, model); // Step 1 — drop removed tables
+  await dropRemovedTables(client, model); // Step 1 — drop removed tables first
   await detectNewTables(client, model); // Step 2 — log new tables
   await syncColumns(client, model); // Step 3 — drop removed columns
   await patchCdsModelCache(client, model); // Step 4 — patch cache before deploy
