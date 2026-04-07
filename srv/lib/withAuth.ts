@@ -1,10 +1,16 @@
 import { verifyToken } from "../lib/jwt";
-import { AppUser } from "../types/appuser";
 
-export const withAuth = (handler: any, allowedRoles: string[] = []) => {
+export const withAuth = (
+  handler: any,
+  module?: string,
+  actions: string[] = [],
+) => {
   return async (req: any) => {
     try {
-      const authHeader = req.headers?.authorization;
+      const authHeader =
+        req.headers?.authorization ||
+        req._?.req?.headers?.authorization ||
+        req.req?.headers?.authorization;
 
       if (!authHeader) {
         return req.error(401, "Unauthorized");
@@ -12,25 +18,25 @@ export const withAuth = (handler: any, allowedRoles: string[] = []) => {
 
       const token = authHeader.split(" ")[1];
 
-      const decoded = verifyToken(token) as AppUser;
+      const decoded: any = verifyToken(token);
 
-      if (!decoded || typeof decoded === "string") {
-        return req.error(401, "Invalid token");
-      }
-
-      if (
-        allowedRoles.length &&
-        !allowedRoles
-          .map((r) => r.toUpperCase())
-          .includes(decoded.role?.toUpperCase())
-      ) {
-        return req.error(403, "Forbidden");
-      }
+      if (!decoded) return req.error(401, "Invalid token");
 
       req.user = decoded;
 
+      if (module && actions.length) {
+        const modulePerms = decoded.permissions?.[module.toLowerCase()] || [];
+
+        const hasAccess = actions.every((a) =>
+          modulePerms.includes(a.toLowerCase()),
+        );
+
+        if (!hasAccess) return req.error(403, "Forbidden");
+      }
+
       return handler(req);
-    } catch {
+    } catch (err) {
+      console.error("AUTH ERROR:", err);
       return req.error(401, "Unauthorized");
     }
   };
