@@ -4,9 +4,10 @@ dotenv.config();
 import cds from "@sap/cds";
 import http from "http";
 import { Server } from "socket.io";
-import { verifyToken } from "./lib/jwt";
-import { loginHandler } from "./handlers/auth.handler";
 import type { Express } from "express";
+
+import { verifyToken } from "./lib/jwt";
+import { bindAllServices } from "./bindings";
 
 cds.env.requires.db = {
   kind: "postgres",
@@ -50,12 +51,7 @@ cds.on("served", () => {
   const app = cds.server as Express;
   const server = http.createServer(app);
 
-  const authService = cds.services["AuthService"];
-  if (authService) {
-    authService.on("login", loginHandler);
-  } else {
-    console.error("❌ AuthService not found");
-  }
+  bindAllServices();
 
   io = new Server(server, {
     cors: {
@@ -93,4 +89,5 @@ cds.on("served", () => {
     });
   }
 });
+
 cds.server();

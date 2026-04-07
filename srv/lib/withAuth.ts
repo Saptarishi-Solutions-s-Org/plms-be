@@ -1,23 +1,37 @@
-import { verifyToken } from "./jwt";
+import { verifyToken } from "../lib/jwt";
+import { AppUser } from "../types/appuser";
 
-export function withAuth(required?: string) {
-  return (req: any) => {
-    const auth = req.headers.authorization;
-    if (!auth) throw new Error("Unauthorized");
+export const withAuth = (handler: any, allowedRoles: string[] = []) => {
+  return async (req: any) => {
+    try {
+      const authHeader = req.headers?.authorization;
 
-    const token = auth.split(" ")[1];
-    const user: any = verifyToken(token);
-
-    if (required) {
-      const [module, permission] = required.split(".");
-      const m = module.toLowerCase();
-      const p = permission.toLowerCase();
-
-      if (!user.permissions[m]?.includes(p)) {
-        throw new Error("Forbidden");
+      if (!authHeader) {
+        return req.error(401, "Unauthorized");
       }
-    }
 
-    req.user = user;
+      const token = authHeader.split(" ")[1];
+
+      const decoded = verifyToken(token) as AppUser;
+
+      if (!decoded || typeof decoded === "string") {
+        return req.error(401, "Invalid token");
+      }
+
+      if (
+        allowedRoles.length &&
+        !allowedRoles
+          .map((r) => r.toUpperCase())
+          .includes(decoded.role?.toUpperCase())
+      ) {
+        return req.error(403, "Forbidden");
+      }
+
+      req.user = decoded;
+
+      return handler(req);
+    } catch {
+      return req.error(401, "Unauthorized");
+    }
   };
-}
+};

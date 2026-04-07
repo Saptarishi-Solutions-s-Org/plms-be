@@ -12,18 +12,22 @@ export const loginHandler = async (req: any) => {
 
     const userRes = await pool.query(
       `
-      SELECT 
-        u.id,
-        u.name,
-        u.password,
-        u.organization_id as "orgId",
-        o.code as "orgCode",
-        o.is_super_organization as "isSuper",
-        u.role_id as "orgRoleId"
-      FROM crm_user u
-      JOIN crm_organization o ON o.id = u.organization_id
-      WHERE u.email = $1
-      `,
+  SELECT 
+    u.id,
+    u.name,
+    u.password,
+    u.organization_id as "orgId",
+    o.code as "orgCode",
+    o.name as "orgName",
+    o.is_super_organization as "isSuper",
+    u.role_id as "orgRoleId",
+    r.name as "role"
+  FROM crm_user u
+  JOIN crm_organization o ON o.id = u.organization_id
+  JOIN crm_organizationroles orr ON orr.id = u.role_id
+  JOIN crm_roles r ON r.id = orr.role_id
+  WHERE u.email = $1
+  `,
       [email],
     );
 
@@ -64,6 +68,7 @@ export const loginHandler = async (req: any) => {
       userId: user.id,
       orgId: user.orgId,
       roleId: user.orgRoleId,
+      role: user.role,
       permissions: permissionMap,
       isSuper: user.isSuper,
     });
@@ -75,7 +80,9 @@ export const loginHandler = async (req: any) => {
         name: user.name,
         orgId: user.orgId,
         orgCode: user.orgCode,
+        orgName: user.orgName,
         roleId: user.orgRoleId,
+        role: user.role,
         permissions: permissionMap,
       },
     };
