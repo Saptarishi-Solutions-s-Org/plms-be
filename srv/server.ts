@@ -5,16 +5,14 @@ import cds from "@sap/cds";
 import http from "http";
 import { Server } from "socket.io";
 import { verifyToken } from "./lib/jwt";
+import type { Express } from "express";
 
-// ✅ DB CONFIG FROM ENV
 cds.env.requires.db = {
   kind: "postgres",
   impl: "@cap-js/postgres",
   credentials: {
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false,
-    },
+    ssl: { rejectUnauthorized: false },
   },
   pool: {
     min: 0,
@@ -26,9 +24,9 @@ let io: Server;
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [];
 
-cds.on("bootstrap", (app: any) => {
-  app.use((req: any, res: any, next: any) => {
-    const origin = req.headers.origin;
+cds.on("bootstrap", (app: Express) => {
+  app.use((req, res, next) => {
+    const origin = req.headers.origin as string | undefined;
 
     if (origin && allowedOrigins.includes(origin)) {
       res.setHeader("Access-Control-Allow-Origin", origin);
@@ -46,16 +44,14 @@ cds.on("bootstrap", (app: any) => {
 });
 
 cds.on("served", () => {
-  const app = cds.server;
+  const app = cds.server as Express;
   const server = http.createServer(app);
 
   io = new Server(server, {
-    cors: {
-      origin: allowedOrigins,
-    },
+    cors: { origin: allowedOrigins },
   });
 
-  io.use((socket: any, next: any) => {
+  io.use((socket: any, next: (err?: Error) => void) => {
     try {
       const token = socket.handshake.auth?.token;
       const user = verifyToken(token);
@@ -70,4 +66,12 @@ cds.on("served", () => {
     const user = socket.data.user;
     if (user?.orgId) socket.join(user.orgId);
   });
+
+  if (!cds.cli) {
+    const port = process.env.PORT || 4004;
+
+    server.listen(port, () => {
+      console.log(`🚀 Server running on http://localhost:${port}`);
+    });
+  }
 });
