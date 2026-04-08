@@ -7,7 +7,10 @@ service AuthService {
             name    : String;
             orgId   : UUID;
             orgCode : String;
+            orgName : String;
             roleId  : UUID;
+            role    : String;
         };
     };
+
 }

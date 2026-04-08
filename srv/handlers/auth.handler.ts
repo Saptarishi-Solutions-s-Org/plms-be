@@ -7,36 +7,46 @@ export const loginHandler = async (req: any) => {
     const { email, password } = req.data;
 
     if (!email || !password) {
-      return req.error(400, "Email and password required");
+      req.reject(400, { message: "Email and password required" });
+      return;
     }
 
     const userRes = await pool.query(
       `
-  SELECT 
-    u.id,
-    u.name,
-    u.password,
-    u.organization_id as "orgId",
-    o.code as "orgCode",
-    o.name as "orgName",
-    o.is_super_organization as "isSuper",
-    u.role_id as "orgRoleId",
-    r.name as "role"
-  FROM crm_user u
-  JOIN crm_organization o ON o.id = u.organization_id
-  JOIN crm_organizationroles orr ON orr.id = u.role_id
-  JOIN crm_roles r ON r.id = orr.role_id
-  WHERE u.email = $1
-  `,
+      SELECT 
+        u.id,
+        u.name,
+        u.password,
+        u.organization_id as "orgId",
+        o.code as "orgCode",
+        o.name as "orgName",
+        o.is_super_organization as "isSuper",
+        u.role_id as "orgRoleId",
+        r.name as "role"
+      FROM crm_user u
+      JOIN crm_organization o ON o.id = u.organization_id
+      JOIN crm_organizationroles orr ON orr.id = u.role_id
+      JOIN crm_roles r ON r.id = orr.role_id
+      WHERE u.email = $1
+        AND u.is_active = true
+        AND o.is_active = true
+      `,
       [email],
     );
 
     const user = userRes.rows[0];
 
-    if (!user) return req.error(401, "Invalid credentials");
+    if (!user) {
+      req.reject(401, { message: "Invalid credentials" });
+      return;
+    }
+
     const valid = await bcrypt.compare(password, user.password || "");
 
-    if (!valid) return req.error(401, "Invalid credentials");
+    if (!valid) {
+      req.reject(401, { message: "Invalid credentials" });
+      return;
+    }
 
     const permRes = await pool.query(
       `
@@ -62,8 +72,6 @@ export const loginHandler = async (req: any) => {
       permissionMap[r.module].push(r.permission);
     }
 
-    console.log("PERMISSIONS:", permissionMap);
-
     const token = generateToken({
       userId: user.id,
       orgId: user.orgId,
@@ -87,7 +95,6 @@ export const loginHandler = async (req: any) => {
       },
     };
   } catch (err: any) {
-    console.error("LOGIN ERROR:", err);
-    return req.error(500, "Internal Server Error");
+    req.reject(500, { message: "Internal Server Error" });
   }
 };

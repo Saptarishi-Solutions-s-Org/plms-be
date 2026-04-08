@@ -5,6 +5,9 @@ import { createOrganizationHandler } from "../handlers/organization/create";
 import { getOrganizationsHandler } from "../handlers/organization/getAll";
 import { getOrganizationByCodeHandler } from "../handlers/organization/getOne";
 import { updateOrganizationHandler } from "../handlers/organization/update";
+import { createUserHandler } from "../handlers/organization/createUser";
+import { updateUserHandler } from "../handlers/organization/updateUser";
+import { getAdminUsersHandler } from "../handlers/organization/getAdminUsers";
 
 export const bindOrganization = () => {
   const service = cds.services["OrganizationService"];
@@ -30,5 +33,11 @@ export const bindOrganization = () => {
     withAuth(updateOrganizationHandler, "organization", ["update"]),
   );
 
-  console.log("OrganizationService bound");
+  service.on("createUser", withAuth(createUserHandler, "user", ["create"]));
+
+  service.on("updateUser", withAuth(updateUserHandler, "user", ["update"]));
+
+  service.on("getAdminUsers", withAuth(getAdminUsersHandler, "user", ["view"]));
+
+  console.log("OrganizationService bound with Users");
 };

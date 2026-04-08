@@ -1,12 +1,12 @@
 import { pool } from "../../lib/db";
-import { verifyToken } from "../../lib/jwt";
 
 export const updateOrganizationHandler = async (req: any) => {
   const client = await pool.connect();
 
   try {
     const { id, name, is_active } = req.data;
-    const userId = req.user?.userId || null;
+    const userId = req.user?.id || null;
+
     await client.query(
       `UPDATE crm_organization
        SET name = $1,
@@ -21,7 +21,7 @@ export const updateOrganizationHandler = async (req: any) => {
       message: "Organization updated successfully",
     };
   } catch (err) {
-    console.error("UPDATE ERROR:", err);
+    console.error(err);
     return req.error(500, "Failed to update organization");
   } finally {
     client.release();

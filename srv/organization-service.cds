@@ -33,6 +33,7 @@ service OrganizationService {
     action   createOrganization(name: String,
                                 email: String,
                                 phone: String,
+                                is_active: Boolean,
                                 address: String,
                                 state: UUID,
                                 country: UUID,
@@ -61,4 +62,38 @@ service OrganizationService {
                                 address: String) returns {
         message : String;
     };
+
+    action   createUser(name: String,
+                        email: String,
+                        phone: String,
+                        gender: String,
+                        is_active: Boolean,
+                        dob: Date,
+                        state: UUID,
+                        country: UUID,
+                        organizationId: UUID)    returns {
+        message : String;
+    };
+
+    action   updateUser(id: UUID,
+                        name: String,
+                        phone: String,
+                        is_active: Boolean,
+                        state: UUID,
+                        country: UUID)           returns {
+        message : String;
+    };
+
+    function getAdminUsers(organizationId: UUID) returns many {
+        id        : UUID;
+        name      : String;
+        email     : String;
+        phone     : String;
+        gender    : String;
+        dob       : Date;
+        state     : String;
+        country   : String;
+        is_active : Boolean;
+    };
+
 }
