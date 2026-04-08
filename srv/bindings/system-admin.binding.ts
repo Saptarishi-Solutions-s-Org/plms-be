@@ -12,7 +12,7 @@ export const bindSystemAdmin = () => {
 
   service.on(
     "getDashboard",
-    withAuth(systemAdminDashboardHandler, ["SYSTEM ADMIN"])
+    withAuth(systemAdminDashboardHandler, "SYSTEM ADMIN"),
   );
 
   console.log("SystemAdminService secured & bound");
