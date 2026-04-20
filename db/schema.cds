@@ -152,6 +152,7 @@ entity Leads : cuid, managed {
     address      : String;
     state        : Association to State;
     country      : Association to Country;
+    postal_code  : String(20);
 
     activities   : Composition of many LeadActivity
                        on activities.lead = $self;
