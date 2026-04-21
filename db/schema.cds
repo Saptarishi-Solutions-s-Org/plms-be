@@ -36,6 +36,14 @@ type LeadActivityType : String enum {
     Other;
 }
 
+type LeadPriority     : String enum {
+    Urgent;
+    High;
+    Medium;
+    Low;
+}
+
+
 entity Modules : cuid, managed {
     name    : String not null;
     default : Boolean not null;
@@ -106,18 +114,19 @@ entity OrganizationRoleModulePermissions : cuid, managed {
 }
 
 entity User : cuid, managed {
-    name              : String not null;
-    email             : String not null;
-    phone             : String not null;
-    password          : String not null;
-    gender            : Gender not null;
-    dob               : Date not null;
-    organization      : Association to Organization not null;
-    role              : Association to OrganizationRoles not null;
-    reporting_manager : Association to User;
-    state             : Association to State not null;
-    country           : Association to Country not null;
-    is_active         : Boolean not null;
+    name                 : String not null;
+    email                : String not null;
+    phone                : String not null;
+    password             : String not null;
+    gender               : Gender not null;
+    dob                  : Date not null;
+    organization         : Association to Organization not null;
+    role                 : Association to OrganizationRoles not null;
+    reporting_manager    : Association to User;
+    state                : Association to State not null;
+    country              : Association to Country not null;
+    is_active            : Boolean not null;
+    must_change_password : Boolean;
 }
 
 entity PasswordResetToken : cuid, managed {
@@ -136,12 +145,14 @@ entity Leads : cuid, managed {
     phone        : String;
     email        : String;
     status       : LeadStatus not null;
+    priority     : LeadPriority;
     source       : String;
     import_type  : ImportType;
     assigned_to  : Association to User;
     address      : String;
     state        : Association to State;
     country      : Association to Country;
+    postal_code  : String(20);
 
     activities   : Composition of many LeadActivity
                        on activities.lead = $self;
