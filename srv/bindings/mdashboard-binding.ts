@@ -9,18 +9,15 @@ export const bindManagerDashboard = () => {
 
   service.on(
     "getManagerDashboard",
-    managerDashboardHandler
-    //withAuth(managerDashboardHandler, "lead", ["view"])
+    withAuth(managerDashboardHandler, "lead", ["view"])
   );
   service.on(
     "getLeadStatusOverview",
-    leadStatusOverviewHandler
-    //withAuth(leadStatusOverviewHandler, "lead", ["view"])
+    withAuth(leadStatusOverviewHandler, "lead", ["view"])
   );
   service.on(
   "getExecutivePerformance",
-    executivePerformanceHandler
-  //withAuth(executivePerformanceHandler, "lead", ["view"])
+    withAuth(executivePerformanceHandler, "lead", ["view"])
 );
 
   console.log("ManagerDashboardService bound successfully");
