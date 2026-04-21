@@ -1,6 +1,6 @@
 import cds from "@sap/cds";
 import { withAuth } from "../lib/withAuth";
-import { managerDashboardHandler } from "../handlers/organization-manager/getmstats";
+import { managerDashboardHandler } from "../handlers/organization-manager/getmanagerstats";
 import { leadStatusOverviewHandler } from "../handlers/organization-manager/getleadstatusoverview";
 import { executivePerformanceHandler } from "../handlers/organization-manager/getexecutiveperformance";
 export const bindManagerDashboard = () => {
@@ -19,6 +19,4 @@ export const bindManagerDashboard = () => {
   "getExecutivePerformance",
     withAuth(executivePerformanceHandler, "lead", ["view"])
 );
-
-  console.log("ManagerDashboardService bound successfully");
 };
