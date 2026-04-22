@@ -3,7 +3,7 @@ import { pool } from "../../lib/db";
 export const managerDashboardHandler = async (req: any) => {
   try {
     const orgId =
-      req.user?.orgId || "08c3652d-3c38-4471-ada4-acda20005a7a";
+      req.user?.orgId;
 
     console.log("Fetching dashboard for org ID:", orgId);
 

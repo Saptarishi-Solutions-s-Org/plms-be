@@ -23,7 +23,7 @@ export const executivePerformanceHandler = async (req: any) => {
 
 
       return res.rows.map((row) => ({
-      executiveId: row.executive_id,
+      executiveId: Number(row.executive_id),
       total: Number(row.total),
       qualified: Number(row.qualified),
     }));
