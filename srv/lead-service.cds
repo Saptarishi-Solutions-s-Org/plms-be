@@ -21,10 +21,9 @@ service LeadService {
 
         stats : {
             total  : Integer;
-            high   : Integer;
-            medium : Integer;
-            low    : Integer;
-            urgent : Integer;
+            new   : Integer;
+            qualified : Integer;
+            contacted    : Integer;
         };
     };
 
