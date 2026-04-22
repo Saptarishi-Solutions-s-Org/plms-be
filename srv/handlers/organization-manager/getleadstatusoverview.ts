@@ -5,7 +5,6 @@ type LeadStatus = "New" | "Contacted" | "Qualified" | "Lost";
 export const leadStatusOverviewHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
-    console.log("Fetching lead status overview for org ID:", orgId);
 
     if (!orgId) {
       return req.error(400, "Organization ID missing");
@@ -35,7 +34,6 @@ export const leadStatusOverviewHandler = async (req: any) => {
     return overview;
 
   } catch (error) {
-    console.error("Lead Status Overview Error:", error);
     return req.error(500, "Failed to fetch lead status overview");
   }
 };

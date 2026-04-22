@@ -5,8 +5,6 @@ export const managerDashboardHandler = async (req: any) => {
     const orgId =
       req.user?.orgId;
 
-    console.log("Fetching dashboard for org ID:", orgId);
-
     // 1. Total Leads
     const totalLeadsRes = await pool.query(
       `SELECT COUNT(*) AS count
@@ -51,7 +49,6 @@ export const managerDashboardHandler = async (req: any) => {
     };
 
   } catch (error) {
-    console.error("Dashboard error:", error);
     return req.error(500, "Failed to fetch dashboard");
   }
 };

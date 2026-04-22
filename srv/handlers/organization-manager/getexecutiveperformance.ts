@@ -29,7 +29,6 @@ export const executivePerformanceHandler = async (req: any) => {
     }));
 
   } catch (error) {
-    console.error("Executive Performance Error:", error);
     return req.error(500, "Failed to fetch executive performance");
   }
 };
