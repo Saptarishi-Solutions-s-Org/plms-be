@@ -424,60 +424,27 @@ async function patchCdsModelCache(client, model) {
       return;
     }
 
-    const countCheck = await client.query(
-      `SELECT COUNT(*) as count FROM cds_model`,
+    // Clear the cache so CDS won't diff against stale type definitions
+    // (e.g. UUID → String on ID, enum type changes) which cause compiler errors
+    // even with schema_evolution: "off".
+    await client.query(`DELETE FROM cds_model`);
+
+    // Immediately re-bootstrap from actual DB state.
+    // CDS crashes with "Cannot read properties of undefined (reading 'csn')"
+    // when cds_model exists but is empty — it expects a row to always be present.
+    const csn = await buildCsnFromDb(client, model);
+    await client.query(`INSERT INTO cds_model (csn) VALUES ($1)`, [
+      JSON.stringify(csn),
+    ]);
+
+    console.log(
+      "  ✅ CDS model cache rebuilt from current DB state (fresh deploy, no diff).",
     );
-    const rowCount = parseInt(countCheck.rows[0].count);
-
-    if (rowCount === 0) {
-      // Empty — build from actual DB state so CDS doesn't try to CREATE existing tables
-      const csn = await buildCsnFromDb(client, model);
-      await client.query(`INSERT INTO cds_model (csn) VALUES ($1)`, [
-        JSON.stringify(csn),
-      ]);
-      console.log("  ✅ CDS model cache bootstrapped from current DB state.");
-      return;
-    }
-
-    // Row exists — remove stale entity definitions
-    const { rows } = await client.query(`SELECT csn FROM cds_model LIMIT 1`);
-    const existingCsn = JSON.parse(rows[0].csn);
-
-    // Get current entity names from the live model
-    const currentEntityNames = new Set(
-      Object.keys(model.definitions).filter(
-        (k) => model.definitions[k].kind === "entity",
-      ),
-    );
-
-    // Remove definitions from stored CSN that no longer exist in current model
-    // This stops CDS from seeing "dropped" entities and throwing errors
-    let patched = false;
-    for (const key of Object.keys(existingCsn.definitions || {})) {
-      if (
-        !currentEntityNames.has(key) &&
-        existingCsn.definitions[key].kind === "entity"
-      ) {
-        delete existingCsn.definitions[key];
-        console.log(`  🗑️  Removed stale entity from cache: ${key}`);
-        patched = true;
-      }
-    }
-
-    if (patched) {
-      await client.query(`UPDATE cds_model SET csn = $1`, [
-        JSON.stringify(existingCsn),
-      ]);
-      console.log("  ✅ CDS model cache patched.");
-    } else {
-      console.log("  ✅ CDS model cache is already up to date.");
-    }
   } catch (e) {
     console.log(`  ⚠️  Could not patch CDS model cache: ${e.message.trim()}`);
     console.log("  Continuing anyway...");
   }
 }
-
 // ─────────────────────────────────────────────────────────────────────────────
 // STEP 5 — CDS deploy + raw SQL fallback for enum type bug
 //
