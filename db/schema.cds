@@ -43,6 +43,21 @@ type LeadPriority     : String enum {
     Low;
 }
 
+type DiscountType     : String enum {
+    Fixed_Amount;
+    Percentage;
+    Combo_Offer;
+    Buy_One_Get_One_Free;
+    Conditional_Discount;
+    Flag_Discount;
+}
+
+type OfferStatus      : String enum {
+    Active;
+    Inactive;
+    Expired;
+    Draft;
+}
 
 entity Modules : cuid, managed {
     name    : String not null;
@@ -123,6 +138,7 @@ entity User : cuid, managed {
     organization         : Association to Organization not null;
     role                 : Association to OrganizationRoles not null;
     reporting_manager    : Association to User;
+    city                 : String not null;
     state                : Association to State not null;
     country              : Association to Country not null;
     is_active            : Boolean not null;
@@ -168,16 +184,27 @@ entity LeadActivity : cuid, managed {
 }
 
 entity Offer : cuid, managed {
-    organization : Association to Organization;
-    title        : String not null;
-    code         : String not null;
-    description  : String(5000);
-    valid_from   : Date;
-    valid_to     : Date;
-    is_global    : Boolean not null;
+    organization         : Association to Organization;
+    title                : String not null;
+    code                 : String not null;
+    description          : String(5000);
+    discount_type        : DiscountType not null;
+    valid_from           : Date not null;
+    valid_to             : Date not null;
+    is_global            : Boolean not null;
+    status               : OfferStatus not null;
+    discount_amount      : Decimal(10, 2);
+    discount_percentage  : Decimal(5, 2);
+    max_discount_amount  : Decimal(10, 2);
+    combo_description    : String(5000);
+    buy_quantity         : Integer;
+    get_quantity         : Integer;
+    min_purchase_amount  : Decimal(10, 2);
+    discount_value       : Decimal(10, 2);
+    flag_discount_amount : Decimal(10, 2);
 
-    assignments  : Composition of many OfferAssignment
-                       on assignments.offer = $self;
+    assignments          : Composition of many OfferAssignment
+                               on assignments.offer = $self;
 }
 
 entity OfferAssignment : cuid, managed {
