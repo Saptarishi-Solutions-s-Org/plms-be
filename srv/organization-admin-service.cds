@@ -24,6 +24,7 @@ service OrganizationAdminService {
         dob        : Date,
         state      : UUID,
         country    : UUID,
+        city       : String,
         roleName   : String,
         reportingManager : UUID 
     ) returns {

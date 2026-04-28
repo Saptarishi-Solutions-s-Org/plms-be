@@ -2,7 +2,8 @@ import { pool } from "../../lib/db";
 import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
 import { generatePassword } from "../../lib/generatePassword";
-import { sendUserCreationMail } from "../../mail/sendUserCreationMail"; 
+import { sendUserCreationMail } from "../../mail/sendUserCreationMail";
+import { sendMail } from "../../lib/mail/send";
 
 export const createOrgUserHandler = async (req: any) => {
   const client = await pool.connect();
@@ -29,8 +30,8 @@ export const createOrgUserHandler = async (req: any) => {
       gender,
       dob,
       country,
-      state, 
-      city,     
+      state,
+      city,
       roleName,
       reportingManager,
     } = req.data;
@@ -71,11 +72,11 @@ export const createOrgUserHandler = async (req: any) => {
 
     await client.query(
       `INSERT INTO crm_user
-      (id, name, email, phone, password, gender, dob,
-       organization_id, role_id, reporting_manager_id, state_id, country_id,city,
-       is_active, createdat, createdby, modifiedat, modifiedby)
-      VALUES
-      ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,true,NOW(),$12,NOW(),$12)`,
+  (id, name, email, phone, password, gender, dob,
+   organization_id, role_id, reporting_manager_id, country_id, state_id, city,
+   is_active, createdat, createdby, modifiedat, modifiedby)
+  VALUES
+  ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13, TRUE, NOW(), $14, NOW(), $14)`,
       [
         userId,
         name,
@@ -87,8 +88,8 @@ export const createOrgUserHandler = async (req: any) => {
         orgId,
         roleId,
         reportingManager,
-        state,
         country,
+        state,
         city,
         createdBy,
       ]
@@ -99,7 +100,7 @@ export const createOrgUserHandler = async (req: any) => {
     const orgRes = await client.query(
       `SELECT name, code FROM crm_organization WHERE id = $1`,
       [orgId]
-    );  
+    );
 
     const orgName = orgRes.rows[0]?.name;
     const orgCode = orgRes.rows[0]?.code;
