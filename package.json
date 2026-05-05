@@ -5,8 +5,9 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "start": "tsx srv/server.ts",
-    "watch": "cds watch"
+    "start": "cds-ts serve",
+    "watch": "cds-ts watch",
+    "dev": "cds-ts watch"
   },
   "dependencies": {
     "@cap-js/postgres": "^2.2.0",
@@ -29,10 +30,14 @@
     "@types/socket.io": "^3.0.1",
     "cds-plugin-ui5": "^0.16.3",
     "dotenv": "^17.4.1",
+    "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"
   },
   "cds": {
+    "build": {
+      "clean": false
+    },
     "requires": {
       "auth": {
         "kind": "mocked"

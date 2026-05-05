@@ -10,7 +10,8 @@ export const withAuth = (
       const authHeader =
         req.headers?.authorization ||
         req.req?.headers?.authorization ||
-        req._?.req?.headers?.authorization;
+        req._?.req?.headers?.authorization ||
+        req.http?.req?.headers?.authorization; // ✅ || not semicolon
 
       console.log("AUTH HEADER:", authHeader);
 
