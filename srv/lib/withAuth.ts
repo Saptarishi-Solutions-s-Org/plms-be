@@ -1,85 +1,70 @@
-import { verifyToken } from "../lib/jwt";
+// srv/lib/withAuth.ts
+import { pool } from "./db";
+import { verifyToken } from "./jwt";
 
-const ROLE_PERMISSIONS: Record<string, Record<string, string[]>> = {
+// ─── Types ─────────────────────────────────────────────────────────────────
 
-  system_admin: {
-    organization:  ["view", "create", "update", "delete"],
-    user:          ["view", "create", "update", "delete"],
-    roles:         [],
-    lead:          [],
-    lead_activity: [],
-    offer:         [],
-    reports:       [],
-  },
+type ModulePermissions = Record<string, string[]>;
 
-  admin: {
-    organization:  ["view", "update"],
-    user:          ["view", "create", "update", "delete"],
-    roles:         ["view", "create", "update", "delete"],
-    offer:         ["view", "create", "update", "delete"],
-    lead:          ["view"],
-    lead_activity: [],
-    reports:       [],
-  },
-
-  manager: {
-    lead:          ["view", "create", "update", "delete", "import", "export"],
-    lead_activity: ["view", "create"],
-    offer:         ["view"],
-    organization:  ["view"],
-    user:          ["view"],
-    roles:         [],
-    reports:       ["view", "export"],
-  },
-
-  executive: {
-    lead:          ["view", "create", "update"],
-    lead_activity: ["view", "create"],
-    offer:         ["view"],
-    organization:  [],
-    user:          [],
-    roles:         [],
-    reports:       [],
-  },
+type WithAuthRequirements = {
+  roles?: string[];
+  [module: string]: string[] | undefined;
 };
 
-/**
- * withAuth — authentication + RBAC middleware for SAP CAP handlers.
- *
- * Usage in bindings:
- *   withAuth(handler)                                   → auth only
- *   withAuth(handler, "lead",          ["view"])        → getLeadsWithStats
- *   withAuth(handler, "lead",          ["create"])      → createLead
- *   withAuth(handler, "lead",          ["update"])      → updateLead
- *   withAuth(handler, "lead",          ["delete"])      → deleteLead
- *   withAuth(handler, "lead",          ["import"])      → importLeads
- *   withAuth(handler, "lead",          ["export"])      → exportLeads
- *   withAuth(handler, "lead_activity", ["create"])      → addLeadActivity
- *   withAuth(handler, "lead_activity", ["view"])        → getLeadActivity
- *   withAuth(handler, "offer",         ["view"])        → getOffers
- *   withAuth(handler, "offer",         ["create"])      → createOffer
- *   withAuth(handler, "offer",         ["update"])      → updateOffer
- *   withAuth(handler, "offer",         ["delete"])      → deleteOffer
- *   withAuth(handler, "user",          ["view"])        → getUsers
- *   withAuth(handler, "user",          ["create"])      → createUser
- *   withAuth(handler, "user",          ["update"])      → updateUser
- *   withAuth(handler, "user",          ["delete"])      → deleteUser
- *   withAuth(handler, "roles",         ["view"])        → getRoles
- *   withAuth(handler, "roles",         ["update"])      → updateRolePermissions
- *   withAuth(handler, "reports",       ["view"])        → getReports
- *   withAuth(handler, "reports",       ["export"])      → exportReport
- *   withAuth(handler, "organization",  ["view"])        → getOrganization
- *   withAuth(handler, "organization",  ["create"])      → createOrganization
- */
-export const withAuth = (
-  handler: any,
-  module?: string,
-  actions: string[] = [],
-) => {
+const permCache = new Map<
+  string,
+  { data: ModulePermissions; expiresAt: number }
+>();
+const CACHE_TTL_MS = 60_000; // 1 minute
+
+async function getRolePermissionsFromDB(
+  orgId: string,
+  roleNames: string[],
+): Promise<ModulePermissions> {
+  const cacheKey = `${orgId}:${roleNames.sort().join(",")}`;
+  const cached = permCache.get(cacheKey);
+
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.data;
+  }
+
+  const res = await pool.query(
+    `SELECT
+       m.name  AS module,
+       p.name  AS permission,
+       COALESCE(ormpo.access, rmp.access) AS access
+     FROM crm_roles r
+     JOIN crm_rolemodulepermissions rmp  ON rmp.role_id          = r.id
+     JOIN crm_modulepermissions      mp   ON mp.id                = rmp.module_permission_id
+     JOIN crm_modules                m    ON m.id                 = mp.module_id
+     JOIN crm_permissions            p    ON p.id                 = mp.permission_id
+     JOIN crm_organizationroles      orr  ON orr.role_id          = r.id
+                                        AND orr.organization_id   = $1
+     LEFT JOIN crm_organizationrolemodulepermissions ormpo
+                                          ON ormpo.rmp_id         = rmp.id
+                                         AND ormpo.organization_id = $1
+     WHERE LOWER(r.name) = ANY($2::text[])
+       AND COALESCE(ormpo.access, rmp.access) = true`,
+    [orgId, roleNames.map((r) => r.toLowerCase())],
+  );
+
+  const data: ModulePermissions = {};
+  for (const row of res.rows) {
+    const mod = row.module.toLowerCase();
+    const perm = row.permission.toLowerCase();
+    if (!data[mod]) data[mod] = [];
+    if (!data[mod].includes(perm)) data[mod].push(perm);
+  }
+
+  permCache.set(cacheKey, { data, expiresAt: Date.now() + CACHE_TTL_MS });
+  return data;
+}
+
+// ─── withAuth ───
+
+export const withAuth = (handler: any, requirements?: WithAuthRequirements) => {
   return async (req: any) => {
     try {
-
-      // ── 1. Extract Authorization header ──────────────────────────────
       const authHeader =
         req.headers?.authorization ||
         req.req?.headers?.authorization ||
@@ -89,81 +74,96 @@ export const withAuth = (
         return req.error(401, "Unauthorized: missing Authorization header");
       }
 
-      // ── 2. Verify JWT ─────────────────────────────────────────────────
       const token = authHeader.split(" ")[1];
-
       if (!token) {
         return req.error(401, "Unauthorized: malformed Authorization header");
       }
 
       const decoded: any = verifyToken(token);
-
       if (!decoded) {
         return req.error(401, "Unauthorized: invalid or expired token");
       }
 
-      // ── 3. Attach user to request ─────────────────────────────────────
-      // decoded.permissions shape: { lead: ["view","create"], offer: ["view"] }
-      // Built by loginHandler from OrganizationRoleModulePermissions table.
+      const jwtRoles: string[] = Array.isArray(decoded.roles)
+        ? decoded.roles.map((r: string) => r.toLowerCase())
+        : [decoded.role?.toLowerCase() ?? "executive"];
+
       req.user = {
-        id:          decoded.userId,
-        orgId:       decoded.orgId,
-        role:        decoded.role?.toLowerCase() ?? "executive",
-        permissions: decoded.permissions ?? {},
+        id: decoded.userId,
+        orgId: decoded.orgId,
+        roles: jwtRoles,
+        permissions: decoded.permissions ?? {}, 
       };
 
-      const { role } = req.user;
-
-      // ── 4. Auth-only mode ─────────────────────────────────────────────
-      if (!module || actions.length === 0) {
+      if (!requirements || Object.keys(requirements).length === 0) {
         return handler(req);
       }
 
-      const normalizedModule  = module.toLowerCase();
-      const normalizedActions = actions.map((a) => a.toLowerCase());
+      const { roles: requiredRoles, ...moduleRequirements } = requirements;
 
-      // ── 5. Role baseline (Layer 2 — hardcoded map above) ─────────────
-      const roleModulePerms: string[] =
-        ROLE_PERMISSIONS[role]?.[normalizedModule] ?? [];
+      if (requiredRoles && requiredRoles.length > 0) {
+        const normalizedRequired = requiredRoles.map((r) => r.toLowerCase());
+        const hasRole = jwtRoles.some((r) => normalizedRequired.includes(r));
 
-      // ── 6. Per-org overrides (Layer 3 — from DB via JWT) ─────────────
-      // Admin configures these in the permission matrix screen.
-      // Stored in JWT by loginHandler, merged on top of the baseline.
-      const userModulePerms: string[] =
-        req.user.permissions?.[normalizedModule] ?? [];
+        if (!hasRole) {
+          console.warn(
+            `[RBAC] DENIED (role) | user=${req.user.id} | ` +
+              `userRoles=${jwtRoles.join(",")} | ` +
+              `requiredRoles=${normalizedRequired.join(",")} | ` +
+              `orgId=${req.user.orgId}`,
+          );
+          return req.error(403, "Forbidden: insufficient role");
+        }
+      }
 
-      // ── 7. Merge both layers ──────────────────────────────────────────
-      const finalPerms = new Set<string>([
-        ...roleModulePerms.map((p) => p.toLowerCase()),
-        ...userModulePerms.map((p: string) => p.toLowerCase()),
-      ]);
-
-      // ── 8. Wildcard shortcut ──────────────────────────────────────────
-      if (finalPerms.has("*")) {
+      if (Object.keys(moduleRequirements).length === 0) {
         return handler(req);
       }
 
-      // ── 9. Check every required action ───────────────────────────────
-      const missingActions = normalizedActions.filter(
-        (action) => !finalPerms.has(action),
-      );
+      const dbPerms = await getRolePermissionsFromDB(req.user.orgId, jwtRoles);
 
-      if (missingActions.length > 0) {
-        console.warn(
-          `[RBAC] DENIED | user=${req.user.id} | role=${role} | ` +
-          `module=${normalizedModule} | ` +
-          `required=${normalizedActions.join(",")} | ` +
-          `missing=${missingActions.join(",")} | ` +
-          `orgId=${req.user.orgId}`,
+      for (const [moduleName, requiredActions] of Object.entries(
+        moduleRequirements,
+      )) {
+        if (!requiredActions || requiredActions.length === 0) continue;
+
+        const normalizedModule = moduleName.toLowerCase();
+        const normalizedActions = requiredActions.map((a) => a.toLowerCase());
+
+        const rolePerms: string[] = (dbPerms[normalizedModule] ?? []).map((p) =>
+          p.toLowerCase(),
         );
-        return req.error(403, "Forbidden: insufficient permissions");
+
+        const userPerms: string[] = (
+          req.user.permissions?.[normalizedModule] ?? []
+        ).map((p: string) => p.toLowerCase());
+
+        const finalPerms = new Set<string>([...rolePerms, ...userPerms]);
+
+        if (finalPerms.has("*")) continue;
+
+        const hasAll = normalizedActions.every((action) =>
+          finalPerms.has(action),
+        );
+
+        if (!hasAll) {
+          const missingActions = normalizedActions.filter(
+            (a) => !finalPerms.has(a),
+          );
+          console.warn(
+            `[RBAC] DENIED | user=${req.user.id} | roles=${req.user.roles.join(",")} | ` +
+              `module=${normalizedModule} | required=${normalizedActions.join(",")} | ` +
+              `missing=${missingActions.join(",")} | orgId=${req.user.orgId}`,
+          );
+          return req.error(403, "Forbidden: insufficient permissions");
+        }
       }
 
       return handler(req);
-
     } catch (err) {
       console.error("[withAuth] Unexpected error:", err);
       return req.error(401, "Unauthorized");
     }
   };
 };
+ 
