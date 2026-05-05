@@ -3,7 +3,6 @@ import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
 import { generatePassword } from "../../lib/generatePassword";
 import { sendUserCreationMail } from "../../mail/sendUserCreationMail";
-import { sendMail } from "../../lib/mail/send";
 
 export const createOrgUserHandler = async (req: any) => {
   const client = await pool.connect();
