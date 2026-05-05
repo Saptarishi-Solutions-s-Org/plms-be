@@ -1,8 +1,5 @@
-// srv/lib/withAuth.ts
 import { pool } from "./db";
 import { verifyToken } from "./jwt";
-
-// ─── Types ─────────────────────────────────────────────────────────────────
 
 type ModulePermissions = Record<string, string[]>;
 
