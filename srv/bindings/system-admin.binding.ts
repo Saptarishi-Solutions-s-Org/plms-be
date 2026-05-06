@@ -11,11 +11,11 @@ export const bindSystemAdmin = () => {
   }
 
   service.on(
-    "getDashboard",
-    withAuth(systemAdminDashboardHandler, {
-      roles: ["SYSTEM ADMIN"], 
-    }),
-  );
+  "getDashboard",
+  withAuth(systemAdminDashboardHandler, {
+    roles: ["SYSTEM ADMIN"],
+  }),
+);
 
   console.log("SystemAdminService secured & bound");
 };
