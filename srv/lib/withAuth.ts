@@ -1,4 +1,4 @@
-import { verifyToken } from "../lib/jwt";
+import { verifyAccessToken } from "../lib/jwt";
 
 export const withAuth = (
   handler: any,
@@ -7,35 +7,36 @@ export const withAuth = (
 ) => {
   return async (req: any) => {
     try {
-      const authHeader =
-        req.headers?.authorization ||
-        req.req?.headers?.authorization ||
-        req._?.req?.headers?.authorization;
+      const token = req.req?.cookies?.accessToken;
 
-      console.log("AUTH HEADER:", authHeader);
+      if (!token) {
+        console.error("NO ACCESS TOKEN");
 
-      if (!authHeader) {
-        console.error("NO AUTH HEADER");
         return req.error(401, "Unauthorized");
       }
 
-      const token = authHeader.split(" ")[1];
-
-      const decoded: any = verifyToken(token);
+      const decoded: any = verifyAccessToken(token);
 
       console.log("DECODED USER:", decoded);
 
-      if (!decoded) {
-        return req.error(401, "Invalid token");
-      }
-
       req.user = {
-        id: decoded.userId,
+        id: decoded.sub,
+
+        name: decoded.name,
+
         orgId: decoded.orgId,
+
         orgCode: decoded.orgCode,
+
         orgName: decoded.orgName,
+
+        roleId: decoded.roleId,
+
         role: decoded.role,
+
         permissions: decoded.permissions,
+
+        isSuper: decoded.isSuper,
       };
 
       if (module && actions.length) {
@@ -53,6 +54,7 @@ export const withAuth = (
       return handler(req);
     } catch (err) {
       console.error("AUTH ERROR:", err);
+
       return req.error(401, "Unauthorized");
     }
   };

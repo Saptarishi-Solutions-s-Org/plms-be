@@ -1,20 +1,31 @@
-import dotenv from "dotenv";
-dotenv.config();
+import jwt, { SignOptions } from "jsonwebtoken";
 
-import jwt from "jsonwebtoken";
+import { ENV } from "../config/env";
 
-const SECRET = process.env.JWT_SECRET as string;
+import { AccessTokenPayload, RefreshTokenPayload } from "../types/jwt.types";
 
-if (!SECRET) {
-  throw new Error("JWT_SECRET is not defined");
+const ACCESS_OPTIONS: SignOptions = {
+  expiresIn: ENV.JWT_EXPIRES_IN,
+  algorithm: "HS256",
+};
+
+const REFRESH_OPTIONS: SignOptions = {
+  expiresIn: ENV.JWT_REFRESH_EXPIRES_IN,
+  algorithm: "HS256",
+};
+
+export function generateAccessToken(payload: AccessTokenPayload): string {
+  return jwt.sign(payload, ENV.JWT_SECRET, ACCESS_OPTIONS);
 }
 
-export function generateToken(payload: any) {
-  return jwt.sign(payload, SECRET, {
-    expiresIn: "1d",
-  });
+export function generateRefreshToken(payload: RefreshTokenPayload): string {
+  return jwt.sign(payload, ENV.JWT_REFRESH_SECRET, REFRESH_OPTIONS);
 }
 
-export function verifyToken(token: string) {
-  return jwt.verify(token, SECRET);
+export function verifyAccessToken(token: string): AccessTokenPayload {
+  return jwt.verify(token, ENV.JWT_SECRET) as AccessTokenPayload;
+}
+
+export function verifyRefreshToken(token: string): RefreshTokenPayload {
+  return jwt.verify(token, ENV.JWT_REFRESH_SECRET) as RefreshTokenPayload;
 }

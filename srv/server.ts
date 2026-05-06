@@ -2,22 +2,34 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import cds from "@sap/cds";
+
 import http from "http";
+
 import { Server } from "socket.io";
+
 import type { Express } from "express";
 
-import { verifyToken } from "./lib/jwt";
+import cookieParser from "cookie-parser";
+
+import cookie from "cookie";
+
+import { verifyAccessToken } from "./lib/jwt";
+
 import { bindAllServices } from "./bindings";
 
 cds.env.requires.db = {
   kind: "postgres",
+
   impl: "@cap-js/postgres",
+
   credentials: {
     connectionString: process.env.DATABASE_URL,
+
     ssl: {
       rejectUnauthorized: false,
     },
   },
+
   pool: {
     min: 0,
     max: 5,
@@ -29,15 +41,28 @@ let io: Server;
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [];
 
 cds.on("bootstrap", (app: Express) => {
+  app.use(cookieParser());
+
   app.use((req, res, next) => {
+    res.removeHeader("WWW-Authenticate");
+
     const origin = req.headers.origin as string | undefined;
 
     if (origin && allowedOrigins.includes(origin)) {
       res.setHeader("Access-Control-Allow-Origin", origin);
     }
 
-    res.setHeader("Access-Control-Allow-Headers", "*");
-    res.setHeader("Access-Control-Allow-Methods", "*");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization",
+    );
+
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    );
 
     if (req.method === "OPTIONS") {
       return res.status(200).end();
@@ -48,25 +73,40 @@ cds.on("bootstrap", (app: Express) => {
 });
 
 cds.on("served", () => {
-  const app = cds.server as Express;
-  const server = http.createServer(app);
-
   bindAllServices();
 
-  io = new Server(server, {
+  const app = cds.server as Express;
+
+  const httpServer = http.createServer(app);
+
+  io = new Server(httpServer, {
     cors: {
       origin: allowedOrigins,
+
+      credentials: true,
+
       methods: ["GET", "POST"],
     },
   });
 
-  io.use((socket: any, next: (err?: Error) => void) => {
+  io.use((socket: any, next) => {
     try {
-      const token = socket.handshake.auth?.token;
-      const user = verifyToken(token);
+      const cookies = cookie.parse(socket.handshake.headers.cookie || "");
+
+      const token = cookies.accessToken;
+
+      if (!token) {
+        return next(new Error("Unauthorized"));
+      }
+
+      const user = verifyAccessToken(token);
+
       socket.data.user = user;
+
       next();
-    } catch {
+    } catch (err) {
+      console.error("SOCKET AUTH ERROR:", err);
+
       next(new Error("Unauthorized"));
     }
   });
@@ -78,16 +118,12 @@ cds.on("served", () => {
       socket.join(user.orgId);
     }
 
-    console.log("🔌 Socket connected:", user?.userId);
-  });
+    console.log("Socket connected:", user?.sub);
 
-  if (!cds.cli) {
-    const port = process.env.PORT || 4004;
-
-    server.listen(port, () => {
-      console.log(`🚀 Server running on http://localhost:${port}`);
+    socket.on("disconnect", () => {
+      console.log("Socket disconnected:", user?.sub);
     });
-  }
+  });
 });
 
-cds.server();
+module.exports = cds.server;

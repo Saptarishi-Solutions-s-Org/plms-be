@@ -1,5 +1,7 @@
 import { Server, Socket } from "socket.io";
-import { verifyToken } from "../lib/jwt";
+import cookie from "cookie";
+
+import { verifyAccessToken } from "../lib/jwt";
 
 let io: Server;
 
@@ -21,14 +23,22 @@ export function initSocket(server: any) {
 
   io.use((socket: AuthSocket, next: (err?: Error) => void) => {
     try {
-      const token = socket.handshake.auth?.token;
-      if (!token) throw new Error("No token");
+      const cookies = cookie.parse(socket.handshake.headers.cookie || "");
 
-      const user = verifyToken(token);
+      const token = cookies.accessToken;
+
+      if (!token) {
+        throw new Error("No access token");
+      }
+
+      const user = verifyAccessToken(token);
+
       socket.data.user = user;
 
       next();
-    } catch {
+    } catch (err) {
+      console.error("SOCKET AUTH ERROR:", err);
+
       next(new Error("Unauthorized"));
     }
   });
@@ -38,15 +48,16 @@ export function initSocket(server: any) {
 
     if (!user?.orgId) {
       socket.disconnect();
+
       return;
     }
 
     socket.join(user.orgId);
 
-    console.log("Socket connected:", user.userId);
+    console.log("🔌 Socket connected:", user.sub);
 
     socket.on("disconnect", () => {
-      console.log("Socket disconnected:", user.userId);
+      console.log("❌ Socket disconnected:", user.sub);
     });
   });
 }
