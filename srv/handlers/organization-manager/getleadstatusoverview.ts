@@ -1,6 +1,5 @@
 import { pool } from "../../lib/db";
-
-type LeadStatus = "New" | "Contacted" | "Qualified" | "Lost";
+import { LeadStatus } from "../../types/org-manager";
 
 export const leadStatusOverviewHandler = async (req: any) => {
   try {
@@ -15,7 +14,7 @@ export const leadStatusOverviewHandler = async (req: any) => {
        FROM crm_leads
        WHERE organization_id = $1
        GROUP BY status`,
-      [orgId]
+      [orgId],
     );
 
     const overview: Record<LeadStatus, number> = {
@@ -32,7 +31,6 @@ export const leadStatusOverviewHandler = async (req: any) => {
     });
 
     return overview;
-
   } catch (error) {
     return req.error(500, "Failed to fetch lead status overview");
   }
