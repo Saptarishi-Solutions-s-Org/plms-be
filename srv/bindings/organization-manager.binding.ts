@@ -9,14 +9,21 @@ export const bindManagerDashboard = () => {
 
   service.on(
     "getManagerDashboard",
-    withAuth(managerDashboardHandler, "lead", ["view"])
+    withAuth(managerDashboardHandler, {
+      modules: { lead: ["view"],
+      },
+    }),
   );
   service.on(
     "getLeadStatusOverview",
-    withAuth(leadStatusOverviewHandler, "lead", ["view"])
+    withAuth(leadStatusOverviewHandler, {
+      modules: { lead: ["view"] },
+    }),
   );
   service.on(
-  "getExecutivePerformance",
-    withAuth(executivePerformanceHandler, "lead", ["view"])
-);
+    "getExecutivePerformance",
+    withAuth(executivePerformanceHandler, {
+      modules: { lead: ["view"] },
+    }),
+  );
 };
