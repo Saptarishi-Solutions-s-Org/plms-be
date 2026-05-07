@@ -10,12 +10,14 @@ export const bindExecutiveDashboard = () => {
   service.on(
     "getExecutiveStats",
     withAuth(getexecutivestats, {
+      roles: ["Executive"],
       modules: { lead: ["view"] },
     }),
   );
   service.on(
     "getExecutiveRecentLeads",
     withAuth(executiveRecentLeadsHandler, {
+      roles: ["Executive"],
       modules: { lead: ["view"] },
     }),
   );
