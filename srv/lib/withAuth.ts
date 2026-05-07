@@ -1,59 +1,118 @@
-import { verifyToken } from "../lib/jwt";
+import { verifyToken } from "./jwt";
+import {
+  ModulePermissions,
+  WithAuthRequirements,
+  WithAuthTokenPayload,
+} from "../types/withAuth";
 
-export const withAuth = (
-  handler: any,
-  module?: string,
-  actions: string[] = [],
-) => {
+export const withAuth = (handler: any, requirements?: WithAuthRequirements) => {
   return async (req: any) => {
     try {
-      const authHeader =
-        req.headers?.authorization ||
-        req.req?.headers?.authorization ||
-        req._?.req?.headers?.authorization ||
-        req.http?.req?.headers?.authorization; // ✅ || not semicolon
 
-      console.log("AUTH HEADER:", authHeader);
+      const authHeader =
+        req.headers?.authorization       ||
+        req.req?.headers?.authorization  ||
+        req._?.req?.headers?.authorization;
 
       if (!authHeader) {
-        console.error("NO AUTH HEADER");
-        return req.error(401, "Unauthorized");
+        return req.error(401, "Unauthorized: missing Authorization header");
       }
 
       const token = authHeader.split(" ")[1];
+      if (!token) {
+        return req.error(401, "Unauthorized: malformed Authorization header");
+      }
 
-      const decoded: any = verifyToken(token);
-
-      console.log("DECODED USER:", decoded);
-
+      const decoded = verifyToken(token) as WithAuthTokenPayload;
       if (!decoded) {
-        return req.error(401, "Invalid token");
+        return req.error(401, "Unauthorized: invalid or expired token");
+      }
+
+      // ── Normalize roles ──────────────────────────────────────────────
+      const jwtRoles: string[] = Array.isArray(decoded.roles)
+        ? decoded.roles.map((r) => r.toLowerCase())
+        : decoded.role
+          ? [decoded.role.toLowerCase()]
+          : [];
+
+      // ── Normalize permissions once — keys + values both lowercased ───
+      const rawPermissions =
+        typeof decoded.permissions === "object" &&
+        decoded.permissions !== null &&
+        !Array.isArray(decoded.permissions)
+          ? decoded.permissions
+          : {};
+
+      const jwtPermissions: ModulePermissions = {};
+      for (const key in rawPermissions) {
+        jwtPermissions[key.toLowerCase()] =
+          rawPermissions[key].map((p: string) => p.toLowerCase());
       }
 
       req.user = {
-        id: decoded.userId,
-        orgId: decoded.orgId,
-        orgCode: decoded.orgCode,
-        orgName: decoded.orgName,
-        role: decoded.role,
-        permissions: decoded.permissions,
+        id:          decoded.userId,
+        orgId:       decoded.orgId,
+        roles:       jwtRoles,
+        permissions: jwtPermissions,
       };
 
-      if (module && actions.length) {
-        const modulePerms = decoded.permissions?.[module.toLowerCase()] || [];
+      if (!requirements || Object.keys(requirements).length === 0) {
+        return handler(req);
+      }
 
-        const hasAccess = actions.every((a: string) =>
-          modulePerms.includes(a.toLowerCase()),
-        );
+      const { roles: requiredRoles, modules: moduleRequirements } = requirements;
 
-        if (!hasAccess) {
-          return req.error(403, "Forbidden");
+      if (requiredRoles && requiredRoles.length > 0) {
+        const normalizedRequired = requiredRoles.map((r) => r.toLowerCase());
+        const hasRole = jwtRoles.some((r) => normalizedRequired.includes(r));
+
+        if (!hasRole) {
+          console.warn(
+            `[RBAC] DENIED (role) | user=${req.user.id} | ` +
+            `userRoles=${jwtRoles.join(",")} | ` +
+            `requiredRoles=${normalizedRequired.join(",")} | ` +
+            `orgId=${req.user.orgId}`
+          );
+          return req.error(403, "Forbidden: insufficient role");
+        }
+      }
+
+      if (!moduleRequirements || Object.keys(moduleRequirements).length === 0) {
+        return handler(req);
+      }
+
+      for (const [moduleName, requiredActions] of Object.entries(moduleRequirements)) {
+
+        if (!Array.isArray(requiredActions) || requiredActions.length === 0) {
+          console.warn(`[RBAC] Invalid config for module: ${moduleName}`);
+          return req.error(500, "Invalid authorization configuration");
+        }
+
+        const normalizedModule  = moduleName.toLowerCase();
+        const normalizedActions = requiredActions.map((a) => a.toLowerCase());
+
+        const modulePerms = jwtPermissions[normalizedModule] ?? [];
+        const finalPerms  = new Set<string>(modulePerms);
+
+        if (finalPerms.has("*")) continue;
+
+        const hasAll = normalizedActions.every((action) => finalPerms.has(action));
+
+        if (!hasAll) {
+          const missingActions = normalizedActions.filter((a) => !finalPerms.has(a));
+          console.warn(
+            `[RBAC] DENIED | user=${req.user.id} | roles=${jwtRoles.join(",")} | ` +
+            `module=${normalizedModule} | required=${normalizedActions.join(",")} | ` +
+            `missing=${missingActions.join(",")} | orgId=${req.user.orgId}`
+          );
+          return req.error(403, "Forbidden: insufficient permissions");
         }
       }
 
       return handler(req);
+
     } catch (err) {
-      console.error("AUTH ERROR:", err);
+      console.error("[withAuth] Unexpected error:", err);
       return req.error(401, "Unauthorized");
     }
   };
