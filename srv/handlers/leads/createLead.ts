@@ -1,4 +1,3 @@
-//srv/handlers/leads/createLead.ts
 import { pool } from "../../lib/db";
 import { randomUUID } from "crypto";
 import { generateLeadCode } from "../../lib/leadcode";

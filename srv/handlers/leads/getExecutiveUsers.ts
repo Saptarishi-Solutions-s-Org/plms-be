@@ -1,4 +1,3 @@
-// srv/handlers/leads/getExecutiveUsers.ts
 import { pool } from "../../lib/db";
 
 export const getExecutiveUsersHandler = async (req: any) => {

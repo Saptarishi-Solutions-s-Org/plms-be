@@ -1,4 +1,3 @@
-// srv/handlers/leads/exportLeads.ts
 import { pool } from "../../lib/db";
 
 export const exportLeadsHandler = async (req: any) => {
