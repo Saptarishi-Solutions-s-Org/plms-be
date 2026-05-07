@@ -10,14 +10,16 @@ export const bindManagerDashboard = () => {
   service.on(
     "getManagerDashboard",
     withAuth(managerDashboardHandler, {
-      modules: { lead: ["view"],
-      },
+      roles: ["manager"],
+      modules: { lead: ["view"] },
     }),
   );
   service.on(
     "getLeadStatusOverview",
     withAuth(leadStatusOverviewHandler, {
+      roles: ["manager"],
       modules: { lead: ["view"] },
     }),
   );
+  
 };
