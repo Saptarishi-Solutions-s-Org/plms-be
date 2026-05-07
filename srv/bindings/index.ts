@@ -1,8 +1,10 @@
 import { bindAuth } from "./auth.binding";
 import { bindLocation } from "./location-binding";
+import { bindOrganizationAdmin } from "./organization-admin.binding";
 import { bindOrganization } from "./organization.binding";
 import { bindSystemAdmin } from "./system-admin.binding";
 import { bindExecutiveDashboard } from "./executive.binding";
+import { bindManagerDashboard } from "./organization-manager.binding";
 
 export const bindAllServices = () => {
   bindAuth();
@@ -10,4 +12,6 @@ export const bindAllServices = () => {
   bindLocation();
   bindOrganization();
   bindExecutiveDashboard();
+  bindManagerDashboard();
+  bindOrganizationAdmin();
 };
