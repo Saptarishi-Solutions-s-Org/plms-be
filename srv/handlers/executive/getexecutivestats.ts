@@ -13,7 +13,7 @@ export const getexecutivestats = async (req: any) => {
        FROM crm_leads
        WHERE organization_ID = $1 
        AND assigned_to_ID = $2`,
-      [orgId, userId]
+      [orgId, userId],
     );
 
     // 2. Converted Leads
@@ -23,7 +23,7 @@ export const getexecutivestats = async (req: any) => {
        WHERE organization_ID = $1
        AND assigned_to_ID = $2
        AND status = 'Qualified'`,
-      [orgId, userId]
+      [orgId, userId],
     );
 
     // 3. This Week Leads
@@ -33,14 +33,14 @@ export const getexecutivestats = async (req: any) => {
        WHERE organization_ID = $1
        AND assigned_to_ID = $2
        AND createdAt >= NOW() - INTERVAL '7 days'`,
-      [orgId, userId]
+      [orgId, userId],
     );
     // 4. Active Offers
     const activeOffersRes = await pool.query(
       `SELECT COUNT(*) AS count
        FROM crm_offer
        WHERE organization_ID = $1`,
-      [orgId]
+      [orgId],
     );
 
     return {
@@ -49,7 +49,6 @@ export const getexecutivestats = async (req: any) => {
       thisWeekLeads: Number(thisWeekLeadsRes.rows[0]?.count) || 0,
       activeOffers: Number(activeOffersRes.rows[0]?.count) || 0,
     };
-
   } catch (error) {
     return req.error(500, "Failed to fetch dashboard");
   }

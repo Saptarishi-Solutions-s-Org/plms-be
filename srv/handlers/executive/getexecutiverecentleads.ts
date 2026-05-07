@@ -20,7 +20,7 @@ export const executiveRecentLeadsHandler = async (req: any) => {
          ON l.assigned_to_id = u.id
        WHERE l.organization_id = $1
        ORDER BY l.createdat DESC`,
-      [orgId]
+      [orgId],
     );
 
     return res.rows.map((lead) => ({
@@ -29,7 +29,6 @@ export const executiveRecentLeadsHandler = async (req: any) => {
       createdat: lead.createdat,
       status: lead.status,
     }));
-
   } catch (error) {
     return req.error(500, "Failed to fetch executive recent leads");
   }
