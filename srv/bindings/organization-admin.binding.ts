@@ -23,6 +23,7 @@ export const bindOrganizationAdmin = () => {
     "createOrgUser",
     withAuth(createOrgUserHandler , {
       modules: { user: ["create"] },
+      roles: ["ADMIN"],
     })
   );
 

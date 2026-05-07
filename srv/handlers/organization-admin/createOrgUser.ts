@@ -12,14 +12,9 @@ export const createOrgUserHandler = async (req: any) => {
 
     const orgId = req.user?.orgId;
     const createdBy = req.user?.userId || req.user?.id;
-    const userRole = req.user?.role;
 
     if (!orgId) {
       return req.error(401, "Unauthorized");
-    }
-
-    if (userRole !== "Admin") {
-      return req.error(403, "Only admin can create users");
     }
 
     const {
