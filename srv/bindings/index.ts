@@ -1,5 +1,6 @@
 import { bindAuth } from "./auth.binding";
 import { bindLocation } from "./location-binding";
+import { bindOrganizationAdmin } from "./organization-admin.binding";
 import { bindOrganization } from "./organization.binding";
 import { bindSystemAdmin } from "./system-admin.binding";
 import { bindManagerDashboard } from "./organization-manager.binding";
@@ -9,5 +10,6 @@ export const bindAllServices = () => {
   bindLocation();
   bindOrganization();
   bindManagerDashboard();
+  bindOrganizationAdmin();
 };
  
