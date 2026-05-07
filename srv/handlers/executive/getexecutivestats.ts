@@ -35,11 +35,19 @@ export const getexecutivestats = async (req: any) => {
        AND createdAt >= NOW() - INTERVAL '7 days'`,
       [orgId, userId]
     );
+    // 4. Active Offers
+    const activeOffersRes = await pool.query(
+      `SELECT COUNT(*) AS count
+       FROM crm_offer
+       WHERE organization_ID = $1`,
+      [orgId]
+    );
 
     return {
       totalLeads: Number(MyLeadsRes.rows[0]?.count) || 0,
       convertedLeads: Number(convertedLeadsRes.rows[0]?.count) || 0,
       thisWeekLeads: Number(thisWeekLeadsRes.rows[0]?.count) || 0,
+      activeOffers: Number(activeOffersRes.rows[0]?.count) || 0,
     };
 
   } catch (error) {
