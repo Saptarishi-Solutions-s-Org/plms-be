@@ -14,14 +14,21 @@ export const bindOrganizationAdmin = () => {
 
   service.on(
     "getAllUsers",
-    withAuth(getAllUsersHandler, "user", ["view"])
+    withAuth(getAllUsersHandler, {
+      modules: { user: ["view"] },
+    })
   );
 
   service.on(
     "createOrgUser",
-    withAuth(createOrgUserHandler , "user" ,["create"])
-  )
+    withAuth(createOrgUserHandler , {
+      modules: { user: ["create"] },
+    })
+  );
 
-  service.on("getAllManagers", withAuth(getManagersHandler, "user", ["view"]));
+
+  service.on("getAllManagers", withAuth(getManagersHandler, {
+    modules: { user: ["view"] },
+  }));
 
 }
