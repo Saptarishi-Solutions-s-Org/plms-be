@@ -1,5 +1,3 @@
-// srv/types/withAuth.types.ts
-
 export type ModulePermissions = Record<string, string[]>;
 
 export type WithAuthTokenPayload = {

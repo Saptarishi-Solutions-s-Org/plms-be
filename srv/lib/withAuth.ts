@@ -31,7 +31,9 @@ export const withAuth = (handler: any, requirements?: WithAuthRequirements) => {
       // ── Normalize roles ──────────────────────────────────────────────
       const jwtRoles: string[] = Array.isArray(decoded.roles)
         ? decoded.roles.map((r) => r.toLowerCase())
-        : [decoded.role?.toLowerCase() ?? "executive"];
+        : decoded.role
+          ? [decoded.role.toLowerCase()]
+          : [];
 
       // ── Normalize permissions once — keys + values both lowercased ───
       const rawPermissions =
