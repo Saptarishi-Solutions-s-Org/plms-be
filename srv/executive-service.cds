@@ -5,22 +5,23 @@ service ExecutiveService {
         newThisWeek  : Integer;
         activeOffers : Integer;
     }
-    
-    function getExecutiveStats() returns TopCardStats;
+
+
     type Leadstat {
-        New : Integer;
+        New       : Integer;
         Contacted : Integer;
         Qualified : Integer;
-        Lost : Integer;
+        Lost      : Integer;
     }
-    function getLeadStats() returns Leadstat;
 
     type RecentLead {
-        leadId : Integer;
-        leadName : String;
+        leadId    : Integer;
+        leadName  : String;
         createdAt : Timestamp;
-        status : String;
+        status    : String;
     }
+
+    function getExecutiveStats()       returns TopCardStats;
+    function getLeadStats()            returns Leadstat;
     function getExecutiveRecentLeads() returns array of RecentLead;
 }
-

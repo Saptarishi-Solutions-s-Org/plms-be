@@ -25,5 +25,4 @@ export const bindExecutiveDashboard = () => {
       modules: { lead: ["view"] },
     }),
   );
-  console.log("Executive Dashboard bindings set up");
 };

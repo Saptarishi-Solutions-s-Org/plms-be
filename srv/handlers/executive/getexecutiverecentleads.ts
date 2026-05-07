@@ -5,7 +5,6 @@ export const executiveRecentLeadsHandler = async (req: any) => {
     const orgId = req.user?.orgId;
     const userId = req.user?.id;
 
-    console.log("Fetching recent leads for Org:", orgId, "User:", userId);
     if (!orgId || !userId) {
       return req.error(400, "User or Organization ID missing");
     }
@@ -32,7 +31,6 @@ export const executiveRecentLeadsHandler = async (req: any) => {
     }));
 
   } catch (error) {
-    console.error("Executive Recent Leads Error:", error);
     return req.error(500, "Failed to fetch executive recent leads");
   }
 };

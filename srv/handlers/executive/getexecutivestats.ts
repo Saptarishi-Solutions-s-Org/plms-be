@@ -51,7 +51,6 @@ export const getexecutivestats = async (req: any) => {
     };
 
   } catch (error) {
-    console.error("Executive Stats Error:", error);
     return req.error(500, "Failed to fetch dashboard");
   }
 };
