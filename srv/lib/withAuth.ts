@@ -3,7 +3,7 @@ import {
   ModulePermissions,
   WithAuthRequirements,
   WithAuthTokenPayload,
-} from "../types/withAuth.types";
+} from "../types/withAuth";
 
 export const withAuth = (handler: any, requirements?: WithAuthRequirements) => {
   return async (req: any) => {
