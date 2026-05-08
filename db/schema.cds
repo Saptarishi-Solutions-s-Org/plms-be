@@ -59,6 +59,13 @@ type OfferStatus      : String enum {
     Draft;
 }
 
+type LeadSource       : String enum {
+    Socil_Media;
+    Advertisement;
+    Referral;
+    Manual_Entry;
+}
+
 entity Modules : cuid, managed {
     name    : String not null;
     default : Boolean not null;
@@ -162,7 +169,7 @@ entity Leads : cuid, managed {
     email        : String;
     status       : LeadStatus not null;
     priority     : LeadPriority;
-    source       : String;
+    source       : LeadSource;
     import_type  : ImportType;
     assigned_to  : Association to User;
     address      : String;
