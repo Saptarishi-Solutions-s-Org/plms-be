@@ -1,4 +1,4 @@
-service ExecutiveService {
+service OrganizationExecutiveService {
     function getExecutiveStats() returns {
         myLeads      : Integer;
         converted    : Integer;
@@ -7,14 +7,14 @@ service ExecutiveService {
     };
 
 
-     function getLeadStats() returns {
+     function getExecutiveLeadStats() returns {
         New       : Integer;
         Contacted : Integer;
         Qualified : Integer;
         Lost      : Integer;
     };
 
-    function getExecutivePerformance() returns array of {
+    function getExecutiveRecentLeads() returns array of {
         leadId    : Integer;
         leadName  : String;
         createdAt : Timestamp;
