@@ -2,7 +2,7 @@ using { crm as db } from '../db/schema';
 
 service OfferService {
 
-    // ─── Types ───────────────────────────────────────────────
+    
     type OfferItem {
         id                   : UUID;
         organization_ID      : UUID;
@@ -33,9 +33,9 @@ service OfferService {
         phone : String;
     };
 
-    // ─── Actions ─────────────────────────────────────────────
+   
     action createOffer(
-        is_global            : Boolean,      // ✅ FIXED: was `false` (a value), must be a type
+        is_global            : Boolean,      
 
         title                : String,
         code                 : String,
@@ -66,7 +66,7 @@ service OfferService {
         status : String;
     };
 
-    // ─── Functions ───────────────────────────────────────────
+   
     function getOffers()     returns many OfferItem;
     function getManagers()   returns many ManagerItem;
 

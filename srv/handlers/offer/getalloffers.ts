@@ -28,7 +28,7 @@ export const getOffersHandler = async (req: any) => {
          o.flag_discount_amount,
          o.valid_from,
          o.valid_to,
-         o.createdat,        -- ✅ fixed: no underscore
+         o.createdat,        
          COALESCE(
            JSON_AGG(
              JSON_BUILD_OBJECT('id', u.id, 'name', u.name, 'email', u.email)
@@ -48,7 +48,7 @@ export const getOffersHandler = async (req: any) => {
     return result.rows;
 
   } catch (err: any) {
-    console.error("GET OFFERS ERROR MESSAGE:", err.message);  // ✅ detailed logging
+    console.error("GET OFFERS ERROR MESSAGE:", err.message);  
     return req.error(500, "Failed to fetch offers");
   }
 };

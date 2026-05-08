@@ -1,4 +1,3 @@
-// srv/bindings/index.ts
 import { bindAuth } from "./auth.binding";
 import { bindLead } from "./lead-binding";
 import { bindLocation } from "./location-binding";
