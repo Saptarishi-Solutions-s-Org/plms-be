@@ -90,11 +90,7 @@ export const createOfferHandler = async (req: any) => {
            AND LOWER(r.name) = 'manager'`,
         [managerIds, orgId]
       );
-
-      if (validCheck.rows.length !== managerIds.length) {
-        throw new Error("One or more selected managers are invalid or do not belong to your organization");
-      }
-
+      
       const values = managerIds
         .map((_, i) => `($${i * 2 + 1}, $${i * 2 + 2})`)
         .join(", ");
@@ -114,11 +110,6 @@ export const createOfferHandler = async (req: any) => {
 
   } catch (error: any) {
     await client.query("ROLLBACK");
-    
-
-    if (error.message?.includes("invalid or do not belong")) {
-      return req.reject(400, error.message);
-    }
 
     return req.reject(500, "Failed to create offer");
   } finally {
