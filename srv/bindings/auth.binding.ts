@@ -1,5 +1,9 @@
 import cds from "@sap/cds";
-import { loginHandler } from "../handlers/auth.handler";
+import {
+  loginHandler,
+  logoutHandler,
+  refreshHandler,
+} from "../handlers/auth.handler";
 
 export const bindAuth = () => {
   const service = cds.services["AuthService"];
@@ -10,6 +14,8 @@ export const bindAuth = () => {
   }
 
   service.on("login", loginHandler);
+  service.on("refresh", refreshHandler);
+  service.on("logout", logoutHandler);
 
   console.log("AuthService bound");
 };
