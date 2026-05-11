@@ -6,6 +6,7 @@ exports.refreshTokenExpiresAt = refreshTokenExpiresAt;
 exports.createRefreshTokenSession = createRefreshTokenSession;
 exports.findRefreshToken = findRefreshToken;
 exports.revokeRefreshToken = revokeRefreshToken;
+exports.revokeOtherRefreshTokens = revokeOtherRefreshTokens;
 exports.rotateRefreshToken = rotateRefreshToken;
 exports.isRefreshTokenUsable = isRefreshTokenUsable;
 const crypto_1 = require("crypto");
@@ -109,6 +110,23 @@ async function revokeRefreshToken(tokenId, replacementTokenId) {
         ${quoteIdentifier(shape.modifiedAt)} = NOW()
     WHERE ${quoteIdentifier(shape.id)} = $1
     `, [tokenId, replacementTokenId || null]);
+}
+async function revokeOtherRefreshTokens(userId, currentTokenId) {
+    const shape = await getDbShape();
+    const params = [userId];
+    let excludeCurrent = "";
+    if (currentTokenId) {
+        params.push(currentTokenId);
+        excludeCurrent = `AND ${quoteIdentifier(shape.id)} <> $2`;
+    }
+    await db_1.pool.query(`
+    UPDATE ${quoteIdentifier(shape.table)}
+    SET ${quoteIdentifier(shape.revokedAt)} = COALESCE(${quoteIdentifier(shape.revokedAt)}, NOW()),
+        ${quoteIdentifier(shape.modifiedAt)} = NOW()
+    WHERE ${quoteIdentifier(shape.userId)} = $1
+      AND ${quoteIdentifier(shape.revokedAt)} IS NULL
+      ${excludeCurrent}
+    `, params);
 }
 async function rotateRefreshToken(input) {
     const replacement = await createRefreshTokenSession({
