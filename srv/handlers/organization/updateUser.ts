@@ -1,6 +1,9 @@
 import { pool } from "../../lib/db";
-import { emitToSystemAdmins } from "../../realtime/socket";
-import { ORGANIZATION_DETAIL_CHANGED } from "../../realtime/events";
+import { emitToSystemAdmins, emitToUser } from "../../realtime/socket";
+import {
+  ORGANIZATION_DETAIL_CHANGED,
+  PROFILE_CHANGED,
+} from "../../realtime/events";
 
 export const updateUserHandler = async (req: any) => {
   try {
@@ -37,6 +40,11 @@ export const updateUserHandler = async (req: any) => {
       orgId: existing.rows[0].organization_id,
       userId: id,
       isActive: is_active,
+    });
+
+    emitToUser(id, PROFILE_CHANGED, {
+      reason: "profile-updated",
+      userId: id,
     });
 
     return {
