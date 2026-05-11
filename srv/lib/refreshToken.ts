@@ -162,6 +162,32 @@ export async function revokeRefreshToken(
   );
 }
 
+export async function revokeOtherRefreshTokens(
+  userId: string,
+  currentTokenId?: string | null,
+) {
+  const shape = await getDbShape();
+  const params: unknown[] = [userId];
+  let excludeCurrent = "";
+
+  if (currentTokenId) {
+    params.push(currentTokenId);
+    excludeCurrent = `AND ${quoteIdentifier(shape.id)} <> $2`;
+  }
+
+  await pool.query(
+    `
+    UPDATE ${quoteIdentifier(shape.table)}
+    SET ${quoteIdentifier(shape.revokedAt)} = COALESCE(${quoteIdentifier(shape.revokedAt)}, NOW()),
+        ${quoteIdentifier(shape.modifiedAt)} = NOW()
+    WHERE ${quoteIdentifier(shape.userId)} = $1
+      AND ${quoteIdentifier(shape.revokedAt)} IS NULL
+      ${excludeCurrent}
+    `,
+    params,
+  );
+}
+
 export async function rotateRefreshToken(input: {
   currentTokenId: string;
   userId: string;

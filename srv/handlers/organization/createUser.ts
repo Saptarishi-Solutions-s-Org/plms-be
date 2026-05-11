@@ -3,6 +3,11 @@ import { randomUUID } from "crypto";
 import { sendUserCreationMail } from "../../mail/sendUserCreationMail";
 import { generatePassword } from "../../lib/generatePassword";
 import bcrypt from "bcrypt";
+import { emitToSystemAdmins } from "../../realtime/socket";
+import {
+  ORGANIZATION_DETAIL_CHANGED,
+  SYSTEM_ADMIN_DASHBOARD_CHANGED,
+} from "../../realtime/events";
 
 export const createUserHandler = async (req: any) => {
   const client = await pool.connect();
@@ -72,6 +77,17 @@ export const createUserHandler = async (req: any) => {
     );
 
     await client.query("COMMIT");
+
+    emitToSystemAdmins(SYSTEM_ADMIN_DASHBOARD_CHANGED, {
+      reason: "organization-admin-created",
+      orgId: organizationId,
+      userId,
+    });
+    emitToSystemAdmins(ORGANIZATION_DETAIL_CHANGED, {
+      reason: "organization-admin-created",
+      orgId: organizationId,
+      userId,
+    });
 
     await sendUserCreationMail({
       to: email,

@@ -1,4 +1,10 @@
 import { pool } from "../../lib/db";
+import { emitToSystemAdmins } from "../../realtime/socket";
+import {
+  ORGANIZATION_DETAIL_CHANGED,
+  ORGANIZATION_LIST_CHANGED,
+  SYSTEM_ADMIN_DASHBOARD_CHANGED,
+} from "../../realtime/events";
 
 export const updateOrganizationHandler = async (req: any) => {
   const client = await pool.connect();
@@ -31,6 +37,22 @@ export const updateOrganizationHandler = async (req: any) => {
     }
 
     await client.query("COMMIT");
+
+    emitToSystemAdmins(SYSTEM_ADMIN_DASHBOARD_CHANGED, {
+      reason: "organization-updated",
+      orgId: id,
+      isActive: is_active,
+    });
+    emitToSystemAdmins(ORGANIZATION_LIST_CHANGED, {
+      reason: "organization-updated",
+      orgId: id,
+      isActive: is_active,
+    });
+    emitToSystemAdmins(ORGANIZATION_DETAIL_CHANGED, {
+      reason: "organization-updated",
+      orgId: id,
+      isActive: is_active,
+    });
 
     return {
       message: "Organization updated successfully",
