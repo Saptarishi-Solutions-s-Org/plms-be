@@ -40,7 +40,7 @@
     },
     "requires": {
       "auth": {
-        "kind": "mocked"
+        "kind": "dummy"
       },
       "db": {
         "kind": "postgres",

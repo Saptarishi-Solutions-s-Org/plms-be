@@ -1,11 +1,14 @@
 export type ModulePermissions = Record<string, string[]>;
 
 export type WithAuthTokenPayload = {
+  type?:        "access";
   userId:       string;
   orgId:        string;
+  roleId?:      string;
   role?:        string;
   roles?:       string[];
   permissions?: ModulePermissions; 
+  isSuper?:     boolean;
 };
 
 export type WithAuthRequirements = {
