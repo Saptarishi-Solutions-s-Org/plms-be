@@ -29,7 +29,7 @@ export const getManagersHandler = async (req: any) => {
     return result.rows;
 
   } catch (error: any) {
-    console.error("GetManagers Error:", error.message ?? error);
+    
     return req.reject(500, "Failed to fetch managers");
   } finally {
     client.release();

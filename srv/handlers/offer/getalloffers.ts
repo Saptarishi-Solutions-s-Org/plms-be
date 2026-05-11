@@ -48,7 +48,7 @@ export const getOffersHandler = async (req: any) => {
     return result.rows;
 
   } catch (err: any) {
-    console.error("GET OFFERS ERROR MESSAGE:", err.message);  
+    
     return req.error(500, "Failed to fetch offers");
   }
 };
