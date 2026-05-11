@@ -52,6 +52,16 @@ const UNIQUE_CONSTRAINTS = [
     name: "uq_org_role_rmp",
     cols: "organizationRole_ID, rmp_ID",
   },
+  {
+    table: "crm_refreshtoken",
+    name: "uq_refresh_token_hash",
+    cols: "token_hash",
+  },
+  {
+    table: "crm_RefreshToken",
+    name: "uq_refresh_token_hash_mixed",
+    cols: "token_hash",
+  },
 ];
 
 const SYSTEM_COLUMNS = new Set([

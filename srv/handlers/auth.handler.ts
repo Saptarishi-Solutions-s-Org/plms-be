@@ -1,6 +1,146 @@
 import bcrypt from "bcrypt";
-import { generateToken } from "../lib/jwt";
+import { generateAccessToken } from "../lib/jwt";
 import { pool } from "../lib/db";
+import {
+  clearUserHintCookie,
+  clearRefreshTokenCookie,
+  getRefreshTokenCookie,
+  getRequestMetadata,
+  setRefreshTokenCookie,
+  setUserHintCookie,
+} from "../lib/cookies";
+import {
+  createRefreshTokenSession,
+  findRefreshToken,
+  isRefreshTokenUsable,
+  revokeRefreshToken,
+  rotateRefreshToken,
+} from "../lib/refreshToken";
+
+type PermissionMap = Record<string, string[]>;
+
+type AuthUserRow = {
+  id: string;
+  name: string;
+  password?: string;
+  orgId: string;
+  orgCode: string;
+  orgName: string;
+  isSuper: boolean;
+  orgRoleId: string;
+  role: string;
+};
+
+async function getAuthUserByEmail(email: string) {
+  const userRes = await pool.query<AuthUserRow>(
+    `
+    SELECT
+      u.id,
+      u.name,
+      u.password,
+      u.organization_id as "orgId",
+      o.code as "orgCode",
+      o.name as "orgName",
+      o.is_super_organization as "isSuper",
+      u.role_id as "orgRoleId",
+      r.name as "role"
+    FROM crm_user u
+    JOIN crm_organization o ON o.id = u.organization_id
+    JOIN crm_organizationroles orr ON orr.id = u.role_id
+    JOIN crm_roles r ON r.id = orr.role_id
+    WHERE u.email = $1
+      AND u.is_active = true
+      AND o.is_active = true
+    `,
+    [email],
+  );
+
+  return userRes.rows[0] || null;
+}
+
+async function getAuthUserById(userId: string) {
+  const userRes = await pool.query<AuthUserRow>(
+    `
+    SELECT
+      u.id,
+      u.name,
+      u.organization_id as "orgId",
+      o.code as "orgCode",
+      o.name as "orgName",
+      o.is_super_organization as "isSuper",
+      u.role_id as "orgRoleId",
+      r.name as "role"
+    FROM crm_user u
+    JOIN crm_organization o ON o.id = u.organization_id
+    JOIN crm_organizationroles orr ON orr.id = u.role_id
+    JOIN crm_roles r ON r.id = orr.role_id
+    WHERE u.id = $1
+      AND u.is_active = true
+      AND o.is_active = true
+    `,
+    [userId],
+  );
+
+  return userRes.rows[0] || null;
+}
+
+async function getPermissionMap(user: AuthUserRow): Promise<PermissionMap> {
+  const permRes = await pool.query(
+    `
+    SELECT
+      mp.name as module,
+      p.name as permission
+    FROM crm_organizationrolemodulepermissions ormp
+    JOIN crm_rolemodulepermissions rmp ON rmp.id = ormp.rmp_id
+    JOIN crm_modulepermissions mp2 ON mp2.id = rmp.module_permission_id
+    JOIN crm_modules mp ON mp.id = mp2.module_id
+    JOIN crm_permissions p ON p.id = mp2.permission_id
+    WHERE ormp.organization_id = $1
+      AND ormp.organizationrole_id = $2
+      AND ormp.access = true
+    `,
+    [user.orgId, user.orgRoleId],
+  );
+
+  const permissionMap: PermissionMap = {};
+
+  for (const row of permRes.rows) {
+    const moduleName = String(row.module || "").toLowerCase();
+    const permission = String(row.permission || "").toLowerCase();
+    if (!moduleName || !permission) continue;
+
+    if (!permissionMap[moduleName]) permissionMap[moduleName] = [];
+    permissionMap[moduleName].push(permission);
+  }
+
+  return permissionMap;
+}
+
+async function buildAuthResponse(user: AuthUserRow) {
+  const permissions = await getPermissionMap(user);
+  const accessToken = generateAccessToken({
+    userId: user.id,
+    orgId: user.orgId,
+    roleId: user.orgRoleId,
+    role: user.role,
+    permissions,
+    isSuper: user.isSuper,
+  });
+
+  return {
+    accessToken,
+    user: {
+      id: user.id,
+      name: user.name,
+      orgId: user.orgId,
+      orgCode: user.orgCode,
+      orgName: user.orgName,
+      roleId: user.orgRoleId,
+      role: user.role,
+      permissions,
+    },
+  };
+}
 
 export const loginHandler = async (req: any) => {
   try {
@@ -11,30 +151,7 @@ export const loginHandler = async (req: any) => {
       return;
     }
 
-    const userRes = await pool.query(
-      `
-      SELECT 
-        u.id,
-        u.name,
-        u.password,
-        u.organization_id as "orgId",
-        o.code as "orgCode",
-        o.name as "orgName",
-        o.is_super_organization as "isSuper",
-        u.role_id as "orgRoleId",
-        r.name as "role"
-      FROM crm_user u
-      JOIN crm_organization o ON o.id = u.organization_id
-      JOIN crm_organizationroles orr ON orr.id = u.role_id
-      JOIN crm_roles r ON r.id = orr.role_id
-      WHERE u.email = $1
-        AND u.is_active = true
-        AND o.is_active = true
-      `,
-      [email],
-    );
-
-    const user = userRes.rows[0];
+    const user = await getAuthUserByEmail(email);
 
     if (!user) {
       req.reject(401, { message: "Invalid credentials" });
@@ -48,53 +165,85 @@ export const loginHandler = async (req: any) => {
       return;
     }
 
-    const permRes = await pool.query(
-      `
-      SELECT 
-        mp.name as module,
-        p.name as permission
-      FROM crm_organizationrolemodulepermissions ormp
-      JOIN crm_rolemodulepermissions rmp ON rmp.id = ormp.rmp_id
-      JOIN crm_modulepermissions mp2 ON mp2.id = rmp.module_permission_id
-      JOIN crm_modules mp ON mp.id = mp2.module_id
-      JOIN crm_permissions p ON p.id = mp2.permission_id
-      WHERE ormp.organization_id = $1
-        AND ormp.organizationrole_id = $2
-        AND ormp.access = true
-      `,
-      [user.orgId, user.orgRoleId],
-    );
-
-    const permissionMap: Record<string, string[]> = {};
-
-    for (const r of permRes.rows) {
-      if (!permissionMap[r.module]) permissionMap[r.module] = [];
-      permissionMap[r.module].push(r.permission);
-    }
-
-    const token = generateToken({
+    const { userAgent, ipAddress } = getRequestMetadata(req);
+    const refreshSession = await createRefreshTokenSession({
       userId: user.id,
-      orgId: user.orgId,
-      roleId: user.orgRoleId,
-      role: user.role,
-      permissions: permissionMap,
-      isSuper: user.isSuper,
+      userAgent,
+      ipAddress,
     });
 
-    return {
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        orgId: user.orgId,
-        orgCode: user.orgCode,
-        orgName: user.orgName,
-        roleId: user.orgRoleId,
-        role: user.role,
-        permissions: permissionMap,
-      },
-    };
+    setRefreshTokenCookie(req, refreshSession.token);
+    setUserHintCookie(req, user);
+
+    return buildAuthResponse(user);
   } catch (err: any) {
+    console.error("[auth.login]", err);
     req.reject(500, { message: "Internal Server Error" });
+  }
+};
+
+export const refreshHandler = async (req: any) => {
+  try {
+    const refreshToken = getRefreshTokenCookie(req);
+
+    if (!refreshToken) {
+      return req.error(401, "Unauthorized: missing refresh token");
+    }
+
+    const tokenRecord = await findRefreshToken(refreshToken);
+
+    if (!tokenRecord || !isRefreshTokenUsable(tokenRecord)) {
+      clearRefreshTokenCookie(req);
+      clearUserHintCookie(req);
+      return req.error(401, "Unauthorized: invalid refresh token");
+    }
+
+    const user = await getAuthUserById(tokenRecord.user_id);
+
+    if (!user) {
+      await revokeRefreshToken(tokenRecord.id);
+      clearRefreshTokenCookie(req);
+      clearUserHintCookie(req);
+      return req.error(401, "Unauthorized: user inactive");
+    }
+
+    const { userAgent, ipAddress } = getRequestMetadata(req);
+    const replacement = await rotateRefreshToken({
+      currentTokenId: tokenRecord.id,
+      userId: user.id,
+      userAgent,
+      ipAddress,
+    });
+
+    setRefreshTokenCookie(req, replacement.token);
+    setUserHintCookie(req, user);
+
+    return buildAuthResponse(user);
+  } catch (err: any) {
+    console.error("[auth.refresh]", err);
+    return req.error(401, "Unauthorized");
+  }
+};
+
+export const logoutHandler = async (req: any) => {
+  try {
+    const refreshToken = getRefreshTokenCookie(req);
+
+    if (refreshToken) {
+      const tokenRecord = await findRefreshToken(refreshToken);
+      if (tokenRecord) {
+        await revokeRefreshToken(tokenRecord.id);
+      }
+    }
+
+    clearRefreshTokenCookie(req);
+    clearUserHintCookie(req);
+
+    return { message: "Logged out successfully" };
+  } catch (err: any) {
+    console.error("[auth.logout]", err);
+    clearRefreshTokenCookie(req);
+    clearUserHintCookie(req);
+    return { message: "Logged out successfully" };
   }
 };

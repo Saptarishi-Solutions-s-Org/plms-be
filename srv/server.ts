@@ -9,6 +9,10 @@ import type { Express } from "express";
 import { verifyToken } from "./lib/jwt";
 import { bindAllServices } from "./bindings";
 
+cds.env.requires.auth = {
+  kind: "dummy",
+};
+
 cds.env.requires.db = {
   kind: "postgres",
   impl: "@cap-js/postgres",
@@ -34,10 +38,17 @@ cds.on("bootstrap", (app: Express) => {
 
     if (origin && allowedOrigins.includes(origin)) {
       res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
     }
 
-    res.setHeader("Access-Control-Allow-Headers", "*");
-    res.setHeader("Access-Control-Allow-Methods", "*");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Authorization, Content-Type, Accept",
+    );
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+    );
 
     if (req.method === "OPTIONS") {
       return res.status(200).end();
@@ -57,12 +68,15 @@ cds.on("served", () => {
     cors: {
       origin: allowedOrigins,
       methods: ["GET", "POST"],
+      credentials: true,
     },
   });
 
   io.use((socket: any, next: (err?: Error) => void) => {
     try {
       const token = socket.handshake.auth?.token;
+      if (!token) throw new Error("No token");
+
       const user = verifyToken(token);
       socket.data.user = user;
       next();

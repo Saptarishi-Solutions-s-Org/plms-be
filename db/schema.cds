@@ -59,6 +59,13 @@ type OfferStatus      : String enum {
     Draft;
 }
 
+type LeadSource       : String enum {
+    Socil_Media;
+    Advertisement;
+    Referral;
+    Manual_Entry;
+}
+
 entity Modules : cuid, managed {
     name    : String not null;
     default : Boolean not null;
@@ -152,6 +159,17 @@ entity PasswordResetToken : cuid, managed {
     is_used    : Boolean not null;
 }
 
+@cds.persistence.name: 'crm_refreshtoken'
+entity RefreshToken : cuid, managed {
+    user         : Association to User not null;
+    token_hash   : String(128) not null;
+    expires_at   : Timestamp not null;
+    revoked_at   : Timestamp;
+    replaced_by  : String(36);
+    user_agent   : String(1000);
+    ip_address   : String(100);
+}
+
 entity Leads : cuid, managed {
     organization : Association to Organization not null;
     name         : String not null;
@@ -162,7 +180,7 @@ entity Leads : cuid, managed {
     email        : String;
     status       : LeadStatus not null;
     priority     : LeadPriority;
-    source       : String;
+    source       : LeadSource;
     import_type  : ImportType;
     assigned_to  : Association to User;
     address      : String;
