@@ -159,6 +159,17 @@ entity PasswordResetToken : cuid, managed {
     is_used    : Boolean not null;
 }
 
+@cds.persistence.name: 'crm_refreshtoken'
+entity RefreshToken : cuid, managed {
+    user         : Association to User not null;
+    token_hash   : String(128) not null;
+    expires_at   : Timestamp not null;
+    revoked_at   : Timestamp;
+    replaced_by  : String(36);
+    user_agent   : String(1000);
+    ip_address   : String(100);
+}
+
 entity Leads : cuid, managed {
     organization : Association to Organization not null;
     name         : String not null;
