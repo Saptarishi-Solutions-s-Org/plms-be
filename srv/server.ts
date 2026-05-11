@@ -2,12 +2,10 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import cds from "@sap/cds";
-import http from "http";
-import { Server } from "socket.io";
 import type { Express } from "express";
 
-import { verifyToken } from "./lib/jwt";
 import { bindAllServices } from "./bindings";
+import { initSocket } from "./realtime/socket";
 
 cds.env.requires.auth = {
   kind: "dummy",
@@ -28,9 +26,14 @@ cds.env.requires.db = {
   },
 };
 
-let io: Server;
-
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [];
+let servicesBound = false;
+
+function bindServicesOnce() {
+  if (servicesBound) return;
+  bindAllServices();
+  servicesBound = true;
+}
 
 cds.on("bootstrap", (app: Express) => {
   app.use((req, res, next) => {
@@ -59,49 +62,21 @@ cds.on("bootstrap", (app: Express) => {
 });
 
 cds.on("served", () => {
-  const app = cds.server as Express;
-  const server = http.createServer(app);
-
-  bindAllServices();
-
-  io = new Server(server, {
-    cors: {
-      origin: allowedOrigins,
-      methods: ["GET", "POST"],
-      credentials: true,
-    },
-  });
-
-  io.use((socket: any, next: (err?: Error) => void) => {
-    try {
-      const token = socket.handshake.auth?.token;
-      if (!token) throw new Error("No token");
-
-      const user = verifyToken(token);
-      socket.data.user = user;
-      next();
-    } catch {
-      next(new Error("Unauthorized"));
-    }
-  });
-
-  io.on("connection", (socket: any) => {
-    const user = socket.data.user;
-
-    if (user?.orgId) {
-      socket.join(user.orgId);
-    }
-
-    console.log("🔌 Socket connected:", user?.userId);
-  });
-
-  if (!cds.cli) {
-    const port = process.env.PORT || 4004;
-
-    server.listen(port, () => {
-      console.log(`🚀 Server running on http://localhost:${port}`);
-    });
-  }
+  bindServicesOnce();
 });
 
-cds.server();
+cds.on("listening", ({ server }: { server: any }) => {
+  initSocket(server);
+});
+
+if (!cds.cli) {
+  cds.server().then((server: any) => {
+    initSocket(server);
+
+    const address = server.address?.();
+    const port =
+      typeof address === "object" && address ? address.port : process.env.PORT;
+
+    console.log(`Server running on http://localhost:${port || 4004}`);
+  });
+}

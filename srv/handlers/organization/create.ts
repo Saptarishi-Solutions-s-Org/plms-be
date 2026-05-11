@@ -2,6 +2,11 @@ import { pool } from "../../lib/db";
 import { generateOrgCode } from "../../lib/orgcode";
 import { sendOrganizationCreationMail } from "../../mail/sendOrganizationCreationMail";
 import { randomUUID } from "crypto";
+import { emitToSystemAdmins } from "../../realtime/socket";
+import {
+  ORGANIZATION_LIST_CHANGED,
+  SYSTEM_ADMIN_DASHBOARD_CHANGED,
+} from "../../realtime/events";
 
 export const createOrganizationHandler = async (req: any) => {
   const client = await pool.connect();
@@ -95,6 +100,17 @@ export const createOrganizationHandler = async (req: any) => {
     }
 
     await client.query("COMMIT");
+
+    emitToSystemAdmins(SYSTEM_ADMIN_DASHBOARD_CHANGED, {
+      reason: "organization-created",
+      orgId,
+      orgCode: code,
+    });
+    emitToSystemAdmins(ORGANIZATION_LIST_CHANGED, {
+      reason: "organization-created",
+      orgId,
+      orgCode: code,
+    });
 
     if (email) {
       await sendOrganizationCreationMail({

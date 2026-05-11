@@ -1,12 +1,15 @@
 import { pool } from "../../lib/db";
+import { emitToSystemAdmins } from "../../realtime/socket";
+import { ORGANIZATION_DETAIL_CHANGED } from "../../realtime/events";
 
 export const updateUserHandler = async (req: any) => {
   try {
     const { id, name, phone, is_active, state, country } = req.data;
 
-    const existing = await pool.query(`SELECT id FROM crm_user WHERE id=$1`, [
-      id,
-    ]);
+    const existing = await pool.query(
+      `SELECT id, organization_id FROM crm_user WHERE id=$1`,
+      [id],
+    );
 
     if (!existing.rows.length) {
       return req.error(404, "User not found");
@@ -28,6 +31,13 @@ export const updateUserHandler = async (req: any) => {
        WHERE id=$7`,
       [name, phone, is_active, state, country, req.user.id, id],
     );
+
+    emitToSystemAdmins(ORGANIZATION_DETAIL_CHANGED, {
+      reason: "organization-admin-updated",
+      orgId: existing.rows[0].organization_id,
+      userId: id,
+      isActive: is_active,
+    });
 
     return {
       message: "User updated successfully",
