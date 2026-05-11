@@ -26,6 +26,8 @@ type AuthUserRow = {
   orgId: string;
   orgCode: string;
   orgName: string;
+  isActive: boolean;
+  orgIsActive: boolean;
   isSuper: boolean;
   orgRoleId: string;
   role: string;
@@ -41,6 +43,8 @@ async function getAuthUserByEmail(email: string) {
       u.organization_id as "orgId",
       o.code as "orgCode",
       o.name as "orgName",
+      u.is_active as "isActive",
+      o.is_active as "orgIsActive",
       o.is_super_organization as "isSuper",
       u.role_id as "orgRoleId",
       r.name as "role"
@@ -49,8 +53,6 @@ async function getAuthUserByEmail(email: string) {
     JOIN crm_organizationroles orr ON orr.id = u.role_id
     JOIN crm_roles r ON r.id = orr.role_id
     WHERE u.email = $1
-      AND u.is_active = true
-      AND o.is_active = true
     `,
     [email],
   );
@@ -67,6 +69,8 @@ async function getAuthUserById(userId: string) {
       u.organization_id as "orgId",
       o.code as "orgCode",
       o.name as "orgName",
+      u.is_active as "isActive",
+      o.is_active as "orgIsActive",
       o.is_super_organization as "isSuper",
       u.role_id as "orgRoleId",
       r.name as "role"
@@ -147,22 +151,23 @@ export const loginHandler = async (req: any) => {
     const { email, password } = req.data;
 
     if (!email || !password) {
-      req.reject(400, { message: "Email and password required" });
-      return;
+      return req.error(400, "Email and password are required");
     }
 
     const user = await getAuthUserByEmail(email);
 
     if (!user) {
-      req.reject(401, { message: "Invalid credentials" });
-      return;
+      return req.error(401, "Account not found");
+    }
+
+    if (!user.isActive || !user.orgIsActive) {
+      return req.error(403, "Account is not active");
     }
 
     const valid = await bcrypt.compare(password, user.password || "");
 
     if (!valid) {
-      req.reject(401, { message: "Invalid credentials" });
-      return;
+      return req.error(401, "Password is incorrect");
     }
 
     const { userAgent, ipAddress } = getRequestMetadata(req);
@@ -178,7 +183,7 @@ export const loginHandler = async (req: any) => {
     return buildAuthResponse(user);
   } catch (err: any) {
     console.error("[auth.login]", err);
-    req.reject(500, { message: "Internal Server Error" });
+    req.reject(500, { message: "Server is down. Please try again later" });
   }
 };
 
