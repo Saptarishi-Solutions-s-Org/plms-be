@@ -30,10 +30,6 @@ export const createOrgUserHandler = async (req: any) => {
       reportingManager,
     } = req.data;
 
-    if (!name || !email || !roleName) {
-      return req.error(400, "Missing required fields");
-    }
-
     const existingUser = await client.query(
       `SELECT id FROM crm_user WHERE email = $1`,
       [email]
