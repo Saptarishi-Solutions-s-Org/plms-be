@@ -39,7 +39,8 @@ export const getexecutivestats = async (req: any) => {
     const activeOffersRes = await pool.query(
       `SELECT COUNT(*) AS count
        FROM crm_offer
-       WHERE organization_ID = $1`,
+       WHERE organization_ID = $1
+       AND status = 'Active'`,
       [orgId],
     );
 
