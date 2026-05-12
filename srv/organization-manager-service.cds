@@ -13,8 +13,9 @@ service ManagerDashboardService {
     Lost      : Integer;
   };
 
-  function getExecutivePerformance() returns array of {
-    name        : String;
-    performance : Integer;
-  };
+ function getExecutivePerformance() returns array of {
+  executiveName : String;
+  total         : Integer;
+  qualified     : Integer;
+};
 }
