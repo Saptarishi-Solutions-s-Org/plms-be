@@ -2,25 +2,24 @@
 service LeadService {
 
     // GET leads + dashboard stats
-    function getLeadsWithStats() returns {
+    function getLeadsWithStats()       returns {
         leads : many {
-            uuid       : String;   
-            leadId     : String;  
-            name       : String;
-            gender     : String;
-            email      : String;
-            phone      : String;
-            status     : String;
-            priority   : String;
-            leadSource : String;
-            city       : String;
-            postalCode : String;
-            stateId    : String;
-            countryId  : String;
-            state      : String;
-            country    : String;
-            assignedTo : String;
-            notes      : String;
+            uuid           : String;
+            leadCode       : String;
+            name           : String;
+            gender         : String;
+            email          : String;
+            phone          : String;
+            status         : String;
+            priority       : String;
+            leadSource     : String;
+            city           : String;
+            postalCode     : String;
+            state          : String;
+            country        : String;
+            assignedTo     : String;
+            assignedToName : String;
+            notes          : String;
         };
         stats : {
             total     : Integer;
@@ -36,43 +35,75 @@ service LeadService {
     };
 
     // CREATE lead
-    action createLead(
-        name       : String,
-        gender     : String,
-        email      : String,
-        phone      : String,
-        city       : String,
-        stateId    : String,
-        countryId  : String,
-        postalCode : String,
-        leadSource : String,
-        status     : String,
-        assignedTo : String,
-        priority   : String,
-        notes      : String
-    ) returns {
-        message : String;
-        leadId  : String;
+    action   createLead(name: String,
+                        gender: String,
+                        email: String,
+                        phone: String,
+                        city: String,
+                        state: String,
+                        country: String,
+                        postalCode: String,
+                        leadSource: String,
+                        status: String,
+                        assignedTo: String,
+                        priority: String,
+                        notes: String) returns {
+        message  : String;
+        leadCode : String;
     };
 
     // UPDATE lead
-    action updateLead(
-        id         : String,
-        name       : String,
-        gender     : String,
-        email      : String,
-        phone      : String,
-        city       : String,
-        stateId    : String,
-        countryId  : String,
-        postalCode : String,
-        leadSource : String,
-        status     : String,
-        assignedTo : String,
-        priority   : String,
-        notes      : String
-    ) returns {
+    action   updateLead(id: String,
+                        name: String,
+                        gender: String,
+                        email: String,
+                        phone: String,
+                        city: String,
+                        state: String,
+                        country: String,
+                        postalCode: String,
+                        leadSource: String,
+                        status: String,
+                        assignedTo: String,
+                        priority: String,
+                        notes: String) returns {
         message : String;
+    };
+
+    action   exportLeads()             returns many {
+        leadCode   : String;
+        name       : String;
+        gender     : String;
+        email      : String;
+        phone      : String;
+        city       : String;
+        state      : String;
+        country    : String;
+        postalCode : String;
+        leadSource : String;
+        status     : String;
+        priority   : String;
+        assignedTo : String;
+        notes      : String;
+    };
+
+    action   importLeads(rows: many {
+        name       : String;
+        gender     : String;
+        email      : String;
+        phone      : String;
+        city       : String;
+        state    : String;
+        country  : String;
+        postalCode : String;
+        leadSource : String;
+        status     : String;
+        assignedTo : String;
+        priority   : String;
+        notes      : String;
+    })                                 returns {
+        imported   : Integer;
+        failed     : Integer;
     };
 
 }

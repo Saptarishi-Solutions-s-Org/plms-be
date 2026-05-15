@@ -16,7 +16,7 @@ export const updateLeadHandler = async (req: any) => {
 
     const {
       id, name, gender, email, phone,
-      city, stateId, countryId, postalCode,
+      city, state, country, postalCode,
       leadSource, status, assignedTo, priority, notes,
     } = req.data;
 
@@ -53,7 +53,7 @@ export const updateLeadHandler = async (req: any) => {
       [
         name, gender, email, phone,
         city, postalCode,
-        stateId || null, countryId || null,
+        state || null, country || null,
         leadSource, status, priority,
         assignedTo || null,
         modifiedBy,
