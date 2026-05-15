@@ -5,6 +5,8 @@ import { getLeadsWithStatsHandler } from "../handlers/leads/getLeadsWithStats";
 import { getExecutiveUsersHandler } from "../handlers/leads/getExecutiveUsers";
 import { createLeadHandler } from "../handlers/leads/createLead";
 import { updateLeadHandler } from "../handlers/leads/updateLead";
+import { exportLeadsHandler } from "../handlers/leads/exportLeads";
+import { importLeadsHandler } from "../handlers/leads/importLeads";
 
 export const bindLead = () => {
   const service = cds.services["LeadService"];
@@ -50,4 +52,26 @@ export const bindLead = () => {
       },
     })
   );
+
+  service.on(
+    "exportLeads",
+    withAuth(exportLeadsHandler, {
+      roles: ["manager", "executive"],
+      modules: {
+        lead: ["export"],
+      },
+    })
+  );
+
+  service.on(
+    "importLeads",
+    withAuth(importLeadsHandler, {
+      roles: ["manager"],
+      modules: {
+        lead: ["import"],
+      },
+    })
+  );
+
+
 };

@@ -8,7 +8,7 @@ export const createLeadHandler = async (req: any) => {
   try {
     await client.query("BEGIN");
 
-    const orgId     = req.user?.orgId;
+    const orgId = req.user?.orgId;
     const createdBy = req.user?.id;
 
     if (!orgId) {
@@ -16,9 +16,19 @@ export const createLeadHandler = async (req: any) => {
     }
 
     const {
-      name, gender, email, phone,
-      city, stateId, countryId, postalCode,
-      leadSource, status, assignedTo, priority, notes,
+      name,
+      gender,
+      email,
+      phone,
+      city,
+      state,
+      country,
+      postalCode,
+      leadSource,
+      status,
+      assignedTo,
+      priority,
+      notes,
     } = req.data;
 
     if (!name || !email || !phone || !status || !priority || !leadSource) {
@@ -26,7 +36,7 @@ export const createLeadHandler = async (req: any) => {
     }
 
     const leadId = randomUUID();
-    const code   = generateLeadCode();
+    const code = generateLeadCode();
 
     await client.query(
       `INSERT INTO crm_leads
@@ -44,11 +54,21 @@ export const createLeadHandler = async (req: any) => {
           $14,$15,
           NOW(),$16,NOW(),$16)`,
       [
-        leadId, code, name, gender, email, phone,
-        status, priority, leadSource,
-        city, postalCode,
-        stateId || null, countryId || null,
-        orgId, assignedTo || null,
+        leadId,
+        code,
+        name,
+        gender,
+        email,
+        phone,
+        status,
+        priority,
+        leadSource,
+        city,
+        postalCode,
+        state || null,
+        country || null,
+        orgId,
+        assignedTo || null,
         createdBy,
       ]
     );
@@ -64,7 +84,7 @@ export const createLeadHandler = async (req: any) => {
 
     await client.query("COMMIT");
 
-    return { message: "Lead created successfully", leadId };
+    return { message: "Lead created successfully", leadCode: code };
   } catch (error: any) {
     await client.query("ROLLBACK");
     console.error("Error creating lead:", error?.message ?? error);
