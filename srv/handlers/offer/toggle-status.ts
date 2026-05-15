@@ -1,45 +1,47 @@
-import cds from "@sap/cds";
-
-const { SELECT, UPDATE } = cds.ql;
+import { pool } from "../../lib/db";
 
 export const toggleOfferStatusHandler = async (req: any) => {
-  const db = await cds.connect.to("db");
-  const { id } = req.data;
-
-  const Offer = cds.entities["crm.Offer"];
 
   try {
-    const offer = await db.run(
-      SELECT.one.from(Offer).where({ ID: id })
+
+    const { id } = req.data;
+
+    const result = await pool.query(
+      `
+      SELECT status
+      FROM crm_offer
+      WHERE id = $1
+      `,
+      [id]
     );
 
-    if (!offer) {
+    if (!result.rows.length) {
       return req.reject(404, "Offer not found");
     }
 
+    const currentStatus = result.rows[0].status;
 
     const newStatus =
-      (offer.status || "").toLowerCase() === "active"
-        ? "inactive"
-        : "active";
+      currentStatus === "Active"
+        ? "Inactive"
+        : "Active";
 
-
-    await db.run(
-      UPDATE(Offer)
-        .set({ status: newStatus })
-        .where({ ID: id })
+    await pool.query(
+      `
+      UPDATE crm_offer
+      SET status = $1
+      WHERE id = $2
+      `,
+      [newStatus, id]
     );
 
-
     return {
-      id,
-      oldStatus: offer.status,
-      newStatus,
-      message: `Offer ${newStatus === "active" ? "activated" : "deactivated"} successfully`
+      status: newStatus.toLowerCase(),
     };
 
   } catch (error: any) {
 
+    
     return req.reject(500, "Failed to toggle offer status");
   }
 };
