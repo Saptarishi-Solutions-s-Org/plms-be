@@ -1,5 +1,6 @@
 import { pool } from "../../lib/db";
 import { randomUUID } from "crypto";
+import { generateOfferCode } from "../../lib/generateOfferCode";
 
 export const createOfferHandler = async (req: any) => {
   const client = await pool.connect();
@@ -16,7 +17,6 @@ export const createOfferHandler = async (req: any) => {
     const {
       is_global,
       title,
-      code,
       description = null,
       discount_type,
       valid_from,
@@ -35,8 +35,8 @@ export const createOfferHandler = async (req: any) => {
     const managerIds: string[] = Array.isArray(data.manager_ids)
       ? data.manager_ids
       : data.manager_ids
-        ? [data.manager_ids]
-        : [];
+      ? [data.manager_ids]
+      : [];
 
     const id = randomUUID();
 
@@ -79,7 +79,7 @@ export const createOfferHandler = async (req: any) => {
         is_global ? null : orgId,
         is_global,
         title?.trim(),
-        `${code?.trim()?.toUpperCase()}_${Date.now()}`,
+        generateOfferCode(),
         description?.trim() || null,
         discount_type,
         discount_amount,
@@ -113,7 +113,9 @@ export const createOfferHandler = async (req: any) => {
         [managerIds, orgId]
       );
 
-      const validManagerIds = validCheck.rows.map((row) => row.id);
+      const validManagerIds = validCheck.rows.map(
+        (row) => row.id
+      );
 
       if (validManagerIds.length === 0) {
         throw new Error("No valid managers found");
@@ -122,15 +124,18 @@ export const createOfferHandler = async (req: any) => {
       const assignmentValues = validManagerIds
         .map((_, i) => {
           const base = i * 3;
+
           return `($${base + 1}, $${base + 2}, $${base + 3})`;
         })
         .join(", ");
 
-      const assignmentParams = validManagerIds.flatMap((managerId) => [
-        randomUUID(),
-        id,           
-        managerId,    
-      ]);
+      const assignmentParams = validManagerIds.flatMap(
+        (managerId) => [
+          randomUUID(),
+          id,
+          managerId,
+        ]
+      );
 
       await client.query(
         `
@@ -154,8 +159,6 @@ export const createOfferHandler = async (req: any) => {
 
   } catch (error: any) {
     await client.query("ROLLBACK");
-
-    
 
     return req.reject(
       500,
