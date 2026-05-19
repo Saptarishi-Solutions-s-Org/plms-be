@@ -3,8 +3,9 @@ import { pool } from "../../lib/db";
 export const getExecutiveUsersHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
+    const managerId = req.user?.id;
 
-    if (!orgId) {
+    if (!orgId || !managerId) {
       return req.error(401, "Unauthorized");
     }
 
@@ -17,9 +18,10 @@ export const getExecutiveUsersHandler = async (req: any) => {
        JOIN crm_roles             r   ON r.id   = orr.role_id
        WHERE u.organization_id = $1
          AND LOWER(r.name) LIKE '%executive%'
+         AND u.reporting_manager_id = $2
          AND u.is_active = true
        ORDER BY u.name ASC`,
-      [orgId]
+      [orgId, managerId]
     );
 
     return res.rows;
