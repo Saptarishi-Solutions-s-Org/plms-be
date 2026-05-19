@@ -3,7 +3,7 @@ import { pool } from "../../lib/db";
 export const getExecutiveUsersHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
-    const managerId = req.user?.id || req.user?.userId;
+    const managerId = req.user?.id;
 
     if (!orgId || !managerId) {
       return req.error(401, "Unauthorized");
