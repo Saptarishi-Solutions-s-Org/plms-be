@@ -9,26 +9,30 @@ export const executivePerformanceHandler = async (req: any) => {
     }
 
     const res = await pool.query(
-      `
-      SELECT 
-        assigned_to AS executive_id,
-        COUNT(*) AS total,
-        COUNT(*) FILTER (WHERE status = 'Qualified') AS qualified
-      FROM crm_leads
-      WHERE organization_id = $1
-      GROUP BY assigned_to
-      `,
-      [orgId]
-    );
+  `
+  SELECT 
+    u.name AS executive_name,
+    COUNT(*) AS total,
+    COUNT(*) FILTER (WHERE l.status = 'Qualified') AS qualified
+  FROM crm_leads l
+  LEFT JOIN crm_user u
+    ON l.assigned_to_id = u.id
+  WHERE l.organization_id = $1
+    AND l.assigned_to_id IS NOT NULL
+  GROUP BY u.name
+  `,
+  [orgId]
+);
 
 
       return res.rows.map((row) => ({
-      executiveId: Number(row.executive_id),
+      executiveName: row.executive_name,
       total: Number(row.total),
       qualified: Number(row.qualified),
     }));
 
   } catch (error) {
+    console.error(error);
     return req.error(500, "Failed to fetch executive performance");
   }
 };

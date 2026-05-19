@@ -10,8 +10,8 @@ export const getLeadsWithStatsHandler = async (req: any) => {
 
     const leadsRes = await pool.query(
       `SELECT
-         l.id                      AS "uuid",      
-         l.code                    AS "leadId",    
+         l.id                      AS "uuid",
+         l.code                    AS "leadCode",
          l.name                    AS "name",
          l.gender                  AS "gender",
          l.email                   AS "email",
@@ -21,28 +21,26 @@ export const getLeadsWithStatsHandler = async (req: any) => {
          l.source                  AS "leadSource",
          l.address                 AS "city",
          l.postal_code             AS "postalCode",
-         l.state_id                AS "stateId",
-         l.country_id              AS "countryId",
-         s.name                    AS "state",
-         c.name                    AS "country",
-         COALESCE(u.id, '')        AS "assignedTo",
+         l.state_id                AS "state",
+         l.country_id              AS "country",
+         s.name                    AS "stateName",
+         c.name                    AS "countryName",
+         l.assigned_to_id          AS "assignedTo",
+         COALESCE(u.name, '')      AS "assignedToName",
          COALESCE(la.notes, '')    AS "notes"
-
        FROM crm_leads l
        LEFT JOIN crm_state   s ON s.id = l.state_id
        LEFT JOIN crm_country c ON c.id = l.country_id
        LEFT JOIN crm_user    u ON u.id = l.assigned_to_id
        LEFT JOIN LATERAL (
-         SELECT notes
-         FROM   crm_leadactivity
-         WHERE  lead_id = l.id
-         ORDER  BY createdat DESC
-         LIMIT  1
+         SELECT notes FROM crm_leadactivity
+         WHERE lead_id = l.id
+         ORDER BY createdat DESC LIMIT 1
        ) la ON true
 
        WHERE l.organization_id = $1
        ORDER BY l.createdat DESC`,
-      [orgId]
+      [orgId],
     );
 
     const statsRes = await pool.query(
@@ -53,14 +51,14 @@ export const getLeadsWithStatsHandler = async (req: any) => {
          COUNT(*) FILTER (WHERE status = 'Qualified') AS qualified
        FROM crm_leads
        WHERE organization_id = $1`,
-      [orgId]
+      [orgId],
     );
 
     return {
       leads: leadsRes.rows,
       stats: {
-        total:     Number(statsRes.rows[0].total)     || 0,
-        new:       Number(statsRes.rows[0].new)       || 0,
+        total: Number(statsRes.rows[0].total) || 0,
+        new: Number(statsRes.rows[0].new) || 0,
         contacted: Number(statsRes.rows[0].contacted) || 0,
         qualified: Number(statsRes.rows[0].qualified) || 0,
       },

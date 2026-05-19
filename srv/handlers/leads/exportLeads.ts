@@ -8,7 +8,7 @@ export const exportLeadsHandler = async (req: any) => {
 
     const res = await pool.query(
       `SELECT
-         l.code                    AS "leadId",
+         l.code                    AS "leadCode",
          l.name                    AS "name",
          l.gender                  AS "gender",
          l.email                   AS "email",
