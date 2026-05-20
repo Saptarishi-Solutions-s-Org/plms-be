@@ -106,4 +106,78 @@ service LeadService {
         failed     : Integer;
     };
 
+    function getLeadDetail(id: String) returns {
+        lead : {
+            uuid           : String;
+            leadCode       : String;
+            name           : String;
+            gender         : String;
+            email          : String;
+            phone          : String;
+            status         : String;
+            priority       : String;
+            leadSource     : String;
+            city           : String;
+            postalCode     : String;
+            state          : String;
+            country        : String;
+            stateName      : String;
+            countryName    : String;
+            importType     : String;
+            createdAt      : String;
+            assignedTo     : String;
+            assignedToName : String;
+            createdById    : String;
+            createdByName  : String;
+            createdByRole  : String;
+        };
+        activities : many {
+            id               : String;
+            type             : String;
+            notes            : String;
+            freeText         : String;
+            callStatus       : String;
+            nextFollowUpDate : String;
+            createdAt        : String;
+            createdByName    : String;
+            createdByRole    : String;
+        };
+        assignedOffer : {
+            id                 : String;
+            title              : String;
+            code               : String;
+            description        : String;
+            discountType       : String;
+            discountAmount     : Decimal(10, 2);
+            discountPercentage : Decimal(5, 2);
+            validFrom          : Date;
+            validTo            : Date;
+            status             : String;
+        };
+    };
+ 
+// ── NEW: addLeadActivity ──────────────────────────────────────────────────────
+ 
+    action addLeadActivity(
+        leadId           : String,
+        type             : String,
+        notes            : String,
+        freeText         : String,
+        callStatus       : String,
+        nextFollowUpDate : Date
+    ) returns {
+        message  : String;
+        activity : {
+            id               : String;
+            type             : String;
+            notes            : String;
+            freeText         : String;
+            callStatus       : String;
+            nextFollowUpDate : String;
+            createdAt        : String;
+            createdByName    : String;
+            createdByRole    : String;
+        };
+    };
+
 }
