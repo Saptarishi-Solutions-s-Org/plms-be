@@ -3,7 +3,7 @@ import { pool } from "../../lib/db";
 export const getManagerOfferOverviewHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
-    const managerId = req.data?.managerId || req.user?.id;
+    const managerId = req.user?.id;
 
     if (!orgId) {
       return req.error(400, "Organization ID missing");
