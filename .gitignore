@@ -6,7 +6,6 @@ connection.properties
 default-*.json
 .cdsrc-private.json
 gen/
-dist/
 node_modules/
 target/
 
