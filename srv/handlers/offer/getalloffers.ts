@@ -53,7 +53,7 @@ export const getOffersHandler = async (req: any) => {
 
        FROM crm_offer o
 
-       LEFT JOIN crm_offerassignment a
+      LEFT JOIN crm_managerofferassignment a
          ON a.offer_id = o.id
 
        LEFT JOIN crm_user u
