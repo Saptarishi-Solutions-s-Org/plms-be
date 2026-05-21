@@ -35,7 +35,7 @@ export const getManagerOfferOverviewHandler = async (req: any) => {
         o.valid_to,
         o.createdat
       FROM crm_offer o
-      LEFT JOIN crm_offerassignment oa
+      LEFT JOIN crm_managerofferassignment oa
         ON oa.offer_id = o.id
       WHERE (o.organization_id = $1 OR o.is_global = true)
         AND (o.is_global = true OR oa.user_id = $2)
@@ -51,7 +51,7 @@ export const getManagerOfferOverviewHandler = async (req: any) => {
           o.status,
           o.is_global
         FROM crm_offer o
-        LEFT JOIN crm_offerassignment oa
+        LEFT JOIN crm_managerofferassignment oa
           ON oa.offer_id = o.id
         WHERE (o.organization_id = $1 OR o.is_global = true)
           AND (o.is_global = true OR oa.user_id = $2)
