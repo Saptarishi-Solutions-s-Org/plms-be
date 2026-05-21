@@ -150,6 +150,11 @@ entity User : cuid, managed {
     country              : Association to Country not null;
     is_active            : Boolean not null;
     must_change_password : Boolean;
+
+    executiveAssignments : Association to many ExecutiveOfferAssignment
+                               on executiveAssignments.executive = $self;
+    managerAssignments   : Association to many ExecutiveOfferAssignment
+                               on managerAssignments.assigned_by = $self;
 }
 
 entity PasswordResetToken : cuid, managed {
@@ -161,13 +166,13 @@ entity PasswordResetToken : cuid, managed {
 
 @cds.persistence.name: 'crm_refreshtoken'
 entity RefreshToken : cuid, managed {
-    user         : Association to User not null;
-    token_hash   : String(128) not null;
-    expires_at   : Timestamp not null;
-    revoked_at   : Timestamp;
-    replaced_by  : String(36);
-    user_agent   : String(1000);
-    ip_address   : String(100);
+    user        : Association to User not null;
+    token_hash  : String(128) not null;
+    expires_at  : Timestamp not null;
+    revoked_at  : Timestamp;
+    replaced_by : String(36);
+    user_agent  : String(1000);
+    ip_address  : String(100);
 }
 
 entity Leads : cuid, managed {
@@ -221,13 +226,19 @@ entity Offer : cuid, managed {
     discount_value       : Decimal(10, 2);
     flag_discount_amount : Decimal(10, 2);
 
-    assignments          : Composition of many OfferAssignment
-                               on assignments.offer = $self;
+    executiveAssignments : Composition of many ExecutiveOfferAssignment
+                               on executiveAssignments.offer = $self;
 }
 
-entity OfferAssignment : cuid, managed {
+entity ManagerOfferAssignment : cuid, managed {
     offer : Association to Offer not null;
     user  : Association to User not null;
+}
+
+entity ExecutiveOfferAssignment : cuid, managed {
+    offer       : Association to Offer not null;
+    assigned_by : Association to User not null;
+    executive   : Association to User not null;
 }
 
 entity Country : cuid, managed {

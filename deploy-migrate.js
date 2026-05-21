@@ -98,6 +98,35 @@ const SYSTEM_COLUMNS = new Set([
   "modifiedby",
 ]);
 
+function normalizeIdentifier(name) {
+  return String(name).toLowerCase();
+}
+
+function toColumnSet(columns) {
+  return new Set([...columns].map(normalizeIdentifier));
+}
+
+function getAssociationColumnName(colName) {
+  return `${colName}_ID`;
+}
+
+function getExpectedColumnName(colName, element) {
+  if (element.type === "cds.Association") {
+    if (!element.keys) return null;
+    return getAssociationColumnName(colName);
+  }
+  if (element.type) return colName;
+  return null;
+}
+
+function getTableName(name, entity) {
+  return (entity["@cds.persistence.name"] || name.replace(/\./g, "_")).toLowerCase();
+}
+
+function quoteIdentifier(name) {
+  return `"${String(name).replace(/"/g, '""')}"`;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // CDS type → SQL type mapping
 // Covers scalars + falls back to VARCHAR for named enum types
@@ -127,7 +156,7 @@ function cdsTypeToSql(type) {
 // Build expected DB columns for a CDS entity.
 // Key insight from debug: isAssociation/isComposition flags are always undefined
 // in cds-compiler v6. Instead we check:
-//   type === 'cds.Association' + keys set  → forward FK  → colName_id column
+//   type === 'cds.Association' + keys set  → forward FK  → colName_ID column
 //   type === 'cds.Composition' + on set    → backlink    → no DB column
 //   anything else with a type              → scalar      → direct column
 function getExpectedColumns(entity) {
@@ -135,11 +164,9 @@ function getExpectedColumns(entity) {
   for (const [colName, element] of Object.entries(entity.elements || {})) {
     if (element.virtual) continue;
     if (element.type === "cds.Composition") continue;
-    if (element.type === "cds.Association") {
-      if (element.keys) cols.add((colName + "_id").toLowerCase());
-    } else if (element.type) {
-      cols.add(colName.toLowerCase());
-    }
+
+    const dbCol = getExpectedColumnName(colName, element);
+    if (dbCol) cols.add(normalizeIdentifier(dbCol));
   }
   return cols;
 }
@@ -149,7 +176,7 @@ function getCdsTableNames(model) {
   for (const [name, def] of Object.entries(model.definitions)) {
     if (def.kind !== "entity") continue;
     if (def["@cds.persistence.skip"]) continue;
-    names.add(name.replace(/\./g, "_").toLowerCase());
+    names.add(getTableName(name, def));
   }
   return names;
 }
@@ -193,6 +220,15 @@ async function getIncomingFKs(client, table) {
 function resolveSqlType(element, model) {
   if (element.type === "cds.Association") return "VARCHAR(36)";
 
+  if (element.type === "cds.Decimal" && element.precision) {
+    const scale = element.scale !== undefined ? `, ${element.scale}` : "";
+    return `DECIMAL(${element.precision}${scale})`;
+  }
+
+  if (element.length) {
+    return `VARCHAR(${element.length})`;
+  }
+
   // Named type reference (e.g. "crm.TrailType")
   const resolved = model.definitions[element.type];
   if (resolved) {
@@ -200,12 +236,48 @@ function resolveSqlType(element, model) {
     return cdsTypeToSql(resolved.type || "cds.String");
   }
 
-  // length annotation on String → VARCHAR(n)
-  if (element.type === "cds.String" && element.length) {
-    return `VARCHAR(${element.length})`;
+  return cdsTypeToSql(element.type);
+}
+
+function getEntitySqlColumns(entity, model) {
+  const columns = [];
+
+  for (const [colName, element] of Object.entries(entity.elements || {})) {
+    if (element.virtual) continue;
+    if (element.type === "cds.Composition") continue;
+
+    const dbCol = getExpectedColumnName(colName, element);
+    if (!dbCol) continue;
+
+    const sqlType =
+      element.type === "cds.Association"
+        ? "VARCHAR(36)"
+        : resolveSqlType(element, model);
+
+    columns.push({
+      name: dbCol,
+      sqlType,
+      key: Boolean(element.key),
+      notNull: Boolean(element.notNull),
+    });
   }
 
-  return cdsTypeToSql(element.type);
+  return columns;
+}
+
+function buildCreateTableSql(table, columns) {
+  const definitions = columns.map((col) => {
+    const constraints = [];
+    if (col.notNull || col.key) constraints.push("NOT NULL");
+    return `  ${quoteIdentifier(col.name)} ${col.sqlType}${constraints.length ? " " + constraints.join(" ") : ""}`;
+  });
+
+  const primaryKeys = columns.filter((col) => col.key).map((col) => quoteIdentifier(col.name));
+  if (primaryKeys.length > 0) {
+    definitions.push(`  PRIMARY KEY (${primaryKeys.join(", ")})`);
+  }
+
+  return `CREATE TABLE IF NOT EXISTS ${quoteIdentifier(table)} (\n${definitions.join(",\n")}\n)`;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -221,7 +293,7 @@ async function buildCsnFromDb(client, model) {
     if (def.kind !== "entity") continue;
     if (def["@cds.persistence.skip"]) continue;
 
-    const table = name.replace(/\./g, "_").toLowerCase();
+    const table = getTableName(name, def);
 
     const { rows: tableRows } = await client.query(
       `SELECT COUNT(*) as count FROM information_schema.tables
@@ -236,6 +308,7 @@ async function buildCsnFromDb(client, model) {
       [table],
     );
     const dbCols = new Set(colRows.map((r) => r.column_name));
+    const dbColsNormalized = toColumnSet(dbCols);
 
     const elements = {};
     for (const [colName, element] of Object.entries(def.elements || {})) {
@@ -244,18 +317,18 @@ async function buildCsnFromDb(client, model) {
 
       if (element.type === "cds.Association") {
         if (!element.keys) continue;
-        const fkCol = (colName + "_id").toLowerCase();
-        if (dbCols.has(fkCol)) {
+        const fkCol = getAssociationColumnName(colName);
+        if (dbColsNormalized.has(normalizeIdentifier(fkCol))) {
           elements[colName] = {
             type: "cds.Association",
             target: element.target,
             keys: element.keys,
           };
-          elements[colName + "_ID"] = { type: "cds.String", length: 36 };
+          elements[fkCol] = { type: "cds.String", length: 36 };
         }
       } else if (element.type) {
-        const dbCol = colName.toLowerCase();
-        if (dbCols.has(dbCol)) {
+        const dbCol = colName;
+        if (dbColsNormalized.has(normalizeIdentifier(dbCol))) {
           elements[colName] = { type: element.type };
           if (element.length) elements[colName].length = element.length;
         }
@@ -359,10 +432,11 @@ async function syncColumns(client, model) {
     if (entity.kind !== "entity") continue;
     if (entity["@cds.persistence.skip"]) continue;
 
-    const table = name.replace(/\./g, "_").toLowerCase();
+    const table = getTableName(name, entity);
     if (!actualTables.has(table)) continue; // new table — handled by CDS deploy
 
     const actualCols = await getTableColumns(client, table);
+    const actualColsNormalized = toColumnSet(actualCols);
     const expectedCols = getExpectedColumns(entity);
 
     // Safety: if expected is empty something went wrong — skip this table
@@ -376,7 +450,7 @@ async function syncColumns(client, model) {
 
     for (const col of expectedCols) {
       if (SYSTEM_COLUMNS.has(col)) continue;
-      if (!actualCols.has(col)) {
+      if (!actualColsNormalized.has(col)) {
         console.log(`  ➕ New column will be added: ${table}.${col}`);
         additions++;
       }
@@ -384,8 +458,9 @@ async function syncColumns(client, model) {
 
     // Drop removed columns
     for (const col of actualCols) {
-      if (SYSTEM_COLUMNS.has(col)) continue;
-      if (expectedCols.has(col)) continue;
+      const normalizedCol = normalizeIdentifier(col);
+      if (SYSTEM_COLUMNS.has(normalizedCol)) continue;
+      if (expectedCols.has(normalizedCol)) continue;
 
       console.log(`  🗑️  Dropping column: ${table}.${col}`);
       try {
@@ -463,6 +538,37 @@ async function patchCdsModelCache(client, model) {
 // Fallback: add new columns via raw ALTER TABLE, then update cds_model cache
 // manually so CDS knows about the new columns on next run.
 // ─────────────────────────────────────────────────────────────────────────────
+async function createNewTablesRaw(client, model) {
+  const actualTables = await getActualTables(client);
+  const createdEntities = [];
+
+  for (const [name, entity] of Object.entries(model.definitions)) {
+    if (entity.kind !== "entity") continue;
+    if (entity["@cds.persistence.skip"]) continue;
+
+    const table = getTableName(name, entity);
+    if (!table.startsWith("crm_")) continue;
+    if (actualTables.has(table)) continue;
+
+    const columns = getEntitySqlColumns(entity, model);
+    if (columns.length === 0) {
+      console.log(`  ⚠️  Skipping table ${table} — no columns resolved`);
+      continue;
+    }
+
+    console.log(`  ➕ Creating table: ${table}`);
+    try {
+      await client.query(buildCreateTableSql(table, columns));
+      createdEntities.push(name);
+      actualTables.add(table);
+    } catch (e) {
+      console.warn(`  ⚠️  Could not create ${table}: ${e.message.trim()}`);
+    }
+  }
+
+  return createdEntities;
+}
+
 async function addNewColumnsRaw(client, model) {
   const actualTables = await getActualTables(client);
   const addedColumns = []; // track what we added for cache update
@@ -471,10 +577,11 @@ async function addNewColumnsRaw(client, model) {
     if (entity.kind !== "entity") continue;
     if (entity["@cds.persistence.skip"]) continue;
 
-    const table = name.replace(/\./g, "_").toLowerCase();
+    const table = getTableName(name, entity);
     if (!actualTables.has(table)) continue;
 
     const actualCols = await getTableColumns(client, table);
+    const actualColsNormalized = toColumnSet(actualCols);
     const elements = entity.elements || {};
 
     for (const [colName, element] of Object.entries(elements)) {
@@ -485,17 +592,19 @@ async function addNewColumnsRaw(client, model) {
 
       if (element.type === "cds.Association") {
         if (!element.keys) continue;
-        dbCol = (colName + "_id").toLowerCase();
+        dbCol = getAssociationColumnName(colName);
         sqlType = "VARCHAR(36)";
       } else if (element.type) {
-        dbCol = colName.toLowerCase();
+        dbCol = colName;
         sqlType = resolveSqlType(element, model);
       } else {
         continue;
       }
 
-      if (SYSTEM_COLUMNS.has(dbCol)) continue;
-      if (actualCols.has(dbCol)) continue;
+      const normalizedDbCol = normalizeIdentifier(dbCol);
+
+      if (SYSTEM_COLUMNS.has(normalizedDbCol)) continue;
+      if (actualColsNormalized.has(normalizedDbCol)) continue;
 
       console.log(`  ➕ Adding column: ${table}.${dbCol} (${sqlType})`);
       try {
@@ -514,8 +623,13 @@ async function addNewColumnsRaw(client, model) {
   return addedColumns;
 }
 
-async function updateCdsModelCacheWithNewColumns(client, model, addedColumns) {
-  if (addedColumns.length === 0) return;
+async function updateCdsModelCacheAfterRawDeploy(
+  client,
+  model,
+  addedColumns,
+  createdEntities,
+) {
+  if (addedColumns.length === 0 && createdEntities.length === 0) return;
 
   console.log("\n  Updating CDS model cache with new columns...");
   try {
@@ -538,6 +652,14 @@ async function updateCdsModelCacheWithNewColumns(client, model, addedColumns) {
 
     const { rows } = await client.query(`SELECT csn FROM cds_model LIMIT 1`);
     const storedCsn = JSON.parse(rows[0].csn);
+
+    for (const entityName of createdEntities) {
+      storedCsn.definitions = storedCsn.definitions || {};
+      storedCsn.definitions[entityName] = JSON.parse(
+        JSON.stringify(model.definitions[entityName]),
+      );
+      console.log(`  ✅ Injected new entity into cache: ${entityName}`);
+    }
 
     // For each added column, inject the element definition into the stored CSN
     // so CDS sees the column as part of the model on next run.
@@ -594,12 +716,27 @@ async function runCdsDeploy(client, model) {
       console.log(
         "  ⚠️  CDS compiler enum bug hit, falling back to raw SQL...",
       );
+      const createdEntities = await createNewTablesRaw(client, model);
       const addedColumns = await addNewColumnsRaw(client, model);
-      await updateCdsModelCacheWithNewColumns(client, model, addedColumns);
-      if (addedColumns.length === 0) {
+      await updateCdsModelCacheAfterRawDeploy(
+        client,
+        model,
+        addedColumns,
+        createdEntities,
+      );
+      if (createdEntities.length === 0 && addedColumns.length === 0) {
         console.log("  ✅ No new columns needed, nothing to add.");
       } else {
-        console.log(`  ✅ ${addedColumns.length} column(s) added via raw SQL.`);
+        if (createdEntities.length > 0) {
+          console.log(
+            `  ✅ ${createdEntities.length} table(s) created via raw SQL.`,
+          );
+        }
+        if (addedColumns.length > 0) {
+          console.log(
+            `  ✅ ${addedColumns.length} column(s) added via raw SQL.`,
+          );
+        }
       }
     } else {
       throw e;
@@ -613,7 +750,14 @@ async function runCdsDeploy(client, model) {
 // ─────────────────────────────────────────────────────────────────────────────
 async function applyUniqueConstraints(client) {
   console.log("\n[6/6] Applying unique constraints...");
+  const actualTables = await getActualTables(client);
+
   for (const { table, name, cols } of UNIQUE_CONSTRAINTS) {
+    if (!actualTables.has(table)) {
+      console.log(`  ⏭️  ${name} skipped — table ${table} does not exist`);
+      continue;
+    }
+
     try {
       await client.query(
         `ALTER TABLE "${table}" ADD CONSTRAINT ${name} UNIQUE (${cols})`,
