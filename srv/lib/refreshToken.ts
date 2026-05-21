@@ -51,7 +51,7 @@ async function getDbShape() {
     SELECT table_name
     FROM information_schema.tables
     WHERE table_schema = 'public'
-      AND table_name IN ('crm_refreshtoken', 'crm_RefreshToken')
+      AND table_name IN ('crm_refreshtoken', 'crm_refreshtoken')
     ORDER BY CASE WHEN table_name = 'crm_refreshtoken' THEN 0 ELSE 1 END
     LIMIT 1
     `,

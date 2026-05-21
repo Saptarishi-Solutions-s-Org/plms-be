@@ -58,7 +58,7 @@ const UNIQUE_CONSTRAINTS = [
     cols: "token_hash",
   },
   {
-    table: "crm_RefreshToken",
+    table: "crm_refreshtoken",
     name: "uq_refresh_token_hash_mixed",
     cols: "token_hash",
   },
