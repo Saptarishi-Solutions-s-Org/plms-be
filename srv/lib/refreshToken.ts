@@ -33,7 +33,13 @@ function quoteIdentifier(identifier: string) {
 }
 
 function column(columns: Set<string>, ...candidates: string[]) {
-  const found = candidates.find((candidate) => columns.has(candidate));
+  const normalizedColumns = new Map(
+    [...columns].map((columnName) => [columnName.toLowerCase(), columnName]),
+  );
+  const found = candidates.find((candidate) =>
+    normalizedColumns.has(candidate.toLowerCase()),
+  );
+  if (found) return normalizedColumns.get(found.toLowerCase()) || found;
   return found || candidates[0];
 }
 
