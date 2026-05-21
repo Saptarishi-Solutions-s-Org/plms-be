@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateOrganizationHandler = void 0;
 const db_1 = require("../../lib/db");
+const socket_1 = require("../../realtime/socket");
+const events_1 = require("../../realtime/events");
 const updateOrganizationHandler = async (req) => {
     const client = await db_1.pool.connect();
     try {
@@ -22,6 +24,21 @@ const updateOrganizationHandler = async (req) => {
          WHERE organization_id = $2`, [userId, id]);
         }
         await client.query("COMMIT");
+        (0, socket_1.emitToSystemAdmins)(events_1.SYSTEM_ADMIN_DASHBOARD_CHANGED, {
+            reason: "organization-updated",
+            orgId: id,
+            isActive: is_active,
+        });
+        (0, socket_1.emitToSystemAdmins)(events_1.ORGANIZATION_LIST_CHANGED, {
+            reason: "organization-updated",
+            orgId: id,
+            isActive: is_active,
+        });
+        (0, socket_1.emitToSystemAdmins)(events_1.ORGANIZATION_DETAIL_CHANGED, {
+            reason: "organization-updated",
+            orgId: id,
+            isActive: is_active,
+        });
         return {
             message: "Organization updated successfully",
         };

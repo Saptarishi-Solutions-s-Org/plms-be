@@ -9,6 +9,8 @@ const crypto_1 = require("crypto");
 const sendUserCreationMail_1 = require("../../mail/sendUserCreationMail");
 const generatePassword_1 = require("../../lib/generatePassword");
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const socket_1 = require("../../realtime/socket");
+const events_1 = require("../../realtime/events");
 const createUserHandler = async (req) => {
     const client = await db_1.pool.connect();
     try {
@@ -54,6 +56,16 @@ const createUserHandler = async (req) => {
             createdBy,
         ]);
         await client.query("COMMIT");
+        (0, socket_1.emitToSystemAdmins)(events_1.SYSTEM_ADMIN_DASHBOARD_CHANGED, {
+            reason: "organization-admin-created",
+            orgId: organizationId,
+            userId,
+        });
+        (0, socket_1.emitToSystemAdmins)(events_1.ORGANIZATION_DETAIL_CHANGED, {
+            reason: "organization-admin-created",
+            orgId: organizationId,
+            userId,
+        });
         await (0, sendUserCreationMail_1.sendUserCreationMail)({
             to: email,
             name,

@@ -6,10 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const cds_1 = __importDefault(require("@sap/cds"));
-const http_1 = __importDefault(require("http"));
-const socket_io_1 = require("socket.io");
-const jwt_1 = require("./lib/jwt");
 const bindings_1 = require("./bindings");
+const socket_1 = require("./realtime/socket");
 cds_1.default.env.requires.auth = {
     kind: "dummy",
 };
@@ -27,8 +25,14 @@ cds_1.default.env.requires.db = {
         max: 5,
     },
 };
-let io;
 const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(",") || [];
+let servicesBound = false;
+function bindServicesOnce() {
+    if (servicesBound)
+        return;
+    (0, bindings_1.bindAllServices)();
+    servicesBound = true;
+}
 cds_1.default.on("bootstrap", (app) => {
     app.use((req, res, next) => {
         const origin = req.headers.origin;
@@ -45,41 +49,16 @@ cds_1.default.on("bootstrap", (app) => {
     });
 });
 cds_1.default.on("served", () => {
-    const app = cds_1.default.server;
-    const server = http_1.default.createServer(app);
-    (0, bindings_1.bindAllServices)();
-    io = new socket_io_1.Server(server, {
-        cors: {
-            origin: allowedOrigins,
-            methods: ["GET", "POST"],
-            credentials: true,
-        },
-    });
-    io.use((socket, next) => {
-        try {
-            const token = socket.handshake.auth?.token;
-            if (!token)
-                throw new Error("No token");
-            const user = (0, jwt_1.verifyToken)(token);
-            socket.data.user = user;
-            next();
-        }
-        catch {
-            next(new Error("Unauthorized"));
-        }
-    });
-    io.on("connection", (socket) => {
-        const user = socket.data.user;
-        if (user?.orgId) {
-            socket.join(user.orgId);
-        }
-        console.log("🔌 Socket connected:", user?.userId);
-    });
-    if (!cds_1.default.cli) {
-        const port = process.env.PORT || 4004;
-        server.listen(port, () => {
-            console.log(`🚀 Server running on http://localhost:${port}`);
-        });
-    }
+    bindServicesOnce();
 });
-cds_1.default.server();
+cds_1.default.server()
+    .then((server) => {
+    (0, socket_1.initSocket)(server);
+    const address = server.address?.();
+    const port = typeof address === "object" && address ? address.port : process.env.PORT;
+    console.log(`Server running on http://localhost:${port || 4004}`);
+})
+    .catch((error) => {
+    console.error("Failed to start server", error);
+    process.exit(1);
+});

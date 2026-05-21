@@ -5,6 +5,8 @@ const db_1 = require("../../lib/db");
 const orgcode_1 = require("../../lib/orgcode");
 const sendOrganizationCreationMail_1 = require("../../mail/sendOrganizationCreationMail");
 const crypto_1 = require("crypto");
+const socket_1 = require("../../realtime/socket");
+const events_1 = require("../../realtime/events");
 const createOrganizationHandler = async (req) => {
     const client = await db_1.pool.connect();
     try {
@@ -54,6 +56,16 @@ const createOrganizationHandler = async (req) => {
         VALUES ($1,$2,$3,$4,$5,NOW(),$6,NOW(),$6)`, [(0, crypto_1.randomUUID)(), orgId, orgRoleId, rmp.id, rmp.access, userId]);
         }
         await client.query("COMMIT");
+        (0, socket_1.emitToSystemAdmins)(events_1.SYSTEM_ADMIN_DASHBOARD_CHANGED, {
+            reason: "organization-created",
+            orgId,
+            orgCode: code,
+        });
+        (0, socket_1.emitToSystemAdmins)(events_1.ORGANIZATION_LIST_CHANGED, {
+            reason: "organization-created",
+            orgId,
+            orgCode: code,
+        });
         if (email) {
             await (0, sendOrganizationCreationMail_1.sendOrganizationCreationMail)({
                 to: email,
