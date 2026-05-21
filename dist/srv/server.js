@@ -51,14 +51,14 @@ cds_1.default.on("bootstrap", (app) => {
 cds_1.default.on("served", () => {
     bindServicesOnce();
 });
-cds_1.default.on("listening", ({ server }) => {
+cds_1.default.server()
+    .then((server) => {
     (0, socket_1.initSocket)(server);
+    const address = server.address?.();
+    const port = typeof address === "object" && address ? address.port : process.env.PORT;
+    console.log(`Server running on http://localhost:${port || 4004}`);
+})
+    .catch((error) => {
+    console.error("Failed to start server", error);
+    process.exit(1);
 });
-if (!cds_1.default.cli) {
-    cds_1.default.server().then((server) => {
-        (0, socket_1.initSocket)(server);
-        const address = server.address?.();
-        const port = typeof address === "object" && address ? address.port : process.env.PORT;
-        console.log(`Server running on http://localhost:${port || 4004}`);
-    });
-}
