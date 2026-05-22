@@ -67,4 +67,24 @@ service OfferService {
         expiredCount  : Integer;
         globalCount   : Integer;
     };
+    function getBulkOffers()
+returns array of {
+    id: UUID;
+    title: String;
+    code: String;
+    description: String;
+    discount_type: String;
+    valid_from: Date;
+    valid_to: Date;
+    status: String;
+    is_global: Boolean;
+};
+
+type ExecutiveLeadCountItem {
+    executiveId   : UUID;
+    executiveName : String;
+    totalLeads    : Integer;
+};
+
+function getExecutivesWithLeadCount() returns many ExecutiveLeadCountItem;
 }

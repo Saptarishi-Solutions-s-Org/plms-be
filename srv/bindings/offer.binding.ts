@@ -1,10 +1,14 @@
 import cds from "@sap/cds";
+
 import { withAuth } from "../lib/withAuth";
-import { createOfferHandler } from "../handlers/offer/create-offer";
-import { getOffersHandler } from "../handlers/offer/getalloffers";
-import { toggleOfferStatusHandler } from "../handlers/offer/toggle-status";
-import { getManagersHandler } from "../handlers/offer/get-managers";
-import { getsummarycards } from "../handlers/offer/offer-cards";
+
+import { createOfferHandler }              from "../handlers/offer/create-offer";
+import { getOffersHandler }                from "../handlers/offer/getalloffers";
+import { getBulkOffersHandler }            from "../handlers/bulkoffers/getoffer";
+import { toggleOfferStatusHandler }        from "../handlers/offer/toggle-status";
+import { getManagersHandler }              from "../handlers/offer/get-managers";
+import { getsummarycards }                 from "../handlers/offer/offer-cards";
+import { getExecutivesWithLeadCountHandler } from "../handlers/bulkoffers/getexcutive";
 
 export const bindOffer = () => {
   const service = cds.services["OfferService"];
@@ -18,9 +22,7 @@ export const bindOffer = () => {
     "createOffer",
     withAuth(createOfferHandler, {
       roles: ["admin"],
-      modules: {
-        offers: ["create"],
-      },
+      modules: { offers: ["create"] },
     })
   );
 
@@ -28,9 +30,15 @@ export const bindOffer = () => {
     "getOffers",
     withAuth(getOffersHandler, {
       roles: ["admin"],
-      modules: {
-        offers: ["view"],
-      },
+      modules: { offers: ["view"] },
+    })
+  );
+
+  service.on(
+    "getBulkOffers",
+    withAuth(getBulkOffersHandler, {
+      roles: ["manager"],
+      modules: { offers: ["view"] },
     })
   );
 
@@ -38,9 +46,7 @@ export const bindOffer = () => {
     "toggleOfferStatus",
     withAuth(toggleOfferStatusHandler, {
       roles: ["admin"],
-      modules: {
-        offers: ["update"],
-      },
+      modules: { offers: ["update"] },
     })
   );
 
@@ -48,9 +54,7 @@ export const bindOffer = () => {
     "getManagers",
     withAuth(getManagersHandler, {
       roles: ["admin"],
-      modules: {
-        offers: ["view"],
-      },
+      modules: { offers: ["view"] },
     })
   );
 
@@ -58,11 +62,16 @@ export const bindOffer = () => {
     "getOfferSummary",
     withAuth(getsummarycards, {
       roles: ["admin"],
-      modules: {
-        offers: ["view"],
-      },
+      modules: { offers: ["view"] },
     })
   );
 
-  console.log("OfferService bound successfully");
+  service.on(
+    "getExecutivesWithLeadCount",
+    withAuth(getExecutivesWithLeadCountHandler, {
+      roles: ["manager"],
+      modules: { offers: ["view"] },
+    })
+  );
+ 
 };

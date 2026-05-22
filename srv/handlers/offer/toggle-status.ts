@@ -1,9 +1,7 @@
 import { pool } from "../../lib/db";
 
 export const toggleOfferStatusHandler = async (req: any) => {
-
   try {
-
     const { id } = req.data;
 
     const result = await pool.query(
@@ -19,12 +17,13 @@ export const toggleOfferStatusHandler = async (req: any) => {
       return req.reject(404, "Offer not found");
     }
 
-    const currentStatus = result.rows[0].status;
+    const currentStatus =
+      result.rows[0].status?.toLowerCase();
 
     const newStatus =
-      currentStatus === "Active"
-        ? "Inactive"
-        : "Active";
+      currentStatus === "active"
+        ? "inactive"
+        : "active";
 
     await pool.query(
       `
@@ -36,12 +35,15 @@ export const toggleOfferStatusHandler = async (req: any) => {
     );
 
     return {
-      status: newStatus.toLowerCase(),
+      status: newStatus,
+      message: "Offer status updated successfully",
     };
 
   } catch (error: any) {
 
-    
-    return req.reject(500, "Failed to toggle offer status");
+    return req.reject(
+      500,
+      error?.message || "Failed to toggle offer status"
+    );
   }
 };
