@@ -21,6 +21,14 @@ export const getManagerOfferOverviewHandler = async (req: any) => {
         o.description,
         o.is_global,
         o.status,
+        CASE
+          WHEN EXISTS (
+            SELECT 1
+            FROM crm_executiveofferassignment ea
+            WHERE ea."offer_ID" = o.id
+          ) THEN 'Assigned'
+          ELSE 'Unassigned'
+        END AS "assignStatus",
         o.discount_type,
         o.discount_amount,
         o.discount_percentage,
@@ -36,9 +44,9 @@ export const getManagerOfferOverviewHandler = async (req: any) => {
         o.createdat
       FROM crm_offer o
       LEFT JOIN crm_managerofferassignment oa
-        ON oa.offer_id = o.id
+        ON oa."offer_ID" = o.id
       WHERE (o.organization_id = $1 OR o.is_global = true)
-        AND (o.is_global = true OR oa.user_id = $2)
+        AND (o.is_global = true OR oa."user_ID" = $2)
       ORDER BY o.createdat DESC
     `;
 
@@ -52,9 +60,9 @@ export const getManagerOfferOverviewHandler = async (req: any) => {
           o.is_global
         FROM crm_offer o
         LEFT JOIN crm_managerofferassignment oa
-          ON oa.offer_id = o.id
+          ON oa."offer_ID" = o.id
         WHERE (o.organization_id = $1 OR o.is_global = true)
-          AND (o.is_global = true OR oa.user_id = $2)
+          AND (o.is_global = true OR oa."user_ID" = $2)
       )
       SELECT
         COUNT(*) AS total_count,
