@@ -9,6 +9,7 @@ const createOfferHandler = async (req) => {
     try {
         const data = req.data ?? {};
         const orgId = req.user?.orgId;
+        const userId = req.user?.id;
         if (!orgId) {
             return req.reject(401, "Unauthorized");
         }
@@ -20,7 +21,6 @@ const createOfferHandler = async (req) => {
                 : [];
         const id = (0, crypto_1.randomUUID)();
         await client.query("BEGIN");
-        // Create Offer
         await client.query(`
       INSERT INTO crm_offer (
         id,
@@ -41,22 +41,25 @@ const createOfferHandler = async (req) => {
         flag_discount_amount,
         valid_from,
         valid_to,
-        status
+        status,
+        createdat,
+        createdby
       )
       VALUES (
         $1,$2,$3,$4,$5,$6,
         $7,$8,$9,$10,
         $11,$12,$13,
         $14,$15,$16,
-        $17,$18,$19
+        $17,$18,$19,
+        $20,$21
       )
       `, [
             id,
-            is_global ? null : orgId,
+            orgId,
             is_global,
             title?.trim(),
             (0, generateOfferCode_1.generateOfferCode)(),
-            description?.trim() || null,
+            description,
             discount_type,
             discount_amount,
             discount_percentage,
@@ -70,6 +73,8 @@ const createOfferHandler = async (req) => {
             valid_from,
             valid_to,
             "Active",
+            new Date(),
+            userId,
         ]);
         // Assign Managers
         if (!is_global && managerIds.length > 0) {
@@ -99,7 +104,7 @@ const createOfferHandler = async (req) => {
                 managerId,
             ]);
             await client.query(`
-        INSERT INTO crm_offerassignment (
+        INSERT INTO crm_managerofferassignment (
           id,
           offer_id,
           user_id

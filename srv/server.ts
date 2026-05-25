@@ -65,12 +65,8 @@ cds.on("served", () => {
   bindServicesOnce();
 });
 
-cds.on("listening", ({ server }: { server: any }) => {
-  initSocket(server);
-});
-
-if (!cds.cli) {
-  cds.server().then((server: any) => {
+cds.server()
+  .then((server: any) => {
     initSocket(server);
 
     const address = server.address?.();
@@ -78,5 +74,8 @@ if (!cds.cli) {
       typeof address === "object" && address ? address.port : process.env.PORT;
 
     console.log(`Server running on http://localhost:${port || 4004}`);
+  })
+  .catch((error: unknown) => {
+    console.error("Failed to start server", error);
+    process.exit(1);
   });
-}

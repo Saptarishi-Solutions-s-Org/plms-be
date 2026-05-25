@@ -12,7 +12,7 @@ const updateLeadHandler = async (req) => {
         if (!orgId) {
             return req.error(401, "Unauthorized");
         }
-        const { id, name, gender, email, phone, city, state, country, postalCode, leadSource, source, status, assignedTo, priority, notes, } = req.data;
+        const { id, name, gender, email, phone, city, state, country, postalCode, leadSource, status, assignedTo, priority, notes, } = req.data;
         if (!id) {
             return req.error(400, "Lead ID is required");
         }
@@ -40,7 +40,7 @@ const updateLeadHandler = async (req) => {
             name, gender, email, phone,
             city, postalCode,
             state || null, country || null,
-            resolvedLeadSource, status, priority,
+            leadSource, status, priority,
             assignedTo || null,
             modifiedBy,
             id, orgId,
