@@ -67,4 +67,9 @@ service OfferService {
         expiredCount  : Integer;
         globalCount   : Integer;
     };
+    
+    action getOfferAssignStatus(offerId : UUID) returns {
+        assignStatus : String;
+        assignedCount: Integer;
+    };
 }
