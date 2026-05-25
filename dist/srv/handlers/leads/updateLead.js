@@ -12,7 +12,7 @@ const updateLeadHandler = async (req) => {
         if (!orgId) {
             return req.error(401, "Unauthorized");
         }
-        const { id, name, gender, email, phone, city, stateId, countryId, postalCode, leadSource, status, assignedTo, priority, notes, } = req.data;
+        const { id, name, gender, email, phone, city, state, country, postalCode, leadSource, source, status, assignedTo, priority, notes, } = req.data;
         if (!id) {
             return req.error(400, "Lead ID is required");
         }
@@ -20,6 +20,7 @@ const updateLeadHandler = async (req) => {
         if (existsRes.rows.length === 0) {
             return req.error(404, "Lead not found");
         }
+        const resolvedLeadSource = leadSource ?? source;
         await client.query(`UPDATE crm_leads SET
          name           = $1,
          gender         = $2,
@@ -38,8 +39,8 @@ const updateLeadHandler = async (req) => {
        WHERE id = $14 AND organization_id = $15`, [
             name, gender, email, phone,
             city, postalCode,
-            stateId || null, countryId || null,
-            leadSource, status, priority,
+            state || null, country || null,
+            resolvedLeadSource, status, priority,
             assignedTo || null,
             modifiedBy,
             id, orgId,
