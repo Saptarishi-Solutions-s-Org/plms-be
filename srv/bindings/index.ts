@@ -7,6 +7,7 @@ import { bindOrganization } from "./organization.binding";
 import { bindSystemAdmin } from "./system-admin.binding";
 import { bindExecutiveDashboard } from "./organization-executive.binding";
 import { bindManagerDashboard } from "./organization-manager.binding";
+import { bindOrganizationReports } from "./organization-reports";
 import { bindProfile } from "./profile.binding";
 
 export const bindAllServices = () => {
@@ -16,6 +17,7 @@ export const bindAllServices = () => {
   bindOrganization();
   bindExecutiveDashboard();
   bindManagerDashboard();
+  bindOrganizationReports();
   bindOrganizationAdmin();
   bindLead();
   bindOffer();
