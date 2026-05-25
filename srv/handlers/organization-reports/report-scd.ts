@@ -29,16 +29,11 @@ export const sourceConversionRateHandler = async (req: any) => {
       [orgId],
     );
 
-    return res.rows.map((row) => {
-      const leads = Number(row.leads);
-      const converted = Number(row.converted);
-
-      return {
-        source: row.source,
-        leads,
-        rate: leads > 0 ? Number(((converted / leads) * 100).toFixed(1)) : 0,
-      };
-    });
+    return res.rows.map((row) => ({
+      source: row.source,
+      leads: Number(row.leads),
+      converted: Number(row.converted),
+    }));
   } catch (error) {
     return req.error(500, "Failed to fetch source conversion rate");
   }

@@ -13,8 +13,8 @@ service ReportDashboardService {
     };
 
     function getSourceConversionData() returns array of {
-        source : String;
-        leads  : Integer;
-        rate   : Decimal;
+        source    : String;
+        leads     : Integer;
+        converted : Integer;
     };
 }
