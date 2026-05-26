@@ -10,6 +10,8 @@ const getLeadsWithStats_1 = require("../handlers/leads/getLeadsWithStats");
 const getExecutiveUsers_1 = require("../handlers/leads/getExecutiveUsers");
 const createLead_1 = require("../handlers/leads/createLead");
 const updateLead_1 = require("../handlers/leads/updateLead");
+const exportLeads_1 = require("../handlers/leads/exportLeads");
+const importLeads_1 = require("../handlers/leads/importLeads");
 const bindLead = () => {
     const service = cds_1.default.services["LeadService"];
     if (!service)
@@ -36,6 +38,18 @@ const bindLead = () => {
         roles: ["manager", "executive"],
         modules: {
             lead: ["update"],
+        },
+    }));
+    service.on("exportLeads", (0, withAuth_1.withAuth)(exportLeads_1.exportLeadsHandler, {
+        roles: ["manager", "executive"],
+        modules: {
+            lead: ["export"],
+        },
+    }));
+    service.on("importLeads", (0, withAuth_1.withAuth)(importLeads_1.importLeadsHandler, {
+        roles: ["manager"],
+        modules: {
+            lead: ["import"],
         },
     }));
 };

@@ -18,7 +18,8 @@ const executiveRecentLeadsHandler = async (req) => {
        LEFT JOIN crm_user u
          ON l.assigned_to_id = u.id
        WHERE l.organization_id = $1
-       ORDER BY l.createdat DESC`, [orgId]);
+       AND l.assigned_to_id = $2
+       ORDER BY l.createdat DESC`, [orgId, userId]);
         return res.rows.map((lead) => ({
             leadId: lead.id,
             leadName: lead.name,

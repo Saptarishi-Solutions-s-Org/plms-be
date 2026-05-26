@@ -2,12 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateUserHandler = void 0;
 const db_1 = require("../../lib/db");
+const socket_1 = require("../../realtime/socket");
+const events_1 = require("../../realtime/events");
 const updateUserHandler = async (req) => {
     try {
         const { id, name, phone, is_active, state, country } = req.data;
-        const existing = await db_1.pool.query(`SELECT id FROM crm_user WHERE id=$1`, [
-            id,
-        ]);
+        const existing = await db_1.pool.query(`SELECT id, organization_id FROM crm_user WHERE id=$1`, [id]);
         if (!existing.rows.length) {
             return req.error(404, "User not found");
         }
@@ -23,6 +23,16 @@ const updateUserHandler = async (req) => {
            modifiedat=NOW(),
            modifiedby=$6
        WHERE id=$7`, [name, phone, is_active, state, country, req.user.id, id]);
+        (0, socket_1.emitToSystemAdmins)(events_1.ORGANIZATION_DETAIL_CHANGED, {
+            reason: "organization-admin-updated",
+            orgId: existing.rows[0].organization_id,
+            userId: id,
+            isActive: is_active,
+        });
+        (0, socket_1.emitToUser)(id, events_1.PROFILE_CHANGED, {
+            reason: "profile-updated",
+            userId: id,
+        });
         return {
             message: "User updated successfully",
         };

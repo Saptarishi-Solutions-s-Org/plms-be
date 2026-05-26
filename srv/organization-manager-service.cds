@@ -6,6 +6,7 @@ service ManagerDashboardService {
     description          : String;
     is_global            : Boolean;
     status               : String;
+    assignStatus         : String;
     discount_type        : String;
     discount_amount      : Decimal(10, 2);
     discount_percentage  : Decimal(5, 2);
@@ -49,5 +50,13 @@ service ManagerDashboardService {
     globalOffers   : Integer;
   };
   offers : many ManagerOfferItem;
+ };
+
+ action assignOfferToExecutive(
+  offerId     : UUID,
+  executiveId : UUID
+ ) returns {
+  assignmentId : UUID;
+  message      : String;
  };
 }
