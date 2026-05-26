@@ -1,4 +1,4 @@
-import { pool } from "../../lib/db";
+import { pool } from "../../../lib/db";
 
 export const ReportDashboardHandler = async (req: any) => {
   try {

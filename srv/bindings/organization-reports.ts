@@ -1,8 +1,8 @@
 import cds from "@sap/cds";
 import { withAuth } from "../lib/withAuth";
-import { ReportDashboardHandler } from "../handlers/organization-reports/stat-cards";
-import { leadSourceHandler } from "../handlers/organization-reports/reports-lsd";
-import { sourceConversionRateHandler } from "../handlers/organization-reports/report-scd";
+import { ReportDashboardHandler } from "../handlers/organization-reports/overview/stat-cards";
+import { leadSourceHandler } from "../handlers/organization-reports/overview/reports-lsd";
+import { sourceConversionRateHandler } from "../handlers/organization-reports/overview/report-scd";
 export const bindOrganizationReports = () => {
   const service = cds.services["ReportDashboardService"];
   if (!service) return;
