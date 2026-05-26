@@ -23,16 +23,13 @@ export const importLeadsHandler = async (req: any) => {
     for (const row of rows) {
       const {
         name, gender, email, phone,
-        city, state, stateId, country, countryId, postalCode,
-        leadSource, source, status, priority, notes, assignedTo,
+        city, stateId, countryId, postalCode,
+        leadSource, status, priority, notes, assignedTo,
       } = row;
 
-      const resolvedLeadSource = leadSource ?? source;
-      const resolvedStateId = stateId ?? state;
-      const resolvedCountryId = countryId ?? country;
 
       // Skip rows missing required fields
-      if (!name || !email || !phone || !status || !priority || !resolvedLeadSource) {
+      if (!name || !email || !phone || !status || !priority || !leadSource) {
         failed++;
         continue;
       }
@@ -59,9 +56,9 @@ export const importLeadsHandler = async (req: any) => {
           [
             leadId, code,
             name, gender ?? "Prefer not to say", email, phone,
-            status, priority, resolvedLeadSource,
+            status, priority, leadSource,
             city ?? "", postalCode ?? "",
-            resolvedStateId || null, resolvedCountryId || null,
+            stateId || null, countryId || null,
             orgId, assignedTo || null,
             createdBy,
           ]

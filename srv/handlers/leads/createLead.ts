@@ -25,16 +25,13 @@ export const createLeadHandler = async (req: any) => {
       country,
       postalCode,
       leadSource,
-      source,
       status,
       assignedTo,
       priority,
       notes,
     } = req.data;
 
-    const resolvedLeadSource = leadSource ?? source;
-
-    if (!name || !email || !phone || !status || !priority || !resolvedLeadSource) {
+    if (!name || !email || !phone || !status || !priority || !leadSource) {
       return req.error(400, "Missing required fields");
     }
 
@@ -65,7 +62,7 @@ export const createLeadHandler = async (req: any) => {
         phone,
         status,
         priority,
-        resolvedLeadSource,
+        leadSource,
         city,
         postalCode,
         state || null,

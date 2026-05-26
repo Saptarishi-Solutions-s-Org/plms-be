@@ -17,7 +17,7 @@ export const updateLeadHandler = async (req: any) => {
     const {
       id, name, gender, email, phone,
       city, state, country, postalCode,
-      leadSource, source, status, assignedTo, priority, notes,
+      leadSource, status, assignedTo, priority, notes,
     } = req.data;
 
     if (!id) {
@@ -33,7 +33,6 @@ export const updateLeadHandler = async (req: any) => {
       return req.error(404, "Lead not found");
     }
 
-    const resolvedLeadSource = leadSource ?? source;
 
     await client.query(
       `UPDATE crm_leads SET
@@ -54,9 +53,8 @@ export const updateLeadHandler = async (req: any) => {
        WHERE id = $14 AND organization_id = $15`,
       [
         name, gender, email, phone,
-        city, postalCode,
+         leadSource, status, priority,
         state || null, country || null,
-        resolvedLeadSource, status, priority,
         assignedTo || null,
         modifiedBy,
         id, orgId,
