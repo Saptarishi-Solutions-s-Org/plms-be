@@ -76,7 +76,6 @@ const createOfferHandler = async (req) => {
             new Date(),
             userId,
         ]);
-        // Assign Managers
         if (!is_global && managerIds.length > 0) {
             const validCheck = await client.query(`
         SELECT u.id
@@ -105,9 +104,9 @@ const createOfferHandler = async (req) => {
             ]);
             await client.query(`
         INSERT INTO crm_managerofferassignment (
-          id,
-          offer_id,
-          user_id
+          "ID",
+          "offer_ID",
+          "user_ID"
         )
         VALUES ${assignmentValues}
         `, assignmentParams);

@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.bindOrganizationReports = void 0;
 const cds_1 = __importDefault(require("@sap/cds"));
 const withAuth_1 = require("../lib/withAuth");
-const stat_cards_1 = require("../handlers/organization-reports/stat-cards");
-const reports_lsd_1 = require("../handlers/organization-reports/reports-lsd");
-const report_scd_1 = require("../handlers/organization-reports/report-scd");
+const stat_cards_1 = require("../handlers/organization-reports/overview/stat-cards");
+const reports_lsd_1 = require("../handlers/organization-reports/overview/reports-lsd");
+const report_scd_1 = require("../handlers/organization-reports/overview/report-scd");
 const bindOrganizationReports = () => {
     const service = cds_1.default.services["ReportDashboardService"];
     if (!service)

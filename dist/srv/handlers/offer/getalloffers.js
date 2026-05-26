@@ -49,8 +49,13 @@ const getOffersHandler = async (req) => {
          ) AS managers
 
        FROM crm_offer o
-      LEFT JOIN crm_managerofferassignment a ON a.offer_id = o.id
-       LEFT JOIN crm_user u ON u.id = a.user_id
+
+      LEFT JOIN crm_managerofferassignment a
+        ON a."offer_ID" = o.id
+
+       LEFT JOIN crm_user u
+        ON u.id = a."user_ID"
+
        WHERE o.is_global = true
           OR o.organization_id = $1
 

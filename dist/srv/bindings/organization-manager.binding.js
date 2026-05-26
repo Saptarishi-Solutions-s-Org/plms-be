@@ -10,6 +10,7 @@ const getmanagerstats_1 = require("../handlers/organization-manager/getmanagerst
 const getleadstatusoverview_1 = require("../handlers/organization-manager/getleadstatusoverview");
 const getexecutiveperformance_1 = require("../handlers/organization-manager/getexecutiveperformance");
 const getmanagerofferoverview_1 = require("../handlers/organization-manager/getmanagerofferoverview");
+const assign_offer_to_executive_1 = require("../handlers/organization-manager/assign-offer-to-executive");
 const bindManagerDashboard = () => {
     const service = cds_1.default.services["ManagerDashboardService"];
     if (!service)
@@ -27,6 +28,10 @@ const bindManagerDashboard = () => {
         modules: { lead: ["view"] },
     }));
     service.on("getManagerOfferOverview", (0, withAuth_1.withAuth)(getmanagerofferoverview_1.getManagerOfferOverviewHandler, {
+        roles: ["manager"],
+        modules: { offers: ["view"] },
+    }));
+    service.on("assignOfferToExecutive", (0, withAuth_1.withAuth)(assign_offer_to_executive_1.assignOfferToExecutiveHandler, {
         roles: ["manager"],
         modules: { offers: ["view"] },
     }));

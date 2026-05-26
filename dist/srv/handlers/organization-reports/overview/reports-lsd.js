@@ -1,16 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sourceConversionRateHandler = void 0;
-const db_1 = require("../../lib/db");
+exports.leadSourceHandler = void 0;
+const db_1 = require("../../../lib/db");
 const sourceLabelSql = `
   CASE
     WHEN source IS NULL OR source = '' THEN 'Unknown'
-    WHEN source = 'Socil_Media' THEN 'Social Media'
+    WHEN source = 'Social_Media' THEN 'Social Media'
     WHEN source = 'Manual_Entry' THEN 'Manual Entry'
     ELSE REPLACE(source, '_', ' ')
   END
 `;
-const sourceConversionRateHandler = async (req) => {
+const leadSourceHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
         if (!orgId) {
@@ -18,8 +18,7 @@ const sourceConversionRateHandler = async (req) => {
         }
         const res = await db_1.pool.query(`SELECT
          ${sourceLabelSql} AS source,
-         COUNT(*) AS leads,
-         COUNT(*) FILTER (WHERE status = 'Qualified') AS converted
+         COUNT(*) AS leads
        FROM crm_leads
        WHERE organization_id = $1
        GROUP BY ${sourceLabelSql}
@@ -27,11 +26,10 @@ const sourceConversionRateHandler = async (req) => {
         return res.rows.map((row) => ({
             source: row.source,
             leads: Number(row.leads),
-            converted: Number(row.converted),
         }));
     }
     catch (error) {
-        return req.error(500, "Failed to fetch source conversion rate");
+        return req.error(500, "Failed to fetch lead source data");
     }
 };
-exports.sourceConversionRateHandler = sourceConversionRateHandler;
+exports.leadSourceHandler = leadSourceHandler;
