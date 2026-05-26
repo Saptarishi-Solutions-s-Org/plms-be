@@ -27,7 +27,6 @@ export const importLeadsHandler = async (req: any) => {
         leadSource, status, priority, notes, assignedTo,
       } = row;
 
-
       // Skip rows missing required fields
       if (!name || !email || !phone || !status || !priority || !leadSource) {
         failed++;
