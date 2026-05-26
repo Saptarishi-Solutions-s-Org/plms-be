@@ -22,6 +22,16 @@ service ManagerDashboardService {
     createdat            : DateTime;
   };
 
+  type ManagerExecutiveItem {
+    id            : UUID;
+    name          : String;
+    email         : String;
+    phone         : String;
+    status        : String;
+    leadCount     : Integer;
+    offerCount    : Integer;
+  };
+
   function getManagerDashboard()     returns {
     totalLeads     : Integer;
     convertedLeads : Integer;
@@ -41,6 +51,15 @@ service ManagerDashboardService {
   total         : Integer;
   qualified     : Integer;
 };
+
+ function getExecutiveOverview() returns {
+  stats : {
+    totalExecutives   : Integer;
+    activeExecutives  : Integer;
+    inactiveExecutives : Integer;
+  };
+  executives : many ManagerExecutiveItem;
+ };
 
  function getManagerOfferOverview() returns {
   stats : {
