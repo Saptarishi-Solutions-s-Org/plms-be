@@ -1,12 +1,5 @@
 import { pool } from "../../../lib/db";
-const sourceLabelSql = `
-  CASE
-    WHEN source IS NULL OR source = '' THEN 'Unknown'
-    WHEN source = 'Social_Media' THEN 'Social Media'
-    WHEN source = 'Manual_Entry' THEN 'Manual Entry'
-    ELSE REPLACE(source, '_', ' ')
-  END
-`;
+import { sourceleads } from "../../../types/org-reports";
 
 export const leadSourceHandler = async (req: any) => {
   try {
@@ -18,11 +11,11 @@ export const leadSourceHandler = async (req: any) => {
 
     const res = await pool.query(
       `SELECT
-         ${sourceLabelSql} AS source,
+         ${sourceleads} AS source,
          COUNT(*) AS leads
        FROM crm_leads
        WHERE organization_id = $1
-       GROUP BY ${sourceLabelSql}
+       GROUP BY ${sourceleads}
        ORDER BY leads DESC, source ASC`,
       [orgId],
     );
