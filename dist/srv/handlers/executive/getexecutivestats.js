@@ -28,8 +28,7 @@ const getexecutivestats = async (req) => {
         // 4. Active Offers
         const activeOffersRes = await db_1.pool.query(`SELECT COUNT(*) AS count
        FROM crm_offer
-       WHERE organization_ID = $1
-       AND status = 'Active'`, [orgId]);
+       WHERE organization_ID = $1`, [orgId]);
         return {
             totalLeads: Number(MyLeadsRes.rows[0]?.count) || 0,
             convertedLeads: Number(convertedLeadsRes.rows[0]?.count) || 0,
@@ -38,6 +37,7 @@ const getexecutivestats = async (req) => {
         };
     }
     catch (error) {
+        console.error("Executive Stats Error:", error);
         return req.error(500, "Failed to fetch dashboard");
     }
 };
