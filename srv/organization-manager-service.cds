@@ -6,6 +6,7 @@ service ManagerDashboardService {
     description          : String;
     is_global            : Boolean;
     status               : String;
+    assignStatus         : String;
     discount_type        : String;
     discount_amount      : Decimal(10, 2);
     discount_percentage  : Decimal(5, 2);
@@ -19,6 +20,16 @@ service ManagerDashboardService {
     valid_from           : Date;
     valid_to             : Date;
     createdat            : DateTime;
+  };
+
+  type ManagerExecutiveItem {
+    id            : UUID;
+    name          : String;
+    email         : String;
+    phone         : String;
+    status        : String;
+    leadCount     : Integer;
+    offerCount    : Integer;
   };
 
   function getManagerDashboard()     returns {
@@ -41,6 +52,15 @@ service ManagerDashboardService {
   qualified     : Integer;
 };
 
+ function getExecutiveOverview() returns {
+  stats : {
+    totalExecutives   : Integer;
+    activeExecutives  : Integer;
+    inactiveExecutives : Integer;
+  };
+  executives : many ManagerExecutiveItem;
+ };
+
  function getManagerOfferOverview() returns {
   stats : {
     totalOffers    : Integer;
@@ -49,5 +69,13 @@ service ManagerDashboardService {
     globalOffers   : Integer;
   };
   offers : many ManagerOfferItem;
+ };
+
+ action assignOfferToExecutive(
+  offerId     : UUID,
+  executiveId : UUID
+ ) returns {
+  assignmentId : UUID;
+  message      : String;
  };
 }

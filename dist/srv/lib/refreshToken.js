@@ -19,7 +19,10 @@ function quoteIdentifier(identifier) {
     return `"${identifier.replace(/"/g, '""')}"`;
 }
 function column(columns, ...candidates) {
-    const found = candidates.find((candidate) => columns.has(candidate));
+    const normalizedColumns = new Map([...columns].map((columnName) => [columnName.toLowerCase(), columnName]));
+    const found = candidates.find((candidate) => normalizedColumns.has(candidate.toLowerCase()));
+    if (found)
+        return normalizedColumns.get(found.toLowerCase()) || found;
     return found || candidates[0];
 }
 async function getDbShape() {
@@ -29,7 +32,7 @@ async function getDbShape() {
     SELECT table_name
     FROM information_schema.tables
     WHERE table_schema = 'public'
-      AND table_name IN ('crm_refreshtoken', 'crm_RefreshToken')
+      AND table_name IN ('crm_refreshtoken', 'crm_refreshtoken')
     ORDER BY CASE WHEN table_name = 'crm_refreshtoken' THEN 0 ELSE 1 END
     LIMIT 1
     `);

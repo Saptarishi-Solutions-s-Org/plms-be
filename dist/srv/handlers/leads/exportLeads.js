@@ -8,7 +8,7 @@ const exportLeadsHandler = async (req) => {
         if (!orgId)
             return req.error(401, "Unauthorized");
         const res = await db_1.pool.query(`SELECT
-         l.code                    AS "leadId",
+         l.code                    AS "leadCode",
          l.name                    AS "name",
          l.gender                  AS "gender",
          l.email                   AS "email",

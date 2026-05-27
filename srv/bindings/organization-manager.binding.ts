@@ -3,7 +3,9 @@ import { withAuth } from "../lib/withAuth";
 import { managerDashboardHandler } from "../handlers/organization-manager/getmanagerstats";
 import { leadStatusOverviewHandler } from "../handlers/organization-manager/getleadstatusoverview";
 import { executivePerformanceHandler } from "../handlers/organization-manager/getexecutiveperformance";
+import { getExecutiveOverviewHandler } from "../handlers/organization-manager/getexecutiveoverview";
 import { getManagerOfferOverviewHandler } from "../handlers/organization-manager/getmanagerofferoverview";
+import { assignOfferToExecutiveHandler } from "../handlers/organization-manager/assign-offer-to-executive";
 
 export const bindManagerDashboard = () => {
   const service = cds.services["ManagerDashboardService"];
@@ -32,11 +34,27 @@ export const bindManagerDashboard = () => {
   );
 
   service.on(
+    "getExecutiveOverview",
+    withAuth(getExecutiveOverviewHandler, {
+      roles: ["manager"],
+      modules: { lead: ["view"], offers: ["view"] },
+    }),
+  );
+
+  service.on(
     "getManagerOfferOverview",
     withAuth(getManagerOfferOverviewHandler, {
       roles: ["manager"],
       modules: { offers: ["view"] },
     }),
+  );
+  
+  service.on(
+    "assignOfferToExecutive",
+    withAuth(assignOfferToExecutiveHandler, {
+      roles: ["manager"],
+      modules: { offers: ["view"] },
+     }),
   );
   
 };

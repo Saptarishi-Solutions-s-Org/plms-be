@@ -13,7 +13,7 @@ const createLeadHandler = async (req) => {
         if (!orgId) {
             return req.error(401, "Unauthorized");
         }
-        const { name, gender, email, phone, city, stateId, countryId, postalCode, leadSource, status, assignedTo, priority, notes, } = req.data;
+        const { name, gender, email, phone, city, state, country, postalCode, leadSource, status, assignedTo, priority, notes, } = req.data;
         if (!name || !email || !phone || !status || !priority || !leadSource) {
             return req.error(400, "Missing required fields");
         }
@@ -33,11 +33,21 @@ const createLeadHandler = async (req) => {
           $12,$13,
           $14,$15,
           NOW(),$16,NOW(),$16)`, [
-            leadId, code, name, gender, email, phone,
-            status, priority, leadSource,
-            city, postalCode,
-            stateId || null, countryId || null,
-            orgId, assignedTo || null,
+            leadId,
+            code,
+            name,
+            gender,
+            email,
+            phone,
+            status,
+            priority,
+            leadSource,
+            city,
+            postalCode,
+            state || null,
+            country || null,
+            orgId,
+            assignedTo || null,
             createdBy,
         ]);
         if (notes?.trim()) {
@@ -46,7 +56,7 @@ const createLeadHandler = async (req) => {
          VALUES ($1,$2,$3,NOW(),$4,NOW(),$4)`, [(0, crypto_1.randomUUID)(), leadId, notes.trim(), createdBy]);
         }
         await client.query("COMMIT");
-        return { message: "Lead created successfully", leadId };
+        return { message: "Lead created successfully", leadCode: code };
     }
     catch (error) {
         await client.query("ROLLBACK");
