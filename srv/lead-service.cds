@@ -1,7 +1,5 @@
-//srv
 service LeadService {
 
-    // GET leads + dashboard stats
     function getLeadsWithStats()       returns {
         leads : many {
             uuid           : String;
@@ -19,6 +17,8 @@ service LeadService {
             country        : String;
             assignedTo     : String;
             assignedToName : String;
+            createdById    : String;
+            createdByName  : String;
             notes          : String;
         };
         stats : {
@@ -28,13 +28,12 @@ service LeadService {
             qualified : Integer;
         };
     };
-    //GET executive users for dropdown
+    
     function getExecutiveUsers() returns many {
         id   : String;
         name : String;
     };
 
-    // CREATE lead
     action   createLead(name: String,
                         gender: String,
                         email: String,
@@ -52,7 +51,6 @@ service LeadService {
         leadCode : String;
     };
 
-    // UPDATE lead
     action   updateLead(id: String,
                         name: String,
                         gender: String,
@@ -104,6 +102,42 @@ service LeadService {
     })                                 returns {
         imported   : Integer;
         failed     : Integer;
+    };
+
+    function getLeadDetail(id: String) returns {
+        activities : many {
+            id               : String;
+            type             : String;
+            notes            : String;
+            freeText         : String;
+            callStatus       : String;
+            nextFollowUpDate : String;
+            createdAt        : String;
+            createdByName    : String;
+            createdByRole    : String;
+        };
+    };
+ 
+    action addLeadActivity(
+        leadId           : String,
+        type             : String,
+        notes            : String,
+        freeText         : String,
+        callStatus       : String,
+        nextFollowUpDate : Date
+    ) returns {
+        message  : String;
+        activity : {
+            id               : String;
+            type             : String;
+            notes            : String;
+            freeText         : String;
+            callStatus       : String;
+            nextFollowUpDate : String;
+            createdAt        : String;
+            createdByName    : String;
+            createdByRole    : String;
+        };
     };
 
 }
