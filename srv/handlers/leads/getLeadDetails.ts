@@ -1,5 +1,3 @@
-// plms-be/srv/handlers/leads/getLeadDetail.ts
-
 import { pool } from "../../lib/db";
 
 export const getLeadDetailHandler = async (req: any) => {
@@ -10,7 +8,6 @@ export const getLeadDetailHandler = async (req: any) => {
     if (!orgId) return req.error(401, "Unauthorized");
     if (!id)    return req.error(400, "Lead ID is required");
 
-    // ── Lead + assigned user + creator + creator role ─────────────────────────
     const leadRes = await pool.query(
       `SELECT
          l.id                             AS "uuid",
@@ -55,7 +52,6 @@ export const getLeadDetailHandler = async (req: any) => {
 
     const lead = leadRes.rows[0];
 
-    // ── Activities (newest first) ─────────────────────────────────────────────
     const activitiesRes = await pool.query(
       `SELECT
          la.id                              AS "id",
@@ -76,7 +72,6 @@ export const getLeadDetailHandler = async (req: any) => {
       [id],
     );
 
-    // ── Assigned offer (active, not expired, for the assigned executive) ──────
     let assignedOffer = null;
     if (lead.assignedTo) {
       const offerRes = await pool.query(
@@ -92,8 +87,9 @@ export const getLeadDetailHandler = async (req: any) => {
            o.valid_to             AS "validTo",
            o.status
          FROM crm_offer o
-         JOIN crm_offerassignment oa ON oa.offer_id = o.id
-         WHERE oa.user_id = $1
+         LEFT JOIN crm_managerofferassignment moa ON moa."offer_ID" = o.id
+         LEFT JOIN crm_executiveofferassignment eoa ON eoa."offer_ID" = o.id
+         WHERE (moa."user_ID" = $1 OR eoa."executive_ID" = $1)
            AND LOWER(o.status) = 'active'
            AND o.valid_to::date >= CURRENT_DATE
          ORDER BY o.createdat DESC
