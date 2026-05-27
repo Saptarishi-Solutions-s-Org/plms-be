@@ -6,15 +6,10 @@ service ReportDashboardService {
         activeOffers   : Integer;
         offersUtilized : Integer;
     };
-
-    function getLeadSourceData() returns array of {
-        source : String;
-        leads  : Integer;
-    };
-
-    function getSourceConversionData() returns array of {
+    function getLeadSourceAnalytics() returns array of {
         source    : String;
         leads     : Integer;
         converted : Integer;
+        conversionRate : Decimal(5,2);
     };
 }
