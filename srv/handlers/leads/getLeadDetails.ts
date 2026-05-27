@@ -72,37 +72,9 @@ export const getLeadDetailHandler = async (req: any) => {
       [id],
     );
 
-    let assignedOffer = null;
-    if (lead.assignedTo) {
-      const offerRes = await pool.query(
-        `SELECT
-           o.id,
-           o.title,
-           o.code,
-           o.description,
-           o.discount_type        AS "discountType",
-           o.discount_amount      AS "discountAmount",
-           o.discount_percentage  AS "discountPercentage",
-           o.valid_from           AS "validFrom",
-           o.valid_to             AS "validTo",
-           o.status
-         FROM crm_offer o
-         LEFT JOIN crm_managerofferassignment moa ON moa."offer_ID" = o.id
-         LEFT JOIN crm_executiveofferassignment eoa ON eoa."offer_ID" = o.id
-         WHERE (moa."user_ID" = $1 OR eoa."executive_ID" = $1)
-           AND LOWER(o.status) = 'active'
-           AND o.valid_to::date >= CURRENT_DATE
-         ORDER BY o.createdat DESC
-         LIMIT 1`,
-        [lead.assignedTo],
-      );
-      assignedOffer = offerRes.rows[0] ?? null;
-    }
-
     return {
       lead,
-      activities:    activitiesRes.rows,
-      assignedOffer,
+      activities: activitiesRes.rows,
     };
   } catch (error: any) {
     console.error("getLeadDetail error:", error?.message ?? error);
