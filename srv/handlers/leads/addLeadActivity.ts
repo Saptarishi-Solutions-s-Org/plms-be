@@ -9,8 +9,6 @@ export const addLeadActivityHandler = async (req: any) => {
 
   const { leadId, type, notes, freeText, callStatus, nextFollowUpDate } = req.data;
 
-  if (!notes?.trim()) return req.error(400, "notes are required");
-
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -26,7 +24,7 @@ export const addLeadActivityHandler = async (req: any) => {
         activityId,
         leadId,
         type             || null,
-        notes.trim(),
+        notes,
         freeText         || null,
         callStatus       || null,
         nextFollowUpDate || null,

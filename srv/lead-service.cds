@@ -1,7 +1,5 @@
-//srv
 service LeadService {
 
-    // GET leads + dashboard stats
     function getLeadsWithStats()       returns {
         leads : many {
             uuid           : String;
@@ -28,13 +26,12 @@ service LeadService {
             qualified : Integer;
         };
     };
-    //GET executive users for dropdown
+    
     function getExecutiveUsers() returns many {
         id   : String;
         name : String;
     };
 
-    // CREATE lead
     action   createLead(name: String,
                         gender: String,
                         email: String,
@@ -52,7 +49,6 @@ service LeadService {
         leadCode : String;
     };
 
-    // UPDATE lead
     action   updateLead(id: String,
                         name: String,
                         gender: String,
@@ -142,21 +138,7 @@ service LeadService {
             createdByName    : String;
             createdByRole    : String;
         };
-        assignedOffer : {
-            id                 : String;
-            title              : String;
-            code               : String;
-            description        : String;
-            discountType       : String;
-            discountAmount     : Decimal(10, 2);
-            discountPercentage : Decimal(5, 2);
-            validFrom          : Date;
-            validTo            : Date;
-            status             : String;
-        };
     };
- 
-// ── NEW: addLeadActivity ──────────────────────────────────────────────────────
  
     action addLeadActivity(
         leadId           : String,
