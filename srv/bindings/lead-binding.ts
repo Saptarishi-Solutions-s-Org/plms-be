@@ -1,6 +1,3 @@
-// plms-be/srv/bindings/lead-binding.ts
-// Full file — replaces existing lead-binding.ts
-
 import cds from "@sap/cds";
 import { withAuth } from "../lib/withAuth";
 
@@ -10,14 +7,12 @@ import { createLeadHandler }         from "../handlers/leads/createLead";
 import { updateLeadHandler }         from "../handlers/leads/updateLead";
 import { exportLeadsHandler }        from "../handlers/leads/exportLeads";
 import { importLeadsHandler }        from "../handlers/leads/importLeads";
-import { getLeadDetailHandler }      from "../handlers/leads/getLeadDetails";      // NEW
-import { addLeadActivityHandler }    from "../handlers/leads/addLeadActivity";    // NEW
+import { getLeadDetailHandler }      from "../handlers/leads/getLeadDetails";     
+import { addLeadActivityHandler }    from "../handlers/leads/addLeadActivity";    
 
 export const bindLead = () => {
   const service = cds.services["LeadService"];
   if (!service) return;
-
-  // ── existing ────────────────────────────────────────────────────────────────
 
   service.on(
     "getLeadsWithStats",
@@ -66,8 +61,6 @@ export const bindLead = () => {
       modules: { lead: ["import"] },
     }),
   );
-
-  // ── NEW ─────────────────────────────────────────────────────────────────────
 
   service.on(
     "getLeadDetail",
