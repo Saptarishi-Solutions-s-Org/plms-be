@@ -2,25 +2,18 @@ import { pool } from "../../lib/db";
 import { randomUUID } from "crypto";
 
 export const addLeadActivityHandler = async (req: any) => {
+  const orgId     = req.user?.orgId;
+  const createdBy = req.user?.id;
+
+  if (!orgId) return req.error(401, "Unauthorized");
+
+  const { leadId, type, notes, freeText, callStatus, nextFollowUpDate } = req.data;
+
+  if (!notes?.trim()) return req.error(400, "notes are required");
+
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-
-    const orgId     = req.user?.orgId;
-    const createdBy = req.user?.id;
-
-    if (!orgId) return req.error(401, "Unauthorized");
-
-    const { leadId, type, notes, freeText, callStatus, nextFollowUpDate } = req.data;
-
-    if (!leadId)        return req.error(400, "leadId is required");
-    if (!notes?.trim()) return req.error(400, "notes are required");
-
-    const check = await client.query(
-      `SELECT id FROM crm_leads WHERE id = $1 AND organization_id = $2`,
-      [leadId, orgId],
-    );
-    if (check.rows.length === 0) return req.error(404, "Lead not found");
 
     const activityId = randomUUID();
 
