@@ -1,5 +1,3 @@
-// plms-be/srv/handlers/leads/addLeadActivity.ts
-
 import { pool } from "../../lib/db";
 import { randomUUID } from "crypto";
 
@@ -18,7 +16,6 @@ export const addLeadActivityHandler = async (req: any) => {
     if (!leadId)        return req.error(400, "leadId is required");
     if (!notes?.trim()) return req.error(400, "notes are required");
 
-    // Verify lead belongs to org
     const check = await client.query(
       `SELECT id FROM crm_leads WHERE id = $1 AND organization_id = $2`,
       [leadId, orgId],
@@ -46,7 +43,6 @@ export const addLeadActivityHandler = async (req: any) => {
 
     await client.query("COMMIT");
 
-    // Return the new activity with author info
     const result = await pool.query(
       `SELECT
          la.id                              AS "id",
