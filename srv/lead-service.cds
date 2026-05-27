@@ -17,6 +17,8 @@ service LeadService {
             country        : String;
             assignedTo     : String;
             assignedToName : String;
+            createdById    : String;
+            createdByName  : String;
             notes          : String;
         };
         stats : {
@@ -103,30 +105,6 @@ service LeadService {
     };
 
     function getLeadDetail(id: String) returns {
-        lead : {
-            uuid           : String;
-            leadCode       : String;
-            name           : String;
-            gender         : String;
-            email          : String;
-            phone          : String;
-            status         : String;
-            priority       : String;
-            leadSource     : String;
-            city           : String;
-            postalCode     : String;
-            state          : String;
-            country        : String;
-            stateName      : String;
-            countryName    : String;
-            importType     : String;
-            createdAt      : String;
-            assignedTo     : String;
-            assignedToName : String;
-            createdById    : String;
-            createdByName  : String;
-            createdByRole  : String;
-        };
         activities : many {
             id               : String;
             type             : String;
