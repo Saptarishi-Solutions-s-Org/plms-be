@@ -1,19 +1,27 @@
 import { pool } from "../../lib/db";
 
+export const getTotalLeads = async (orgId: string) => {
+  const res = await pool.query(
+    `SELECT COUNT(*) AS count
+     FROM crm_leads
+     WHERE organization_id = $1`,
+    [orgId]
+  );
+
+  return Number(res.rows[0]?.count) || 0;
+};
+
 export const managerDashboardHandler = async (req: any) => {
   try {
-    const orgId =
-      req.user?.orgId;
+    const orgId = req.user?.orgId;
 
-    // 1. Total Leads
-    const totalLeadsRes = await pool.query(
-      `SELECT COUNT(*) AS count
-       FROM crm_leads
-       WHERE organization_id = $1`,
-      [orgId]
-    );
+    if (!orgId) {
+      return req.error(400, "Organization ID missing");
+    }
 
-    // 2. Converted Leads
+    const totalLeads = await getTotalLeads(orgId);
+
+    // Converted Leads
     const convertedLeadsRes = await pool.query(
       `SELECT COUNT(*) AS count
        FROM crm_leads
@@ -22,7 +30,7 @@ export const managerDashboardHandler = async (req: any) => {
       [orgId]
     );
 
-    // 3. This Week Leads
+    // This Week Leads
     const thisWeekLeadsRes = await pool.query(
       `SELECT COUNT(*) AS count
        FROM crm_leads
@@ -31,7 +39,7 @@ export const managerDashboardHandler = async (req: any) => {
       [orgId]
     );
 
-    // 4. Active Offers
+    // Active Offers
     const activeOffersRes = await pool.query(
       `SELECT COUNT(*) AS count
        FROM crm_offer
@@ -42,10 +50,15 @@ export const managerDashboardHandler = async (req: any) => {
     );
 
     return {
-      totalLeads: Number(totalLeadsRes.rows[0]?.count) || 0,
-      convertedLeads: Number(convertedLeadsRes.rows[0]?.count) || 0,
-      thisWeekLeads: Number(thisWeekLeadsRes.rows[0]?.count) || 0,
-      activeOffers: Number(activeOffersRes.rows[0]?.count) || 0,
+      totalLeads,
+      convertedLeads:
+        Number(convertedLeadsRes.rows[0]?.count) || 0,
+
+      thisWeekLeads:
+        Number(thisWeekLeadsRes.rows[0]?.count) || 0,
+
+      activeOffers:
+        Number(activeOffersRes.rows[0]?.count) || 0,
     };
 
   } catch (error) {

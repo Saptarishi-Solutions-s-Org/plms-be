@@ -3,9 +3,10 @@ service ReportDashboardService {
         totalLeads     : Integer;
         leadsAssigned  : Integer;
         convertedLeads : Integer;
+        conversionRate : Decimal(5,2);
         activeOffers   : Integer;
-        offersUtilized : Integer;
     };
+
     function getLeadSourceAnalytics() returns array of {
         source    : String;
         leads     : Integer;

@@ -1,5 +1,5 @@
 import { pool } from "../../../lib/db";
-
+import { getTotalLeads} from "../../organization-manager/getmanagerstats";
 export const ReportDashboardHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
@@ -8,13 +8,7 @@ export const ReportDashboardHandler = async (req: any) => {
       return req.error(400, "Organization ID missing");
     }
 
-    const totalLeadsRes = await pool.query(
-      `SELECT COUNT(*) AS count
-       FROM crm_leads
-       WHERE organization_id = $1`,
-      [orgId],
-    );
-
+    const totalLeads = await getTotalLeads(orgId);
     const leadsAssignedRes = await pool.query(
       `SELECT COUNT(*) AS count
        FROM crm_leads
@@ -31,36 +25,21 @@ export const ReportDashboardHandler = async (req: any) => {
       [orgId],
     );
 
-    const activeOffersRes = await pool.query(
-      `SELECT COUNT(*) AS count
-       FROM crm_offer
-       WHERE organization_id = $1
-       AND status = 'Active'
-       AND valid_from <= CURRENT_DATE
-       AND valid_to >= CURRENT_DATE`,
-      [orgId],
-    );
 
-    const offersUtilizedRes = await pool.query(
-      `SELECT COUNT(DISTINCT o.id) AS count
-       FROM crm_offerassignment a
-       JOIN crm_offer o
-         ON o.id = a.offer_id
-       WHERE o.organization_id = $1
-       AND o.status = 'Active'
-       AND o.valid_from <= CURRENT_DATE
-       AND o.valid_to >= CURRENT_DATE`,
-      [orgId],
-    );
+
+    const leadsAssigned = Number(leadsAssignedRes.rows[0]?.count) || 0;
+    const convertedLeads = Number(convertedLeadsRes.rows[0]?.count) || 0;
 
     return {
-      totalLeads: Number(totalLeadsRes.rows[0]?.count) || 0,
-      leadsAssigned: Number(leadsAssignedRes.rows[0]?.count) || 0,
-      convertedLeads: Number(convertedLeadsRes.rows[0]?.count) || 0,
-      activeOffers: Number(activeOffersRes.rows[0]?.count) || 0,
-      offersUtilized: Number(offersUtilizedRes.rows[0]?.count) || 0,
+      leadsAssigned,
+      convertedLeads,
+      conversionRate:
+        totalLeads > 0
+          ? Number(((convertedLeads / totalLeads) * 100).toFixed(1))
+          : 0,
     };
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Error fetching report stats:", error?.message ?? error);
     return req.error(500, "Failed to fetch report stats");
   }
 };
