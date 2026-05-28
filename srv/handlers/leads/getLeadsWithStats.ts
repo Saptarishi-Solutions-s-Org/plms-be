@@ -27,11 +27,14 @@ export const getLeadsWithStatsHandler = async (req: any) => {
          c.name                    AS "countryName",
          l.assigned_to_id          AS "assignedTo",
          COALESCE(u.name, '')      AS "assignedToName",
+         l.createdby               AS "createdById",
+         COALESCE(cu.name, 'System') AS "createdByName",
          COALESCE(la.notes, '')    AS "notes"
        FROM crm_leads l
        LEFT JOIN crm_state   s ON s.id = l.state_id
        LEFT JOIN crm_country c ON c.id = l.country_id
        LEFT JOIN crm_user    u ON u.id = l.assigned_to_id
+       LEFT JOIN crm_user    cu ON cu.id::text = l.createdby
        LEFT JOIN LATERAL (
          SELECT notes FROM crm_leadactivity
          WHERE lead_id = l.id
