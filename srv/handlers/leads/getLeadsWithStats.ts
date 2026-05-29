@@ -3,9 +3,10 @@ import { pool } from "../../lib/db";
 export const getLeadsWithStatsHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
+    const userId = req.user?.id;
 
-    if (!orgId) {
-      return req.error(401, "Unauthorized");
+    if (!orgId || !userId) {
+      return req.error(400, "User or Organization ID missing");
     }
 
     const leadsRes = await pool.query(
@@ -42,8 +43,12 @@ export const getLeadsWithStatsHandler = async (req: any) => {
        ) la ON true
 
        WHERE l.organization_id = $1
+         AND (
+           l.assigned_to_id = $2
+           OR u.reporting_manager_id = $2
+         )
        ORDER BY l.createdat DESC`,
-      [orgId],
+      [orgId, userId],
     );
 
     const statsRes = await pool.query(
@@ -52,9 +57,14 @@ export const getLeadsWithStatsHandler = async (req: any) => {
          COUNT(*) FILTER (WHERE status = 'New')       AS new,
          COUNT(*) FILTER (WHERE status = 'Contacted') AS contacted,
          COUNT(*) FILTER (WHERE status = 'Qualified') AS qualified
-       FROM crm_leads
-       WHERE organization_id = $1`,
-      [orgId],
+       FROM crm_leads l
+       LEFT JOIN crm_user u ON u.id = l.assigned_to_id
+       WHERE l.organization_id = $1
+         AND (
+           l.assigned_to_id = $2
+           OR u.reporting_manager_id = $2
+         )`,
+      [orgId, userId],
     );
 
     return {
