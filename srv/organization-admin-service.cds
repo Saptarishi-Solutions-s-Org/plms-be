@@ -37,4 +37,9 @@ service OrganizationAdminService {
         id   : UUID;
         name : String;
     };
+
+    function getAllExecutives() returns array of {
+        id  : UUID ;
+        name : String;
+    }
 }

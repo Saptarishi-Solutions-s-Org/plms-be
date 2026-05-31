@@ -3,6 +3,7 @@ import { getAllUsersHandler } from "../handlers/organization-admin/getAllUsers";
 import { withAuth } from "../lib/withAuth";
 import { createOrgUserHandler } from "../handlers/organization-admin/createOrgUser";
 import { getManagersHandler } from "../handlers/organization-admin/getAllManagers";
+import { getExecutivesHandler } from "../handlers/organization-admin/getAllExecutives";
 
 export const bindOrganizationAdmin = () => {
   const service = cds.services["OrganizationAdminService"];
@@ -32,4 +33,8 @@ export const bindOrganizationAdmin = () => {
     modules: { user: ["view"] },
   }));
 
-}
+  service.on("getAllExecutives", withAuth(getExecutivesHandler, {
+    modules: { user: ["view"] },
+  }));
+
+} 
