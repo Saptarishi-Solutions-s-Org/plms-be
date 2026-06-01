@@ -78,4 +78,22 @@ service ManagerDashboardService {
   assignmentId : UUID;
   message      : String;
  };
+
+ action deactivateExecutiveForManager(
+  executiveId       : UUID,
+  targetExecutiveId : UUID
+ ) returns {
+  message               : String;
+  executiveName         : String;
+  targetExecutiveName   : String;
+  leadsReassigned       : Integer;
+ };
+ 
+
+ function getOtherExecutivesForReassign(executiveId: UUID) returns array of {
+  id    : UUID;
+  name  : String;
+  email : String;
+  phone : String;
+ };
 }

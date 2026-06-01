@@ -6,6 +6,8 @@ import { executivePerformanceHandler } from "../handlers/organization-manager/ge
 import { getExecutiveOverviewHandler } from "../handlers/organization-manager/getexecutiveoverview";
 import { getManagerOfferOverviewHandler } from "../handlers/organization-manager/getmanagerofferoverview";
 import { assignOfferToExecutiveHandler } from "../handlers/organization-manager/assign-offer-to-executive";
+import { deactivateExecutiveForManagerHandler } from "../handlers/organization-manager/deactivateExecutiveForManager";
+import { getOtherExecutivesForReassignHandler } from "../handlers/organization-manager/getOtherExecutivesForReassign";
 
 export const bindManagerDashboard = () => {
   const service = cds.services["ManagerDashboardService"];
@@ -55,6 +57,22 @@ export const bindManagerDashboard = () => {
       roles: ["manager"],
       modules: { offers: ["view"] },
      }),
+  );
+
+  service.on(
+    "deactivateExecutiveForManager",
+    withAuth(deactivateExecutiveForManagerHandler, {
+      roles: ["manager"],
+      modules: { lead: ["update"] },
+    }),
+  );
+
+  service.on(
+    "getOtherExecutivesForReassign",
+    withAuth(getOtherExecutivesForReassignHandler, {
+      roles: ["manager"],
+      modules: { lead: ["view"] },
+    }),
   );
   
 };

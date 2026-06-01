@@ -41,5 +41,46 @@ service OrganizationAdminService {
     function getAllExecutives() returns array of {
         id  : UUID ;
         name : String;
-    }
+    };
+
+    function getExecutivesForManager(managerId: UUID) returns array of {
+        id    : UUID;
+        name  : String;
+        email : String;
+        phone : String;
+    };
+
+    function getManagersForReassign(excludeManagerId: UUID) returns array of {
+        id    : UUID;
+        name  : String;
+        email : String;
+        phone : String;
+    };
+
+    action deactivateExecutive(
+        executiveId       : UUID,
+        targetExecutiveId : UUID
+    ) returns {
+        message               : String;
+        executiveName         : String;
+        targetExecutiveName   : String;
+        leadsReassigned       : Integer;
+    };
+
+    action deactivateManager(
+        managerId       : UUID,
+        targetManagerId : UUID
+    ) returns {
+        message             : String;
+        managerName         : String;
+        targetManagerName   : String;
+        executivesReassigned : Integer;
+    };
+
+    // Generic activate action for any user (manager/executive)
+    action activateUser(
+        userId : UUID
+    ) returns {
+        message : String;
+    };
 }
