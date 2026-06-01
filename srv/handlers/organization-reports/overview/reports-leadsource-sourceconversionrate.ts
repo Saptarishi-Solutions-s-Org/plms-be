@@ -1,5 +1,4 @@
 import { pool } from "../../../lib/db";
-import { sourceleads } from "../../../types/org-reports";
 
 export const leadSourceAnalyticsHandler = async (req: any) => {
   try {
@@ -12,14 +11,14 @@ export const leadSourceAnalyticsHandler = async (req: any) => {
     const res = await pool.query(
       `
       SELECT
-        ${sourceleads} AS source,
+        source AS source,
         COUNT(*) AS leads,
         COUNT(*) FILTER (
           WHERE status = 'Qualified'
         ) AS converted
       FROM crm_leads
       WHERE organization_id = $1
-      GROUP BY ${sourceleads}
+      GROUP BY source
       ORDER BY leads DESC, source ASC
       `,
       [orgId],
