@@ -12,6 +12,7 @@ export const getLeadsWithStatsHandler = async (req: any) => {
     const leadsRes = await pool.query(
       `SELECT
          l.id                      AS "uuid",
+         l.id                      AS "id",
          l.code                    AS "leadCode",
          l.name                    AS "name",
          l.gender                  AS "gender",
@@ -30,6 +31,7 @@ export const getLeadsWithStatsHandler = async (req: any) => {
          COALESCE(u.name, '')      AS "assignedToName",
          l.createdby               AS "createdById",
          COALESCE(cu.name, 'System') AS "createdByName",
+         l.createdat               AS "createdAt",
          COALESCE(la.notes, '')    AS "notes"
        FROM crm_leads l
        LEFT JOIN crm_state   s ON s.id = l.state_id
