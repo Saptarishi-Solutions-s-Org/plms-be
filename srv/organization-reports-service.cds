@@ -22,12 +22,4 @@ service ReportDashboardService {
         conversionRate : Decimal(5, 2);
         assignedOffers : Integer;
     };
-
-    type ReportStats {
-        total_leads     : Integer;
-        leads_assigned  : Integer;
-        converted_leads : Integer;
-    }
-
-    action   getReportDateRange(from: Date, to: Date) returns ReportStats;
 }

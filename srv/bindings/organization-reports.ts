@@ -3,7 +3,8 @@ import { withAuth } from "../lib/withAuth";
 import { ReportDashboardHandler } from "../handlers/organization-reports/overview/stat-cards";
 import { leadSourceAnalyticsHandler } from "../handlers/organization-reports/overview/reports-leadsource-sourceconversionrate";
 import { exportExecutivesHandler } from "../handlers/organization-reports/exportExecutives";
-import { getReportDateRangeHandler } from "../handlers/organization-reports/daterangefilter/page";
+
+
 export const bindOrganizationReports = () => {
   const service = cds.services["ReportDashboardService"];
   if (!service) return;
@@ -29,11 +30,4 @@ export const bindOrganizationReports = () => {
       modules: { lead: ["export"] },
     }),
   );
-  service.on(
-    "getReportDateRange",
-    withAuth(getReportDateRangeHandler, {
-      roles: ["manager"],
-      modules: { lead: ["view", "filter"] },
-    }),
-  )
 };
