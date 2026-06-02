@@ -3,6 +3,7 @@ service LeadService {
     function getLeadsWithStats()       returns {
         leads : many {
             uuid           : String;
+            id             : String;
             leadCode       : String;
             name           : String;
             gender         : String;
@@ -19,6 +20,7 @@ service LeadService {
             assignedToName : String;
             createdById    : String;
             createdByName  : String;
+            createdAt      : Timestamp;
             notes          : String;
         };
         stats : {
