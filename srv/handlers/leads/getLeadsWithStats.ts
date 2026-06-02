@@ -46,6 +46,7 @@ export const getLeadsWithStatsHandler = async (req: any) => {
          AND (
            l.assigned_to_id = $2
            OR u.reporting_manager_id = $2
+           OR l.assigned_to_id IS NULL
          )
        ORDER BY l.createdat DESC`,
       [orgId, userId],
@@ -59,10 +60,11 @@ export const getLeadsWithStatsHandler = async (req: any) => {
          COUNT(*) FILTER (WHERE status = 'Qualified') AS qualified
        FROM crm_leads l
        LEFT JOIN crm_user u ON u.id = l.assigned_to_id
-       WHERE l.organization_id = $1
+      WHERE l.organization_id = $1
          AND (
            l.assigned_to_id = $2
            OR u.reporting_manager_id = $2
+           OR l.assigned_to_id IS NULL
          )`,
       [orgId, userId],
     );

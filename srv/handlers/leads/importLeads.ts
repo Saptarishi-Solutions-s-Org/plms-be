@@ -24,16 +24,39 @@ export const importLeadsHandler = async (req: any) => {
       const {
         name, gender, email, phone,
         city, stateId, countryId, postalCode,
-        leadSource, status, priority, notes, assignedTo,
+        source, leadSource, status, priority, notes, assignedTo,
       } = row;
 
-      // Skip rows missing required fields
-      if (!name || !email || !phone || !status || !priority || !leadSource) {
+      const src = source ?? leadSource;
+
+      // Skip rows missing the five required fields
+      if (!name || !gender || !email || !phone || !src) {
         failed++;
         continue;
       }
 
       try {
+        // Skip if a lead with same email or phone already exists for the org
+        const dup = await client.query(
+          `SELECT id FROM crm_leads WHERE organization_id=$1 AND (email=$2 OR phone=$3) LIMIT 1`,
+          [orgId, email, phone]
+        );
+
+        if (dup.rowCount) {
+          failed++;
+          continue;
+        }
+        // Do not insert duplicates: skip if a lead with same email or phone exists for this org
+        const dupCheck = await client.query(
+          `SELECT id FROM crm_leads WHERE organization_id = $1 AND (email = $2 OR phone = $3) LIMIT 1`,
+          [orgId, email, phone]
+        );
+
+        if (dupCheck.rowCount) {
+          failed++;
+          continue;
+        }
+
         const leadId = randomUUID();
         const code   = generateLeadCode();
 
@@ -54,8 +77,8 @@ export const importLeadsHandler = async (req: any) => {
               NOW(),$16,NOW(),$16)`,
           [
             leadId, code,
-            name, gender ?? "Prefer not to say", email, phone,
-            status, priority, leadSource,
+            name, gender, email, phone,
+            status ?? 'New', priority ?? null, src,
             city ?? "", postalCode ?? "",
             stateId || null, countryId || null,
             orgId, assignedTo || null,
