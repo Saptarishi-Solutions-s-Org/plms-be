@@ -12,28 +12,18 @@ export const getExecutiveOffersHandler = async (req: any) => {
     const res = await pool.query(
       `
       SELECT
-        ea."ID"                  AS "assignmentId",
-        o.id                     AS "offerId",
         o.title                  AS "title",
-        o.code                   AS "code",
         o.description            AS "description",
-        o.is_global              AS "isGlobal",
-        o.status                 AS "status",
         o.discount_type          AS "discountType",
-        o.discount_amount        AS "discountAmount",
-        o.discount_percentage    AS "discountPercentage",
-        o.max_discount_amount    AS "maxDiscountAmount",
-        o.combo_description      AS "comboDescription",
-        o.buy_quantity           AS "buyQuantity",
-        o.get_quantity           AS "getQuantity",
-        o.min_purchase_amount    AS "minPurchaseAmount",
-        o.discount_value         AS "discountValue",
-        o.flag_discount_amount   AS "flagDiscountAmount",
+        COALESCE(
+          o.discount_value,
+          o.discount_amount,
+          o.discount_percentage,
+          o.flag_discount_amount
+        )                        AS "discountValue",
         o.valid_from             AS "validFrom",
         o.valid_to               AS "validTo",
-        ea."createdAt"           AS "assignedAt",
-        manager.id               AS "assignedBy",
-        manager.name             AS "assignedByName"
+        o.status                 AS "status"
       FROM crm_executiveofferassignment ea
       JOIN crm_offer o
         ON o.id = ea."offer_ID"
@@ -57,3 +47,4 @@ export const getExecutiveOffersHandler = async (req: any) => {
     return req.error(500, "Failed to fetch executive offers");
   }
 };
+ 
