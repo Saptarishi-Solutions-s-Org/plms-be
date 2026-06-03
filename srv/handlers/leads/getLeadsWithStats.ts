@@ -48,7 +48,7 @@ export const getLeadsWithStatsHandler = async (req: any) => {
          AND (
            l.assigned_to_id = $2
            OR u.reporting_manager_id = $2
-           OR l.assigned_to_id IS NULL
+           OR (l.assigned_to_id IS NULL AND l.createdby = $2)
          )
        ORDER BY l.createdat DESC`,
       [orgId, userId],
@@ -66,7 +66,7 @@ export const getLeadsWithStatsHandler = async (req: any) => {
          AND (
            l.assigned_to_id = $2
            OR u.reporting_manager_id = $2
-           OR l.assigned_to_id IS NULL
+           OR (l.assigned_to_id IS NULL AND l.createdby = $2)
          )`,
       [orgId, userId],
     );

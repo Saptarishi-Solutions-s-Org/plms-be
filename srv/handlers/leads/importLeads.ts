@@ -11,7 +11,7 @@ export const importLeadsHandler = async (req: any) => {
     const orgId     = req.user?.orgId;
     const createdBy = req.user?.id;
 
-    if (!orgId) return req.error(401, "Unauthorized");
+    if (!orgId || !createdBy) return req.error(401, "Unauthorized");
 
     const rows: any[] = req.data?.rows ?? [];
 
