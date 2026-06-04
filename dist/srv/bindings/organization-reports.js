@@ -7,8 +7,8 @@ exports.bindOrganizationReports = void 0;
 const cds_1 = __importDefault(require("@sap/cds"));
 const withAuth_1 = require("../lib/withAuth");
 const stat_cards_1 = require("../handlers/organization-reports/overview/stat-cards");
-const reports_lsd_1 = require("../handlers/organization-reports/overview/reports-lsd");
-const report_scd_1 = require("../handlers/organization-reports/overview/report-scd");
+const reports_leadsource_sourceconversionrate_1 = require("../handlers/organization-reports/overview/reports-leadsource-sourceconversionrate");
+const exportExecutives_1 = require("../handlers/organization-reports/exportExecutives");
 const bindOrganizationReports = () => {
     const service = cds_1.default.services["ReportDashboardService"];
     if (!service)
@@ -17,13 +17,13 @@ const bindOrganizationReports = () => {
         roles: ["manager"],
         modules: { lead: ["view"] },
     }));
-    service.on("getLeadSourceData", (0, withAuth_1.withAuth)(reports_lsd_1.leadSourceHandler, {
+    service.on("getLeadSourceAnalytics", (0, withAuth_1.withAuth)(reports_leadsource_sourceconversionrate_1.leadSourceAnalyticsHandler, {
         roles: ["manager"],
         modules: { lead: ["view"] },
     }));
-    service.on("getSourceConversionData", (0, withAuth_1.withAuth)(report_scd_1.sourceConversionRateHandler, {
+    service.on("exportExecutives", (0, withAuth_1.withAuth)(exportExecutives_1.exportExecutivesHandler, {
         roles: ["manager"],
-        modules: { lead: ["view"] },
+        modules: { lead: ["export"] },
     }));
 };
 exports.bindOrganizationReports = bindOrganizationReports;

@@ -9,6 +9,7 @@ const withAuth_1 = require("../lib/withAuth");
 const getexecutivestats_1 = require("../handlers/executive/getexecutivestats");
 const getexecutiverecentleads_1 = require("../handlers/executive/getexecutiverecentleads");
 const getleadstats_1 = require("../handlers/executive/getleadstats");
+const get_executive_offers_1 = require("../handlers/offer/get-executive-offers");
 const bindExecutiveDashboard = () => {
     const service = cds_1.default.services["OrganizationExecutiveService"];
     if (!service)
@@ -24,6 +25,10 @@ const bindExecutiveDashboard = () => {
     service.on("getExecutiveLeadStats", (0, withAuth_1.withAuth)(getleadstats_1.executiveLeadStatsHandler, {
         roles: ["Executive"],
         modules: { lead: ["view"] },
+    }));
+    service.on("getExecutiveOffers", (0, withAuth_1.withAuth)(get_executive_offers_1.getExecutiveOffersHandler, {
+        roles: ["Executive"],
+        modules: { offers: ["view"] },
     }));
 };
 exports.bindExecutiveDashboard = bindExecutiveDashboard;
