@@ -1,4 +1,6 @@
 import { pool } from "../../lib/db";
+import { emitToOrg } from "../../realtime/socket";
+import { USER_DETAIL_CHANGED, USER_LIST_CHANGED } from "../../realtime/events";
 
 export const deactivateManagerHandler = async (req: any) => {
   const client = await pool.connect();
@@ -89,6 +91,14 @@ export const deactivateManagerHandler = async (req: any) => {
 
     await client.query("COMMIT");
 
+    emitToOrg(orgId, USER_LIST_CHANGED, {
+      reason: "manager-deactivated",
+      userId: managerId,
+    });
+    emitToOrg(orgId, USER_DETAIL_CHANGED, {
+      reason: "manager-deactivated",
+      userId: managerId,
+    });
     return {
       message: `Manager deactivated successfully. ${executiveCount} executives reassigned to ${targetManagerRes.rows[0].name}`,
       managerName: managerRes.rows[0].name,
