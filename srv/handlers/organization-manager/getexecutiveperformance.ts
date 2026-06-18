@@ -13,15 +13,21 @@ export const executivePerformanceHandler = async (req: any) => {
   `
   SELECT 
     u.name AS executive_name,
-    COUNT(*) AS total,
+    COUNT(l.id) AS total,
     COUNT(*) FILTER (WHERE l.status = 'Qualified') AS qualified
-  FROM crm_leads l
-  LEFT JOIN crm_user u
+  FROM crm_user u
+  JOIN crm_organizationroles orr
+    ON orr.id = u.role_id
+  JOIN crm_roles r
+    ON r.id = orr.role_id
+  LEFT JOIN crm_leads l
     ON l.assigned_to_id = u.id
-  WHERE l.organization_id = $1
-    AND l.assigned_to_id IS NOT NULL
-    AND l.createdby = $2
-  GROUP BY u.name
+   AND l.organization_id = $1
+  WHERE u.organization_id = $1
+    AND u.reporting_manager_id = $2
+    AND LOWER(r.name) LIKE '%executive%'
+  GROUP BY u.id, u.name
+  ORDER BY u.name ASC
   `,
   [orgId, userId]
 );

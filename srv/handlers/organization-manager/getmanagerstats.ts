@@ -1,11 +1,12 @@
 import { pool } from "../../lib/db";
 
-export const getTotalLeads = async (orgId: string) => {
+export const getTotalLeads = async (orgId: string, userId: string) => {
   const res = await pool.query(
     `SELECT COUNT(*) AS count
      FROM crm_leads
-     WHERE organization_id = $1`,
-    [orgId]
+     WHERE organization_id = $1
+     AND createdby = $2`,
+    [orgId, userId]
   );
 
   return Number(res.rows[0]?.count) || 0;
@@ -38,19 +39,25 @@ export const managerDashboardHandler = async (req: any) => {
     // Converted Leads
     const convertedLeadsRes = await pool.query(
       `SELECT COUNT(*) AS count
-       FROM crm_leads
-       WHERE organization_id = $1
-       AND status = 'Qualified'`,
-      [orgId]
+       FROM crm_leads l
+       JOIN crm_user u
+         ON u.id = l.assigned_to_id
+       WHERE l.organization_id = $1
+       AND u.reporting_manager_id = $2
+       AND l.status = 'Qualified'`,
+      [orgId, userId]
     );
 
     // This Week Leads
     const thisWeekLeadsRes = await pool.query(
       `SELECT COUNT(*) AS count
-       FROM crm_leads
-       WHERE organization_id = $1
-       AND createdat >= NOW() - INTERVAL '7 days'`,
-      [orgId]
+       FROM crm_leads l
+       JOIN crm_user u
+         ON u.id = l.assigned_to_id
+       WHERE l.organization_id = $1
+       AND u.reporting_manager_id = $2
+       AND l.createdat >= NOW() - INTERVAL '7 days'`,
+      [orgId, userId]
     );
 
     // Active Offers
