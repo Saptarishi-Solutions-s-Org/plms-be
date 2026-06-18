@@ -1,7 +1,8 @@
 import { pool } from "../../lib/db";
 import { randomUUID } from "crypto";
 import { generateOfferCode } from "../../lib/generateOfferCode";
-
+import { emitToOrg } from "../../realtime/socket";
+import { OFFER_LIST_CHANGED } from "../../realtime/events";
 export const createOfferHandler = async (req: any) => {
   const client = await pool.connect();
 
@@ -154,6 +155,11 @@ export const createOfferHandler = async (req: any) => {
     }
 
     await client.query("COMMIT");
+
+    emitToOrg(orgId, OFFER_LIST_CHANGED, {
+      reason: "offer-created",
+      offerId: id,
+    });
 
     return {
       id,

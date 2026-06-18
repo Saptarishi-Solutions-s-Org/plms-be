@@ -1,5 +1,10 @@
 import { randomUUID } from "crypto";
 import { pool } from "../../lib/db";
+import { emitToUser } from "../../realtime/socket";
+import {
+  OFFER_DETAIL_CHANGED,
+  OFFER_LIST_CHANGED,
+} from "../../realtime/events";
 
 export const assignOfferToExecutiveHandler = async (req: any) => {
   const { offerId, executiveId } = req.data ?? {};
@@ -106,6 +111,19 @@ export const assignOfferToExecutiveHandler = async (req: any) => {
       `,
       [assignmentId, offerId, managerId, executiveId, managerId],
     );
+
+    emitToUser(executiveId, OFFER_LIST_CHANGED, {
+      reason: "offer-assigned-to-executive",
+      offerId,
+      assignmentId,
+    });
+
+    emitToUser(managerId, OFFER_DETAIL_CHANGED, {
+      reason: "offer-assigned-to-executive",
+      offerId,
+      executiveId,
+      assignmentId,
+    });
 
     return {
       assignmentId,

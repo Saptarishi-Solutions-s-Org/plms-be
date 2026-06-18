@@ -3,8 +3,9 @@ import { pool } from "../../lib/db";
 export const executivePerformanceHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
+    const userId = req.user?.id;
 
-    if (!orgId) {
+    if (!orgId || !userId) {
       return req.error(400, "Organization ID missing");
     }
 
@@ -19,9 +20,10 @@ export const executivePerformanceHandler = async (req: any) => {
     ON l.assigned_to_id = u.id
   WHERE l.organization_id = $1
     AND l.assigned_to_id IS NOT NULL
+    AND l.createdby = $2
   GROUP BY u.name
   `,
-  [orgId]
+  [orgId, userId]
 );
 
 

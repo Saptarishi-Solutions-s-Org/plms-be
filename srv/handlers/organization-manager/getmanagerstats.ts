@@ -11,15 +11,29 @@ export const getTotalLeads = async (orgId: string) => {
   return Number(res.rows[0]?.count) || 0;
 };
 
+export const getAssignedLeads = async (orgId: string, userId: string) => {
+  const res = await pool.query(
+    `SELECT COUNT(*) AS count
+     FROM crm_leads
+     WHERE organization_id = $1
+     AND assigned_to_id IS NOT NULL
+     AND createdby = $2`,
+    [orgId, userId]
+  );
+
+  return Number(res.rows[0]?.count) || 0;
+};
+
 export const managerDashboardHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
+    const userId = req.user?.id;
 
-    if (!orgId) {
+    if (!orgId || !userId) {
       return req.error(400, "Organization ID missing");
     }
 
-    const totalLeads = await getTotalLeads(orgId);
+    const assignedLeads = await getAssignedLeads(orgId, userId);
 
     // Converted Leads
     const convertedLeadsRes = await pool.query(
@@ -50,7 +64,7 @@ export const managerDashboardHandler = async (req: any) => {
     );
 
     return {
-      totalLeads,
+      totalLeads: assignedLeads,
       convertedLeads:
         Number(convertedLeadsRes.rows[0]?.count) || 0,
 
