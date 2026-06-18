@@ -1,21 +1,19 @@
 import { pool } from "../../../lib/db";
-import { getTotalLeads} from "../../organization-manager/getmanagerstats";
+import {
+  getAssignedLeads,
+  getTotalLeads,
+} from "../../organization-manager/getmanagerstats";
 export const ReportDashboardHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
+    const userId = req.user?.id;
 
-    if (!orgId) {
+    if (!orgId || !userId) {
       return req.error(400, "Organization ID missing");
     }
 
     const totalLeads = await getTotalLeads(orgId);
-    const leadsAssignedRes = await pool.query(
-      `SELECT COUNT(*) AS count
-       FROM crm_leads
-       WHERE organization_id = $1
-       AND assigned_to_id IS NOT NULL`,
-      [orgId],
-    );
+    const leadsAssigned = await getAssignedLeads(orgId, userId);
 
     const convertedLeadsRes = await pool.query(
       `SELECT COUNT(*) AS count
@@ -25,9 +23,6 @@ export const ReportDashboardHandler = async (req: any) => {
       [orgId],
     );
 
-
-
-    const leadsAssigned = Number(leadsAssignedRes.rows[0]?.count) || 0;
     const convertedLeads = Number(convertedLeadsRes.rows[0]?.count) || 0;
 
     return {
