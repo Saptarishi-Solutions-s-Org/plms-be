@@ -1,6 +1,8 @@
 import { pool }             from "../../lib/db";
 import { randomUUID }       from "crypto";
 import { generateLeadCode } from "../../lib/leadcode";
+import { emitToOrg } from "../../realtime/socket";
+import { LEAD_LIST_CHANGED } from "../../realtime/events";
 
 export const importLeadsHandler = async (req: any) => {
   const client = await pool.connect();
@@ -102,6 +104,15 @@ export const importLeadsHandler = async (req: any) => {
     }
 
     await client.query("COMMIT");
+
+    if (imported > 0) {
+      emitToOrg(orgId, LEAD_LIST_CHANGED, {
+        reason: "leads-imported",
+        imported,
+        failed,
+      });
+    }
+
     return { imported, failed };
   } catch (error: any) {
     await client.query("ROLLBACK");

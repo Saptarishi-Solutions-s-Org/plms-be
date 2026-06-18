@@ -1,6 +1,8 @@
 import { pool } from "../../lib/db";
 import { randomUUID } from "crypto";
 import { generateLeadCode } from "../../lib/leadcode";
+import { emitToOrg } from "../../realtime/socket";
+import { LEAD_LIST_CHANGED } from "../../realtime/events";
 
 export const createLeadHandler = async (req: any) => {
   const client = await pool.connect();
@@ -83,6 +85,12 @@ export const createLeadHandler = async (req: any) => {
     }
 
     await client.query("COMMIT");
+
+    emitToOrg(orgId, LEAD_LIST_CHANGED, {
+      reason: "lead-created",
+      leadId,
+      leadCode: code,
+    });
 
     return { message: "Lead created successfully", leadCode: code };
   } catch (error: any) {

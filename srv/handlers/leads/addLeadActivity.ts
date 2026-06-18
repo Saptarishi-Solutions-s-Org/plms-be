@@ -1,5 +1,7 @@
 import { pool } from "../../lib/db";
 import { randomUUID } from "crypto";
+import { emitToOrg } from "../../realtime/socket";
+import { LEAD_DETAIL_CHANGED, LEAD_LIST_CHANGED } from "../../realtime/events";
 
 export const addLeadActivityHandler = async (req: any) => {
   const orgId     = req.user?.orgId;
@@ -33,6 +35,16 @@ export const addLeadActivityHandler = async (req: any) => {
     );
 
     await client.query("COMMIT");
+
+    emitToOrg(orgId, LEAD_DETAIL_CHANGED, {
+      reason: "lead-activity-added",
+      leadId,
+      activityId,
+    });
+    emitToOrg(orgId, LEAD_LIST_CHANGED, {
+      reason: "lead-activity-added",
+      leadId,
+    });
 
     const result = await pool.query(
       `SELECT
