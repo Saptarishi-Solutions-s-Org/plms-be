@@ -4,6 +4,8 @@ exports.createOfferHandler = void 0;
 const db_1 = require("../../lib/db");
 const crypto_1 = require("crypto");
 const generateOfferCode_1 = require("../../lib/generateOfferCode");
+const socket_1 = require("../../realtime/socket");
+const events_1 = require("../../realtime/events");
 const createOfferHandler = async (req) => {
     const client = await db_1.pool.connect();
     try {
@@ -112,6 +114,10 @@ const createOfferHandler = async (req) => {
         `, assignmentParams);
         }
         await client.query("COMMIT");
+        (0, socket_1.emitToOrg)(orgId, events_1.OFFER_LIST_CHANGED, {
+            reason: "offer-created",
+            offerId: id,
+        });
         return {
             id,
             message: "Offer created successfully",

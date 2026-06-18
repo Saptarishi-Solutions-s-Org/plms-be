@@ -9,6 +9,8 @@ const crypto_1 = require("crypto");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const generatePassword_1 = require("../../lib/generatePassword");
 const sendUserCreationMail_1 = require("../../mail/sendUserCreationMail");
+const socket_1 = require("../../realtime/socket");
+const events_1 = require("../../realtime/events");
 const createOrgUserHandler = async (req) => {
     const client = await db_1.pool.connect();
     try {
@@ -61,6 +63,14 @@ const createOrgUserHandler = async (req) => {
             createdBy,
         ]);
         await client.query("COMMIT");
+        (0, socket_1.emitToOrg)(orgId, events_1.USER_LIST_CHANGED, {
+            reason: "user-created",
+            userId,
+        });
+        (0, socket_1.emitToOrg)(orgId, events_1.USER_DETAIL_CHANGED, {
+            reason: "user-created",
+            userId,
+        });
         const orgRes = await client.query(`SELECT name, code FROM crm_organization WHERE id = $1`, [orgId]);
         const orgName = orgRes.rows[0]?.name;
         const orgCode = orgRes.rows[0]?.code;

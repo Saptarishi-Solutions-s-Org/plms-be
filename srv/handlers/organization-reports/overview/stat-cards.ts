@@ -12,15 +12,16 @@ export const ReportDashboardHandler = async (req: any) => {
       return req.error(400, "Organization ID missing");
     }
 
-    const totalLeads = await getTotalLeads(orgId);
+    const totalLeads = await getTotalLeads(orgId, userId);
     const leadsAssigned = await getAssignedLeads(orgId, userId);
 
     const convertedLeadsRes = await pool.query(
       `SELECT COUNT(*) AS count
        FROM crm_leads
        WHERE organization_id = $1
-       AND status = 'Qualified'`,
-      [orgId],
+       AND status = 'Qualified'
+       AND createdby = $2`,
+      [orgId, userId],
     );
 
     const convertedLeads = Number(convertedLeadsRes.rows[0]?.count) || 0;

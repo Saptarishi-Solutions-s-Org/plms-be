@@ -6,19 +6,17 @@ const getmanagerstats_1 = require("../../organization-manager/getmanagerstats");
 const ReportDashboardHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
-        if (!orgId) {
+        const userId = req.user?.id;
+        if (!orgId || !userId) {
             return req.error(400, "Organization ID missing");
         }
-        const totalLeads = await (0, getmanagerstats_1.getTotalLeads)(orgId);
-        const leadsAssignedRes = await db_1.pool.query(`SELECT COUNT(*) AS count
-       FROM crm_leads
-       WHERE organization_id = $1
-       AND assigned_to_id IS NOT NULL`, [orgId]);
+        const totalLeads = await (0, getmanagerstats_1.getTotalLeads)(orgId, userId);
+        const leadsAssigned = await (0, getmanagerstats_1.getAssignedLeads)(orgId, userId);
         const convertedLeadsRes = await db_1.pool.query(`SELECT COUNT(*) AS count
        FROM crm_leads
        WHERE organization_id = $1
-       AND status = 'Qualified'`, [orgId]);
-        const leadsAssigned = Number(leadsAssignedRes.rows[0]?.count) || 0;
+       AND status = 'Qualified'
+       AND createdby = $2`, [orgId, userId]);
         const convertedLeads = Number(convertedLeadsRes.rows[0]?.count) || 0;
         return {
             leadsAssigned,

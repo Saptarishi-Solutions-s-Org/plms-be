@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateLeadHandler = void 0;
 const db_1 = require("../../lib/db");
 const crypto_1 = require("crypto");
+const socket_1 = require("../../realtime/socket");
+const events_1 = require("../../realtime/events");
 const updateLeadHandler = async (req) => {
     const client = await db_1.pool.connect();
     try {
@@ -50,6 +52,14 @@ const updateLeadHandler = async (req) => {
          VALUES ($1,$2,$3,NOW(),$4,NOW(),$4)`, [(0, crypto_1.randomUUID)(), id, notes.trim(), modifiedBy]);
         }
         await client.query("COMMIT");
+        (0, socket_1.emitToOrg)(orgId, events_1.LEAD_LIST_CHANGED, {
+            reason: "lead-updated",
+            leadId: id,
+        });
+        (0, socket_1.emitToOrg)(orgId, events_1.LEAD_DETAIL_CHANGED, {
+            reason: "lead-updated",
+            leadId: id,
+        });
         return { message: "Lead updated successfully" };
     }
     catch (error) {
