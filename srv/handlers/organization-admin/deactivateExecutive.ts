@@ -1,4 +1,6 @@
 import { pool } from "../../lib/db";
+import { emitToOrg } from "../../realtime/socket";
+import { LEAD_LIST_CHANGED, USER_DETAIL_CHANGED, USER_LIST_CHANGED } from "../../realtime/events";
 
 export const deactivateExecutiveHandler = async (req: any) => {
   const client = await pool.connect();
@@ -85,6 +87,15 @@ export const deactivateExecutiveHandler = async (req: any) => {
     );
 
     await client.query("COMMIT");
+
+    emitToOrg(orgId, USER_LIST_CHANGED, {
+      reason: "executive-deactivated",
+      userId: executiveId,
+    });
+    emitToOrg(orgId, USER_DETAIL_CHANGED, {
+      reason: "executive-deactivated",
+      userId: executiveId,
+    });
 
     return {
       message: `Executive deactivated successfully. ${leadCount} leads reassigned to ${targetExecutiveRes.rows[0].name}`,

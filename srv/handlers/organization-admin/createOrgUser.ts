@@ -3,6 +3,8 @@ import { randomUUID } from "crypto";
 import bcrypt from "bcrypt";
 import { generatePassword } from "../../lib/generatePassword";
 import { sendUserCreationMail } from "../../mail/sendUserCreationMail";
+import { emitToOrg } from "../../realtime/socket";
+import { USER_DETAIL_CHANGED, USER_LIST_CHANGED } from "../../realtime/events";
 
 export const createOrgUserHandler = async (req: any) => {
   const client = await pool.connect();
@@ -90,6 +92,15 @@ export const createOrgUserHandler = async (req: any) => {
     );
 
     await client.query("COMMIT");
+
+    emitToOrg(orgId, USER_LIST_CHANGED, {
+      reason: "user-created",
+      userId,
+    });
+    emitToOrg(orgId, USER_DETAIL_CHANGED, {
+      reason: "user-created",
+      userId,
+    });
 
     const orgRes = await client.query(
       `SELECT name, code FROM crm_organization WHERE id = $1`,
