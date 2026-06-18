@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.assignOfferToExecutiveHandler = void 0;
 const crypto_1 = require("crypto");
 const db_1 = require("../../lib/db");
+const socket_1 = require("../../realtime/socket");
+const events_1 = require("../../realtime/events");
 const assignOfferToExecutiveHandler = async (req) => {
     const { offerId, executiveId } = req.data ?? {};
     const orgId = req.user?.orgId;
@@ -81,6 +83,17 @@ const assignOfferToExecutiveHandler = async (req) => {
       )
       VALUES ($1, $2, $3, $4, NOW(), $5)
       `, [assignmentId, offerId, managerId, executiveId, managerId]);
+        (0, socket_1.emitToUser)(executiveId, events_1.OFFER_LIST_CHANGED, {
+            reason: "offer-assigned-to-executive",
+            offerId,
+            assignmentId,
+        });
+        (0, socket_1.emitToUser)(managerId, events_1.OFFER_DETAIL_CHANGED, {
+            reason: "offer-assigned-to-executive",
+            offerId,
+            executiveId,
+            assignmentId,
+        });
         return {
             assignmentId,
             message: "Offer assigned to executive successfully",

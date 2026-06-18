@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.addLeadActivityHandler = void 0;
 const db_1 = require("../../lib/db");
 const crypto_1 = require("crypto");
+const socket_1 = require("../../realtime/socket");
+const events_1 = require("../../realtime/events");
 const addLeadActivityHandler = async (req) => {
     const orgId = req.user?.orgId;
     const createdBy = req.user?.id;
@@ -27,6 +29,15 @@ const addLeadActivityHandler = async (req) => {
             createdBy,
         ]);
         await client.query("COMMIT");
+        (0, socket_1.emitToOrg)(orgId, events_1.LEAD_DETAIL_CHANGED, {
+            reason: "lead-activity-added",
+            leadId,
+            activityId,
+        });
+        (0, socket_1.emitToOrg)(orgId, events_1.LEAD_LIST_CHANGED, {
+            reason: "lead-activity-added",
+            leadId,
+        });
         const result = await db_1.pool.query(`SELECT
          la.id                              AS "id",
          la.type                            AS "type",

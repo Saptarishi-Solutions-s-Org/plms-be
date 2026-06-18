@@ -4,6 +4,8 @@ exports.importLeadsHandler = void 0;
 const db_1 = require("../../lib/db");
 const crypto_1 = require("crypto");
 const leadcode_1 = require("../../lib/leadcode");
+const socket_1 = require("../../realtime/socket");
+const events_1 = require("../../realtime/events");
 const importLeadsHandler = async (req) => {
     const client = await db_1.pool.connect();
     try {
@@ -74,6 +76,13 @@ const importLeadsHandler = async (req) => {
             }
         }
         await client.query("COMMIT");
+        if (imported > 0) {
+            (0, socket_1.emitToOrg)(orgId, events_1.LEAD_LIST_CHANGED, {
+                reason: "leads-imported",
+                imported,
+                failed,
+            });
+        }
         return { imported, failed };
     }
     catch (error) {

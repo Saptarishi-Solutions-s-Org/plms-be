@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivateManagerHandler = void 0;
 const db_1 = require("../../lib/db");
+const socket_1 = require("../../realtime/socket");
+const events_1 = require("../../realtime/events");
 const deactivateManagerHandler = async (req) => {
     const client = await db_1.pool.connect();
     try {
@@ -61,6 +63,14 @@ const deactivateManagerHandler = async (req) => {
        SET is_active = false, modifiedat = NOW()
        WHERE id = $1`, [managerId]);
         await client.query("COMMIT");
+        (0, socket_1.emitToOrg)(orgId, events_1.USER_LIST_CHANGED, {
+            reason: "manager-deactivated",
+            userId: managerId,
+        });
+        (0, socket_1.emitToOrg)(orgId, events_1.USER_DETAIL_CHANGED, {
+            reason: "manager-deactivated",
+            userId: managerId,
+        });
         return {
             message: `Manager deactivated successfully. ${executiveCount} executives reassigned to ${targetManagerRes.rows[0].name}`,
             managerName: managerRes.rows[0].name,
