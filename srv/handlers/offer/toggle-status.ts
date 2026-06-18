@@ -1,10 +1,16 @@
 import { pool } from "../../lib/db";
+import { emitToOrg } from "../../realtime/socket";
+import {
+  OFFER_DETAIL_CHANGED,
+  OFFER_LIST_CHANGED,
+} from "../../realtime/events";
 
 export const toggleOfferStatusHandler = async (req: any) => {
 
   try {
 
     const { id } = req.data;
+    const orgId = req.user?.orgId;
 
     const result = await pool.query(
       `
@@ -34,6 +40,18 @@ export const toggleOfferStatusHandler = async (req: any) => {
       `,
       [newStatus, id]
     );
+
+    emitToOrg(orgId, OFFER_LIST_CHANGED, {
+      reason: "offer-status-changed",
+      offerId: id,
+      status: newStatus.toLowerCase(),
+    });
+
+    emitToOrg(orgId, OFFER_DETAIL_CHANGED, {
+      reason: "offer-status-changed",
+      offerId: id,
+      status: newStatus.toLowerCase(),
+    });
 
     return {
       status: newStatus.toLowerCase(),
