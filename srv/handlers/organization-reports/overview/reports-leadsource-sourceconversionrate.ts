@@ -3,25 +3,32 @@ import { pool } from "../../../lib/db";
 export const leadSourceAnalyticsHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
+    const userId = req.user?.id;
 
-    if (!orgId) {
-      return req.error(400, "Organization ID missing");
+    if (!orgId || !userId) {
+      return req.error(400, "User or Organization ID missing");
     }
 
     const res = await pool.query(
       `
       SELECT
-        source AS source,
+        l.source AS source,
         COUNT(*) AS leads,
         COUNT(*) FILTER (
           WHERE status = 'Qualified'
         ) AS converted
-      FROM crm_leads
-      WHERE organization_id = $1
-      GROUP BY source
+      FROM crm_leads l
+      LEFT JOIN crm_user u ON u.id = l.assigned_to_id
+      WHERE l.organization_id = $1
+        AND (
+          l.assigned_to_id = $2
+          OR u.reporting_manager_id = $2
+          OR (l.assigned_to_id IS NULL AND l.createdby = $2)
+        )
+      GROUP BY l.source
       ORDER BY leads DESC, source ASC
       `,
-      [orgId],
+      [orgId, userId],
     );
 
     return res.rows.map((row) => ({
