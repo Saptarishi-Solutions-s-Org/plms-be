@@ -4,17 +4,21 @@ import { LeadStatus } from "../../types/org-manager";
 export const leadStatusOverviewHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
+    const userId = req.user?.id;
 
-    if (!orgId) {
+    if (!orgId || !userId) {
       return req.error(400, "Organization ID missing");
     }
 
     const res = await pool.query(
       `SELECT status, COUNT(*) AS count
-       FROM crm_leads
-       WHERE organization_id = $1
+       FROM crm_leads l
+       JOIN crm_user u
+         ON u.id = l.assigned_to_id
+       WHERE l.organization_id = $1
+       AND u.reporting_manager_id = $2
        GROUP BY status`,
-      [orgId],
+      [orgId, userId],
     );
 
     const overview: Record<LeadStatus, number> = {

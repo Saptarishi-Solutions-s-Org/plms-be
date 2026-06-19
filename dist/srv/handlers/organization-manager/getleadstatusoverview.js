@@ -5,13 +5,17 @@ const db_1 = require("../../lib/db");
 const leadStatusOverviewHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
-        if (!orgId) {
+        const userId = req.user?.id;
+        if (!orgId || !userId) {
             return req.error(400, "Organization ID missing");
         }
         const res = await db_1.pool.query(`SELECT status, COUNT(*) AS count
-       FROM crm_leads
-       WHERE organization_id = $1
-       GROUP BY status`, [orgId]);
+       FROM crm_leads l
+       JOIN crm_user u
+         ON u.id = l.assigned_to_id
+       WHERE l.organization_id = $1
+       AND u.reporting_manager_id = $2
+       GROUP BY status`, [orgId, userId]);
         const overview = {
             New: 0,
             Contacted: 0,
