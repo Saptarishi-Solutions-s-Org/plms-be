@@ -5,6 +5,7 @@ import { getOffersHandler } from "../handlers/offer/getalloffers";
 import { toggleOfferStatusHandler } from "../handlers/offer/toggle-status";
 import { getManagersHandler } from "../handlers/offer/get-managers";
 import { getsummarycards } from "../handlers/offer/offer-cards";
+import { getExecutivesByOfferHandler } from "../handlers/offer/get-executives-by-offer";
 
 export const bindOffer = () => {
   const service = cds.services["OfferService"];
@@ -58,6 +59,16 @@ export const bindOffer = () => {
     "getOfferSummary",
     withAuth(getsummarycards, {
       roles: ["admin"],
+      modules: {
+        offers: ["view"],
+      },
+    })
+  );
+
+  service.on(
+    "getExecutivesByOffer",
+    withAuth(getExecutivesByOfferHandler, {
+      roles: ["manager"],
       modules: {
         offers: ["view"],
       },
