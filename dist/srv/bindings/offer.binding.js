@@ -11,6 +11,7 @@ const getalloffers_1 = require("../handlers/offer/getalloffers");
 const toggle_status_1 = require("../handlers/offer/toggle-status");
 const get_managers_1 = require("../handlers/offer/get-managers");
 const offer_cards_1 = require("../handlers/offer/offer-cards");
+const get_executives_by_offer_1 = require("../handlers/offer/get-executives-by-offer");
 const bindOffer = () => {
     const service = cds_1.default.services["OfferService"];
     if (!service) {
@@ -43,6 +44,12 @@ const bindOffer = () => {
     }));
     service.on("getOfferSummary", (0, withAuth_1.withAuth)(offer_cards_1.getsummarycards, {
         roles: ["admin"],
+        modules: {
+            offers: ["view"],
+        },
+    }));
+    service.on("getExecutivesByOffer", (0, withAuth_1.withAuth)(get_executives_by_offer_1.getExecutivesByOfferHandler, {
+        roles: ["manager"],
         modules: {
             offers: ["view"],
         },
