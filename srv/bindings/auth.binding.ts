@@ -4,6 +4,10 @@ import {
   logoutHandler,
   refreshHandler,
 } from "../handlers/auth.handler";
+import {
+  forgotPasswordHandler,
+  resetPasswordHandler,
+} from "../handlers/forgotPassword";
 
 export const bindAuth = () => {
   const service = cds.services["AuthService"];
@@ -16,6 +20,8 @@ export const bindAuth = () => {
   service.on("login", loginHandler);
   service.on("refresh", refreshHandler);
   service.on("logout", logoutHandler);
+  service.on("forgotPassword", forgotPasswordHandler);
+  service.on("resetPassword", resetPasswordHandler);
 
   console.log("AuthService bound");
 };

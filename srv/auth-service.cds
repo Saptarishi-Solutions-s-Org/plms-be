@@ -30,4 +30,16 @@ service AuthService {
         message : String;
     };
 
+    action forgotPassword(email: String) returns {
+        message : String;
+    };
+
+    action resetPassword(
+        token           : String,
+        newPassword     : String,
+        confirmPassword : String
+    ) returns {
+        message : String;
+    };
+
 }
