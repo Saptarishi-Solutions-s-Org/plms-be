@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { createHash, randomBytes, randomUUID } from "crypto";
+import { randomBytes, randomUUID } from "crypto";
 import { pool } from "../lib/db";
 import { validatePasswordPolicy } from "../lib/passwordPolicy";
 import { sendPasswordResetMail } from "../mail/sendPasswordResetMail";
@@ -9,16 +9,16 @@ const RESET_TOKEN_VALIDITY_MINUTES = 30;
 const GENERIC_FORGOT_PASSWORD_MESSAGE =
   "If the email exists, reset link sent";
 
-const hashToken = (token: string) =>
-  createHash("sha256").update(token).digest("hex");
-
 const getResetUrl = (token: string) => {
-  const frontendUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    process.env.ALLOWED_ORIGINS?.split(",")[0]?.trim();
+  const frontendUrl =process.env.ALLOWED_ORIGINS?.split(",")[0]?.trim();
   const resetPageUrl =
     process.env.PASSWORD_RESET_URL ||
-    `${frontendUrl || "http://localhost:3000"}/reset-password`;
+    (frontendUrl ? `${frontendUrl}/reset-password` : "");
+
+  if (!resetPageUrl) {
+    throw new Error("PASSWORD_RESET_URL or ALLOWED_ORIGINS is missing");
+  }
+
   const separator = resetPageUrl.includes("?") ? "&" : "?";
 
   return `${resetPageUrl.replace(/\/$/, "")}${separator}token=${encodeURIComponent(token)}`;
@@ -48,8 +48,7 @@ export const forgotPasswordHandler = async (req: any) => {
       return { message: GENERIC_FORGOT_PASSWORD_MESSAGE };
     }
 
-    const token = randomBytes(32).toString("base64url");
-    const tokenHash = hashToken(token);
+    const token = randomBytes(32).toString("hex");
     const tokenId = randomUUID();
 
     const client = await pool.connect();
@@ -66,7 +65,7 @@ export const forgotPasswordHandler = async (req: any) => {
            (id, user_id, token, expires_at, is_used, createdat, modifiedat)
          VALUES
            ($1, $2, $3, NOW() + ($4 * INTERVAL '1 minute'), false, NOW(), NOW())`,
-        [tokenId, user.id, tokenHash, RESET_TOKEN_VALIDITY_MINUTES],
+        [tokenId, user.id, token, RESET_TOKEN_VALIDITY_MINUTES],
       );
       await client.query("COMMIT");
     } catch (error) {
@@ -76,11 +75,14 @@ export const forgotPasswordHandler = async (req: any) => {
       client.release();
     }
 
+    const resetUrl = getResetUrl(token);
+
     try {
+      console.log("[auth.forgotPassword] sending reset mail:", user.email);
       await sendPasswordResetMail({
         to: user.email,
         name: user.name,
-        resetUrl: getResetUrl(token),
+        resetUrl,
       });
     } catch (error) {
       console.error("[auth.forgotPassword.mail]", error);
@@ -90,6 +92,7 @@ export const forgotPasswordHandler = async (req: any) => {
          WHERE id = $1`,
         [tokenId],
       );
+      return req.error(500, "Failed to send password reset email");
     }
 
     return { message: GENERIC_FORGOT_PASSWORD_MESSAGE };
@@ -123,29 +126,40 @@ export const resetPasswordHandler = async (req: any) => {
     await client.query("BEGIN");
 
     const tokenResult = await client.query(
-      `SELECT prt.id, prt.user_id, u.password
+      `SELECT prt.id, prt.user_id, prt.expires_at, prt.is_used, u.password
        FROM crm_passwordresettoken prt
        JOIN crm_user u ON u.id = prt.user_id
        JOIN crm_organization o ON o.id = u.organization_id
        WHERE prt.token = $1
-         AND prt.is_used = false
-         AND prt.expires_at > NOW()
          AND u.is_active = true
          AND o.is_active = true
        LIMIT 1
        FOR UPDATE OF prt`,
-      [hashToken(token)],
+      [token],
     );
 
     const resetRecord = tokenResult.rows[0];
     if (!resetRecord) {
       await client.query("ROLLBACK");
-      return req.error(400, "Invalid or expired password reset token");
+      return req.error(400, "Invalid token");
+    }
+
+    if (resetRecord.is_used) {
+      await client.query("ROLLBACK");
+      return req.error(400, "Token already used");
+    }
+
+    if (new Date(resetRecord.expires_at) < new Date()) {
+      await client.query("ROLLBACK");
+      return req.error(400, "Token expired");
     }
 
     if (await bcrypt.compare(newPassword, resetRecord.password)) {
       await client.query("ROLLBACK");
-      return req.error(400, "New password must be different from old password");
+      return req.error(
+        400,
+        "New password must be different from current password",
+      );
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 10);
@@ -162,8 +176,8 @@ export const resetPasswordHandler = async (req: any) => {
     await client.query(
       `UPDATE crm_passwordresettoken
        SET is_used = true, modifiedat = NOW()
-       WHERE user_id = $1 AND is_used = false`,
-      [resetRecord.user_id],
+       WHERE id = $1`,
+      [resetRecord.id],
     );
 
     await client.query("COMMIT");
