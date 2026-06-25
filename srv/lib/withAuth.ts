@@ -1,4 +1,5 @@
 import { verifyToken } from "./jwt";
+import { pool } from "./db";
 import {
   ModulePermissions,
   WithAuthRequirements,
@@ -70,8 +71,34 @@ export const withAuth = (handler: any, requirements?: WithAuthRequirements) => {
         role: decoded.role,
         roles: jwtRoles,
         permissions: jwtPermissions,
+        mustChangePassword: decoded.mustChangePassword === true,
         isSuper: decoded.isSuper,
       };
+
+      const allowForcedPasswordChange =
+        requirements?.allowForcedPasswordChange === true;
+
+      if (
+        req.user.mustChangePassword &&
+        !allowForcedPasswordChange
+      ) {
+        return req.error(403, "Password change required");
+      }
+
+      if (!req.user.mustChangePassword) {
+        const forcedPasswordRes = await pool.query(
+          `SELECT must_change_password FROM crm_user WHERE id = $1 LIMIT 1`,
+          [req.user.id],
+        );
+        const mustChangePassword =
+          forcedPasswordRes.rows[0]?.must_change_password === true;
+
+        req.user.mustChangePassword = mustChangePassword;
+
+        if (mustChangePassword && !allowForcedPasswordChange) {
+          return req.error(403, "Password change required");
+        }
+      }
 
       if (!requirements || Object.keys(requirements).length === 0) {
         return handler(req);

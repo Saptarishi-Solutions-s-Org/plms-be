@@ -13,9 +13,11 @@ import {
   createRefreshTokenSession,
   findRefreshToken,
   isRefreshTokenUsable,
+  revokeOtherRefreshTokens,
   revokeRefreshToken,
   rotateRefreshToken,
 } from "../lib/refreshToken";
+import { validatePasswordPolicy } from "../lib/passwordPolicy";
 
 type PermissionMap = Record<string, string[]>;
 
@@ -31,6 +33,7 @@ type AuthUserRow = {
   isSuper: boolean;
   orgRoleId: string;
   role: string;
+  mustChangePassword: boolean;
 };
 
 async function getAuthUserByEmail(email: string) {
@@ -47,7 +50,8 @@ async function getAuthUserByEmail(email: string) {
       o.is_active as "orgIsActive",
       o.is_super_organization as "isSuper",
       u.role_id as "orgRoleId",
-      r.name as "role"
+      r.name as "role",
+      COALESCE(u.must_change_password, false) as "mustChangePassword"
     FROM crm_user u
     JOIN crm_organization o ON o.id = u.organization_id
     JOIN crm_organizationroles orr ON orr.id = u.role_id
@@ -73,7 +77,8 @@ async function getAuthUserById(userId: string) {
       o.is_active as "orgIsActive",
       o.is_super_organization as "isSuper",
       u.role_id as "orgRoleId",
-      r.name as "role"
+      r.name as "role",
+      COALESCE(u.must_change_password, false) as "mustChangePassword"
     FROM crm_user u
     JOIN crm_organization o ON o.id = u.organization_id
     JOIN crm_organizationroles orr ON orr.id = u.role_id
@@ -128,6 +133,7 @@ async function buildAuthResponse(user: AuthUserRow) {
     roleId: user.orgRoleId,
     role: user.role,
     permissions,
+    mustChangePassword: user.mustChangePassword,
     isSuper: user.isSuper,
   });
 
@@ -142,8 +148,36 @@ async function buildAuthResponse(user: AuthUserRow) {
       roleId: user.orgRoleId,
       role: user.role,
       permissions,
+      mustChangePassword: user.mustChangePassword,
     },
   };
+}
+
+async function replaceRefreshSession(req: any, userId: string) {
+  const { userAgent, ipAddress } = getRequestMetadata(req);
+  const refreshToken = getRefreshTokenCookie(req);
+  const currentRefreshRecord = refreshToken
+    ? await findRefreshToken(refreshToken)
+    : null;
+
+  const replacement =
+    currentRefreshRecord &&
+    currentRefreshRecord.user_id === userId &&
+    isRefreshTokenUsable(currentRefreshRecord)
+      ? await rotateRefreshToken({
+          currentTokenId: currentRefreshRecord.id,
+          userId,
+          userAgent,
+          ipAddress,
+        })
+      : await createRefreshTokenSession({
+          userId,
+          userAgent,
+          ipAddress,
+        });
+
+  await revokeOtherRefreshTokens(userId, replacement.id);
+  setRefreshTokenCookie(req, replacement.token);
 }
 
 export const loginHandler = async (req: any) => {
@@ -227,6 +261,63 @@ export const refreshHandler = async (req: any) => {
   } catch (err: any) {
     console.error("[auth.refresh]", err);
     return req.error(401, "Unauthorized");
+  }
+};
+
+export const setPasswordHandler = async (req: any) => {
+  try {
+    const userId = req.user?.userId || req.user?.id;
+    if (!userId) return req.error(401, "Unauthorized");
+
+    const { password, confirmPassword } = req.data;
+
+    if (!password || !confirmPassword) {
+      return req.error(400, "Password and confirm password are required");
+    }
+
+    if (password !== confirmPassword) {
+      return req.error(400, "Passwords do not match");
+    }
+
+    const policy = validatePasswordPolicy(password);
+    if (!policy.valid) {
+      return req.error(400, policy.message);
+    }
+
+    const currentUser = await getAuthUserById(userId);
+    if (!currentUser) {
+      return req.error(401, "Unauthorized: user inactive");
+    }
+
+    if (!currentUser.mustChangePassword) {
+      return req.error(400, "Password has already been set");
+    }
+
+    const newHash = await bcrypt.hash(password, 10);
+    await pool.query(
+      `
+      UPDATE crm_user
+      SET password = $1,
+          must_change_password = false,
+          modifiedat = NOW(),
+          modifiedby = $2
+      WHERE id = $2
+      `,
+      [newHash, userId],
+    );
+
+    const updatedUser = await getAuthUserById(userId);
+    if (!updatedUser) {
+      return req.error(401, "Unauthorized: user inactive");
+    }
+
+    await replaceRefreshSession(req, userId);
+    setUserHintCookie(req, updatedUser);
+
+    return buildAuthResponse(updatedUser);
+  } catch (err: any) {
+    console.error("[auth.setPassword]", err);
+    return req.error(500, "Failed to set password");
   }
 };
 

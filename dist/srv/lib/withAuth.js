@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.withAuth = void 0;
 const jwt_1 = require("./jwt");
+const db_1 = require("./db");
 function normalizeList(values) {
     return Array.isArray(values)
         ? values.map((value) => String(value).toLowerCase())
@@ -52,8 +53,22 @@ const withAuth = (handler, requirements) => {
                 role: decoded.role,
                 roles: jwtRoles,
                 permissions: jwtPermissions,
+                mustChangePassword: decoded.mustChangePassword === true,
                 isSuper: decoded.isSuper,
             };
+            const allowForcedPasswordChange = requirements?.allowForcedPasswordChange === true;
+            if (req.user.mustChangePassword &&
+                !allowForcedPasswordChange) {
+                return req.error(403, "Password change required");
+            }
+            if (!req.user.mustChangePassword) {
+                const forcedPasswordRes = await db_1.pool.query(`SELECT must_change_password FROM crm_user WHERE id = $1 LIMIT 1`, [req.user.id]);
+                const mustChangePassword = forcedPasswordRes.rows[0]?.must_change_password === true;
+                req.user.mustChangePassword = mustChangePassword;
+                if (mustChangePassword && !allowForcedPasswordChange) {
+                    return req.error(403, "Password change required");
+                }
+            }
             if (!requirements || Object.keys(requirements).length === 0) {
                 return handler(req);
             }
