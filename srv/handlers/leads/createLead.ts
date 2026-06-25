@@ -37,6 +37,19 @@ export const createLeadHandler = async (req: any) => {
       return req.error(400, "Missing required fields");
     }
 
+    const duplicate = await client.query(
+      `SELECT id FROM crm_leads
+       WHERE organization_id = $1
+         AND (LOWER(email) = LOWER($2) OR phone = $3)
+       LIMIT 1`,
+      [orgId, email, phone]
+    );
+
+    if (duplicate.rowCount) {
+      await client.query("ROLLBACK");
+      return req.error(409, "A lead with this email or phone already exists");
+    }
+
     const leadId = randomUUID();
     const code = generateLeadCode();
 

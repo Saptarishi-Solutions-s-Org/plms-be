@@ -3,12 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logoutHandler = exports.refreshHandler = exports.loginHandler = void 0;
+exports.logoutHandler = exports.setPasswordHandler = exports.refreshHandler = exports.loginHandler = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jwt_1 = require("../lib/jwt");
 const db_1 = require("../lib/db");
 const cookies_1 = require("../lib/cookies");
 const refreshToken_1 = require("../lib/refreshToken");
+const passwordPolicy_1 = require("../lib/passwordPolicy");
 async function getAuthUserByEmail(email) {
     const userRes = await db_1.pool.query(`
     SELECT
@@ -22,7 +23,8 @@ async function getAuthUserByEmail(email) {
       o.is_active as "orgIsActive",
       o.is_super_organization as "isSuper",
       u.role_id as "orgRoleId",
-      r.name as "role"
+      r.name as "role",
+      COALESCE(u.must_change_password, false) as "mustChangePassword"
     FROM crm_user u
     JOIN crm_organization o ON o.id = u.organization_id
     JOIN crm_organizationroles orr ON orr.id = u.role_id
@@ -43,7 +45,8 @@ async function getAuthUserById(userId) {
       o.is_active as "orgIsActive",
       o.is_super_organization as "isSuper",
       u.role_id as "orgRoleId",
-      r.name as "role"
+      r.name as "role",
+      COALESCE(u.must_change_password, false) as "mustChangePassword"
     FROM crm_user u
     JOIN crm_organization o ON o.id = u.organization_id
     JOIN crm_organizationroles orr ON orr.id = u.role_id
@@ -88,6 +91,7 @@ async function buildAuthResponse(user) {
         roleId: user.orgRoleId,
         role: user.role,
         permissions,
+        mustChangePassword: user.mustChangePassword,
         isSuper: user.isSuper,
     });
     return {
@@ -101,8 +105,32 @@ async function buildAuthResponse(user) {
             roleId: user.orgRoleId,
             role: user.role,
             permissions,
+            mustChangePassword: user.mustChangePassword,
         },
     };
+}
+async function replaceRefreshSession(req, userId) {
+    const { userAgent, ipAddress } = (0, cookies_1.getRequestMetadata)(req);
+    const refreshToken = (0, cookies_1.getRefreshTokenCookie)(req);
+    const currentRefreshRecord = refreshToken
+        ? await (0, refreshToken_1.findRefreshToken)(refreshToken)
+        : null;
+    const replacement = currentRefreshRecord &&
+        currentRefreshRecord.user_id === userId &&
+        (0, refreshToken_1.isRefreshTokenUsable)(currentRefreshRecord)
+        ? await (0, refreshToken_1.rotateRefreshToken)({
+            currentTokenId: currentRefreshRecord.id,
+            userId,
+            userAgent,
+            ipAddress,
+        })
+        : await (0, refreshToken_1.createRefreshTokenSession)({
+            userId,
+            userAgent,
+            ipAddress,
+        });
+    await (0, refreshToken_1.revokeOtherRefreshTokens)(userId, replacement.id);
+    (0, cookies_1.setRefreshTokenCookie)(req, replacement.token);
 }
 const loginHandler = async (req) => {
     try {
@@ -173,6 +201,52 @@ const refreshHandler = async (req) => {
     }
 };
 exports.refreshHandler = refreshHandler;
+const setPasswordHandler = async (req) => {
+    try {
+        const userId = req.user?.userId || req.user?.id;
+        if (!userId)
+            return req.error(401, "Unauthorized");
+        const { password, confirmPassword } = req.data;
+        if (!password || !confirmPassword) {
+            return req.error(400, "Password and confirm password are required");
+        }
+        if (password !== confirmPassword) {
+            return req.error(400, "Passwords do not match");
+        }
+        const policy = (0, passwordPolicy_1.validatePasswordPolicy)(password);
+        if (!policy.valid) {
+            return req.error(400, policy.message);
+        }
+        const currentUser = await getAuthUserById(userId);
+        if (!currentUser) {
+            return req.error(401, "Unauthorized: user inactive");
+        }
+        if (!currentUser.mustChangePassword) {
+            return req.error(400, "Password has already been set");
+        }
+        const newHash = await bcrypt_1.default.hash(password, 10);
+        await db_1.pool.query(`
+      UPDATE crm_user
+      SET password = $1,
+          must_change_password = false,
+          modifiedat = NOW(),
+          modifiedby = $2
+      WHERE id = $2
+      `, [newHash, userId]);
+        const updatedUser = await getAuthUserById(userId);
+        if (!updatedUser) {
+            return req.error(401, "Unauthorized: user inactive");
+        }
+        await replaceRefreshSession(req, userId);
+        (0, cookies_1.setUserHintCookie)(req, updatedUser);
+        return buildAuthResponse(updatedUser);
+    }
+    catch (err) {
+        console.error("[auth.setPassword]", err);
+        return req.error(500, "Failed to set password");
+    }
+};
+exports.setPasswordHandler = setPasswordHandler;
 const logoutHandler = async (req) => {
     try {
         const refreshToken = (0, cookies_1.getRefreshTokenCookie)(req);

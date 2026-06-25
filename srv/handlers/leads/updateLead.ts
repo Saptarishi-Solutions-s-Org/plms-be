@@ -35,6 +35,20 @@ export const updateLeadHandler = async (req: any) => {
       return req.error(404, "Lead not found");
     }
 
+    const duplicate = await client.query(
+      `SELECT id FROM crm_leads
+       WHERE organization_id = $1
+         AND id <> $2
+         AND (LOWER(email) = LOWER($3) OR phone = $4)
+       LIMIT 1`,
+      [orgId, id, email, phone]
+    );
+
+    if (duplicate.rowCount) {
+      await client.query("ROLLBACK");
+      return req.error(409, "A lead with this email or phone already exists");
+    }
+
     await client.query(
       `UPDATE crm_leads SET
          name           = $1,

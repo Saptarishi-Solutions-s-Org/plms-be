@@ -70,9 +70,9 @@ export const createOrgUserHandler = async (req: any) => {
       `INSERT INTO crm_user
   (id, name, email, phone, password, gender, dob,
    organization_id, role_id, reporting_manager_id, country_id, state_id, city,
-   is_active, createdat, createdby, modifiedat, modifiedby)
+   is_active, must_change_password, createdat, createdby, modifiedat, modifiedby)
   VALUES
-  ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13, TRUE, NOW(), $14, NOW(), $14)`,
+  ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13, TRUE, TRUE, NOW(), $14, NOW(), $14)`,
       [
         userId,
         name,

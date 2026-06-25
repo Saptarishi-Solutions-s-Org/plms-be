@@ -34,7 +34,7 @@ export const managerDashboardHandler = async (req: any) => {
       return req.error(400, "Organization ID missing");
     }
 
-    const assignedLeads = await getAssignedLeads(orgId, userId);
+    const totalLeads = await getTotalLeads(orgId, userId);
 
     // Converted Leads
     const convertedLeadsRes = await pool.query(
@@ -71,7 +71,7 @@ export const managerDashboardHandler = async (req: any) => {
     );
 
     return {
-      totalLeads: assignedLeads,
+      totalLeads,
       convertedLeads:
         Number(convertedLeadsRes.rows[0]?.count) || 0,
 
