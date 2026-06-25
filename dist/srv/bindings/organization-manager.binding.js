@@ -14,6 +14,7 @@ const getmanagerofferoverview_1 = require("../handlers/organization-manager/getm
 const assign_offer_to_executive_1 = require("../handlers/organization-manager/assign-offer-to-executive");
 const deactivateExecutiveForManager_1 = require("../handlers/organization-manager/deactivateExecutiveForManager");
 const getOtherExecutivesForReassign_1 = require("../handlers/organization-manager/getOtherExecutivesForReassign");
+const getAvailableExecutivesForOffer_1 = require("../handlers/organization-manager/getAvailableExecutivesForOffer");
 const bindManagerDashboard = () => {
     const service = cds_1.default.services["ManagerDashboardService"];
     if (!service)
@@ -39,6 +40,10 @@ const bindManagerDashboard = () => {
         modules: { offers: ["view"] },
     }));
     service.on("assignOfferToExecutive", (0, withAuth_1.withAuth)(assign_offer_to_executive_1.assignOfferToExecutiveHandler, {
+        roles: ["manager"],
+        modules: { offers: ["view"] },
+    }));
+    service.on("getAvailableExecutivesForOffer", (0, withAuth_1.withAuth)(getAvailableExecutivesForOffer_1.getAvailableExecutivesForOfferHandler, {
         roles: ["manager"],
         modules: { offers: ["view"] },
     }));
