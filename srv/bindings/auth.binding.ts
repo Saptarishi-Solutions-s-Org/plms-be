@@ -5,6 +5,10 @@ import {
   refreshHandler,
   setPasswordHandler,
 } from "../handlers/auth.handler";
+import {
+  forgotPasswordHandler,
+  resetPasswordHandler,
+} from "../handlers/forgotPassword";
 import { withAuth } from "../lib/withAuth";
 
 export const bindAuth = () => {
@@ -22,6 +26,8 @@ export const bindAuth = () => {
     withAuth(setPasswordHandler, { allowForcedPasswordChange: true }),
   );
   service.on("logout", logoutHandler);
+  service.on("forgotPassword", forgotPasswordHandler);
+  service.on("resetPassword", resetPasswordHandler);
 
   console.log("AuthService bound");
 };
