@@ -52,6 +52,7 @@ service AuthService {
 
     action resetPassword(
         token           : String,
+        password        : String,
         newPassword     : String,
         confirmPassword : String
     ) returns {
