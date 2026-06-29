@@ -1,6 +1,13 @@
+type PaginationMeta {
+    page       : Integer;
+    limit      : Integer;
+    total      : Integer;
+    totalPages : Integer;
+}
+
 service LeadService {
 
-    function getLeadsWithStats()       returns {
+    function getLeadsWithStats(page: Integer, limit: Integer) returns {
         leads : many {
             uuid           : String;
             id             : String;
@@ -29,6 +36,7 @@ service LeadService {
             contacted : Integer;
             qualified : Integer;
         };
+        pagination : PaginationMeta;
     };
     
     function getExecutiveUsers() returns many {

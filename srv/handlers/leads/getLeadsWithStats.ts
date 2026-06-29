@@ -1,9 +1,11 @@
 import { pool } from "../../lib/db";
+import { createPaginationMeta, parsePaginationParams } from "../../lib/pagination";
 
 export const getLeadsWithStatsHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
     const userId = req.user?.id;
+    const { page, limit, offset } = parsePaginationParams(req.data);
 
     if (!orgId || !userId) {
       return req.error(400, "User or Organization ID missing");
@@ -50,8 +52,9 @@ export const getLeadsWithStatsHandler = async (req: any) => {
            OR u.reporting_manager_id = $2
            OR (l.assigned_to_id IS NULL AND l.createdby = $2)
          )
-       ORDER BY l.createdat DESC`,
-      [orgId, userId],
+       ORDER BY l.createdat DESC
+       LIMIT $3 OFFSET $4`,
+      [orgId, userId, limit, offset],
     );
 
     const statsRes = await pool.query(
@@ -79,6 +82,11 @@ export const getLeadsWithStatsHandler = async (req: any) => {
         contacted: Number(statsRes.rows[0].contacted) || 0,
         qualified: Number(statsRes.rows[0].qualified) || 0,
       },
+      pagination: createPaginationMeta({
+        page,
+        limit,
+        total: Number(statsRes.rows[0].total) || 0,
+      }),
     };
   } catch (error: any) {
     console.error("Error fetching leads + stats:", error?.message ?? error);
