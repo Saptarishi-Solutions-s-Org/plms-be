@@ -1,6 +1,7 @@
 import { pool } from "../../lib/db";
 import { emitToOrg, emitToUser } from "../../realtime/socket";
 import {
+  LEAD_LIST_CHANGED,
   PROFILE_CHANGED,
   USER_DETAIL_CHANGED,
   USER_LIST_CHANGED,
@@ -137,6 +138,8 @@ export const updateOrgUserHandler = async (req: any) => {
       reportingManager === undefined
         ? existing.reporting_manager_id
         : reportingManager;
+    const reportingManagerChanged =
+      nextReportingManager !== existing.reporting_manager_id;
 
     await client.query(
       `UPDATE crm_user
@@ -187,6 +190,14 @@ export const updateOrgUserHandler = async (req: any) => {
       reason: "profile-updated",
       userId: id,
     });
+    if (reportingManagerChanged) {
+      emitToOrg(orgId, LEAD_LIST_CHANGED, {
+        reason: "executive-reporting-manager-changed",
+        executiveId: id,
+        previousManagerId: existing.reporting_manager_id,
+        reportingManagerId: nextReportingManager,
+      });
+    }
 
     return { message: "User updated successfully" };
   } catch (err) {

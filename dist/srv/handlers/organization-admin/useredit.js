@@ -88,6 +88,7 @@ const updateOrgUserHandler = async (req) => {
         const nextReportingManager = reportingManager === undefined
             ? existing.reporting_manager_id
             : reportingManager;
+        const reportingManagerChanged = nextReportingManager !== existing.reporting_manager_id;
         await client.query(`UPDATE crm_user
        SET name = COALESCE($1, name),
            email = COALESCE($2, email),
@@ -132,6 +133,14 @@ const updateOrgUserHandler = async (req) => {
             reason: "profile-updated",
             userId: id,
         });
+        if (reportingManagerChanged) {
+            (0, socket_1.emitToOrg)(orgId, events_1.LEAD_LIST_CHANGED, {
+                reason: "executive-reporting-manager-changed",
+                executiveId: id,
+                previousManagerId: existing.reporting_manager_id,
+                reportingManagerId: nextReportingManager,
+            });
+        }
         return { message: "User updated successfully" };
     }
     catch (err) {
