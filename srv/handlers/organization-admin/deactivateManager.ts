@@ -74,7 +74,9 @@ export const deactivateManagerHandler = async (req: any) => {
     if (executiveCount > 0) {
       await client.query(
         `UPDATE crm_user
-         SET reporting_manager_id = $1, modifiedat = NOW()
+         SET reporting_manager_id = $1,
+             session_version = session_version + 1,
+             modifiedat = NOW()
          WHERE reporting_manager_id = $2
          AND organization_id = $3`,
         [targetManagerId, managerId, orgId]
@@ -84,7 +86,9 @@ export const deactivateManagerHandler = async (req: any) => {
     // Deactivate the manager
     await client.query(
       `UPDATE crm_user
-       SET is_active = false, modifiedat = NOW()
+       SET is_active = false,
+           session_version = session_version + 1,
+           modifiedat = NOW()
        WHERE id = $1`,
       [managerId]
     );

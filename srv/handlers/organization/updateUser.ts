@@ -10,7 +10,7 @@ export const updateUserHandler = async (req: any) => {
     const { id, name, phone, is_active, state, country } = req.data;
 
     const existing = await pool.query(
-      `SELECT id, organization_id FROM crm_user WHERE id=$1`,
+      `SELECT id, organization_id, is_active FROM crm_user WHERE id=$1`,
       [id],
     );
 
@@ -29,6 +29,10 @@ export const updateUserHandler = async (req: any) => {
            is_active=$3,
            state_id=$4,
            country_id=$5,
+           session_version = CASE
+             WHEN is_active IS DISTINCT FROM $3 THEN session_version + 1
+             ELSE session_version
+           END,
            modifiedat=NOW(),
            modifiedby=$6
        WHERE id=$7`,

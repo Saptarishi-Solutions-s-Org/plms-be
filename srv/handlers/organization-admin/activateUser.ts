@@ -20,7 +20,14 @@ export const activateUserHandler = async (req: any) => {
 
     if (!res.rows.length) return req.error(404, "User not found");
 
-    await client.query(`UPDATE crm_user SET is_active = true, modifiedat = NOW() WHERE id = $1`, [userId]);
+    await client.query(
+      `UPDATE crm_user
+       SET is_active = true,
+           session_version = session_version + 1,
+           modifiedat = NOW()
+       WHERE id = $1`,
+      [userId],
+    );
 
     emitToOrg(orgId, USER_LIST_CHANGED, {
       reason: "user-activated",

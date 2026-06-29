@@ -6,6 +6,7 @@ export type WithAuthTokenPayload = {
   orgId:        string;
   roleId?:      string;
   role?:        string;
+  sessionVersion?: number;
   roles?:       string[];
   permissions?: ModulePermissions; 
   mustChangePassword?: boolean;

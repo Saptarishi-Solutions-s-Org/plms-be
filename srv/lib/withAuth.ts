@@ -1,5 +1,6 @@
 import { verifyToken } from "./jwt";
 import { pool } from "./db";
+import { validateSessionState } from "./sessionValidation";
 import {
   ModulePermissions,
   WithAuthRequirements,
@@ -74,6 +75,14 @@ export const withAuth = (handler: any, requirements?: WithAuthRequirements) => {
         mustChangePassword: decoded.mustChangePassword === true,
         isSuper: decoded.isSuper,
       };
+
+      const sessionValid = await validateSessionState({
+        decoded,
+        permissions: jwtPermissions,
+      });
+      if (!sessionValid) {
+        return req.error(401, "Unauthorized: session expired");
+      }
 
       const allowForcedPasswordChange =
         requirements?.allowForcedPasswordChange === true;
