@@ -7,6 +7,8 @@ service OrganizationAdminService {
             email      : String;
             phone      : String;
             role_name  : String;
+            reporting_manager_id   : UUID;
+            reporting_manager_name : String;
             is_active  : Boolean;
         };
         stats: {
@@ -31,6 +33,23 @@ service OrganizationAdminService {
         message       : String;
         userId        : UUID;
         tempPassword  : String;
+    };
+
+    action updateOrgUser(
+        id               : UUID,
+        name             : String,
+        email            : String,
+        phone            : String,
+        gender           : String,
+        dob              : Date,
+        country          : UUID,
+        state            : UUID,
+        city             : String,
+        roleName         : String,
+        reportingManager : UUID,
+        is_active        : Boolean
+    ) returns {
+        message : String;
     };
 
     function getAllManagers() returns array of {

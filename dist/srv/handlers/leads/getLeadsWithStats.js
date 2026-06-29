@@ -2,10 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getLeadsWithStatsHandler = void 0;
 const db_1 = require("../../lib/db");
+const pagination_1 = require("../../lib/pagination");
 const getLeadsWithStatsHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
         const userId = req.user?.id;
+        const { page, limit, offset } = (0, pagination_1.parsePaginationParams)(req.data);
         if (!orgId || !userId) {
             return req.error(400, "User or Organization ID missing");
         }
@@ -49,7 +51,8 @@ const getLeadsWithStatsHandler = async (req) => {
            OR u.reporting_manager_id = $2
            OR (l.assigned_to_id IS NULL AND l.createdby = $2)
          )
-       ORDER BY l.createdat DESC`, [orgId, userId]);
+       ORDER BY l.createdat DESC
+       LIMIT $3 OFFSET $4`, [orgId, userId, limit, offset]);
         const statsRes = await db_1.pool.query(`SELECT
          COUNT(*)                                     AS total,
          COUNT(*) FILTER (WHERE status = 'New')       AS new,
@@ -71,6 +74,11 @@ const getLeadsWithStatsHandler = async (req) => {
                 contacted: Number(statsRes.rows[0].contacted) || 0,
                 qualified: Number(statsRes.rows[0].qualified) || 0,
             },
+            pagination: (0, pagination_1.createPaginationMeta)({
+                page,
+                limit,
+                total: Number(statsRes.rows[0].total) || 0,
+            }),
         };
     }
     catch (error) {

@@ -15,6 +15,7 @@ const deactivateManager_1 = require("../handlers/organization-admin/deactivateMa
 const getExecutivesForManager_1 = require("../handlers/organization-admin/getExecutivesForManager");
 const getManagersForReassign_1 = require("../handlers/organization-admin/getManagersForReassign");
 const activateUser_1 = require("../handlers/organization-admin/activateUser");
+const useredit_1 = require("../handlers/organization-admin/useredit");
 const bindOrganizationAdmin = () => {
     const service = cds_1.default.services["OrganizationAdminService"];
     if (!service) {
@@ -26,6 +27,10 @@ const bindOrganizationAdmin = () => {
     }));
     service.on("createOrgUser", (0, withAuth_1.withAuth)(createOrgUser_1.createOrgUserHandler, {
         modules: { user: ["create"] },
+        roles: ["ADMIN"],
+    }));
+    service.on("updateOrgUser", (0, withAuth_1.withAuth)(useredit_1.updateOrgUserHandler, {
+        modules: { user: ["update"] },
         roles: ["ADMIN"],
     }));
     service.on("getAllManagers", (0, withAuth_1.withAuth)(getAllManagers_1.getManagersHandler, {

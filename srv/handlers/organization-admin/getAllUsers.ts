@@ -15,7 +15,9 @@ export const getAllUsersHandler = async (req: any) => {
          u.email,
          u.phone,
          u.is_active,
-         rl.name AS role_name
+         rl.name AS role_name,
+         u.reporting_manager_id,
+         manager.name AS reporting_manager_name
        FROM crm_user u
        JOIN crm_organization o 
          ON u.organization_id = o.id
@@ -23,6 +25,9 @@ export const getAllUsersHandler = async (req: any) => {
          ON u.role_id = r.id
        JOIN crm_roles rl 
          ON r.role_id = rl.id
+       LEFT JOIN crm_user manager
+         ON manager.id = u.reporting_manager_id
+        AND manager.organization_id = u.organization_id
        WHERE u.organization_id = $1 
          AND rl.name IN ('Manager', 'Executive')
        ORDER BY rl.name`,
