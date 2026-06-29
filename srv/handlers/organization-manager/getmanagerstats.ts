@@ -3,9 +3,12 @@ import { pool } from "../../lib/db";
 export const getTotalLeads = async (orgId: string, userId: string) => {
   const res = await pool.query(
     `SELECT COUNT(*) AS count
-     FROM crm_leads
-     WHERE organization_id = $1
-     AND createdby = $2`,
+     FROM crm_leads l
+     JOIN crm_user u
+       ON u.id = l.assigned_to_id
+      AND u.organization_id = l.organization_id
+     WHERE l.organization_id = $1
+       AND u.reporting_manager_id = $2`,
     [orgId, userId]
   );
 

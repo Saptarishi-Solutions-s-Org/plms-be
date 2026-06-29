@@ -4,9 +4,12 @@ exports.managerDashboardHandler = exports.getAssignedLeads = exports.getTotalLea
 const db_1 = require("../../lib/db");
 const getTotalLeads = async (orgId, userId) => {
     const res = await db_1.pool.query(`SELECT COUNT(*) AS count
-     FROM crm_leads
-     WHERE organization_id = $1
-     AND createdby = $2`, [orgId, userId]);
+     FROM crm_leads l
+     JOIN crm_user u
+       ON u.id = l.assigned_to_id
+      AND u.organization_id = l.organization_id
+     WHERE l.organization_id = $1
+       AND u.reporting_manager_id = $2`, [orgId, userId]);
     return Number(res.rows[0]?.count) || 0;
 };
 exports.getTotalLeads = getTotalLeads;
