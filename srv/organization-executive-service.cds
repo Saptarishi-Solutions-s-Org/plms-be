@@ -22,13 +22,22 @@ service OrganizationExecutiveService {
     };
 
     function getExecutiveOffers() returns array of {
-        title     : String;
+        id            : UUID;
+        title         : String;
         description   : String;
         discountType  : String;
         discountValue : Decimal(10, 2);
         validFrom     : Date;
         validTo       : Date;
         status        : String;
+    };
+
+    action assignOfferToLead(
+        offerId: UUID, 
+        leadId: UUID
+       ) returns {
+        assignmentId : UUID;
+        message      : String;
     };
 }
  
