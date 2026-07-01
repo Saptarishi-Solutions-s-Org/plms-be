@@ -82,7 +82,9 @@ export const deactivateExecutiveForManagerHandler = async (req: any) => {
     // Deactivate the executive
     await client.query(
       `UPDATE crm_user
-       SET is_active = false, modifiedat = NOW()
+       SET is_active = false,
+           session_version = session_version + 1,
+           modifiedat = NOW()
        WHERE id = $1`,
       [executiveId]
     );

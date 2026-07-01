@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.withAuth = void 0;
 const jwt_1 = require("./jwt");
 const db_1 = require("./db");
+const sessionValidation_1 = require("./sessionValidation");
 function normalizeList(values) {
     return Array.isArray(values)
         ? values.map((value) => String(value).toLowerCase())
@@ -56,6 +57,13 @@ const withAuth = (handler, requirements) => {
                 mustChangePassword: decoded.mustChangePassword === true,
                 isSuper: decoded.isSuper,
             };
+            const sessionValid = await (0, sessionValidation_1.validateSessionState)({
+                decoded,
+                permissions: jwtPermissions,
+            });
+            if (!sessionValid) {
+                return req.error(401, "Unauthorized: session expired");
+            }
             const allowForcedPasswordChange = requirements?.allowForcedPasswordChange === true;
             if (req.user.mustChangePassword &&
                 !allowForcedPasswordChange) {

@@ -54,13 +54,17 @@ const deactivateManagerHandler = async (req) => {
         // Reassign all executives to the target manager
         if (executiveCount > 0) {
             await client.query(`UPDATE crm_user
-         SET reporting_manager_id = $1, modifiedat = NOW()
+         SET reporting_manager_id = $1,
+             session_version = session_version + 1,
+             modifiedat = NOW()
          WHERE reporting_manager_id = $2
          AND organization_id = $3`, [targetManagerId, managerId, orgId]);
         }
         // Deactivate the manager
         await client.query(`UPDATE crm_user
-       SET is_active = false, modifiedat = NOW()
+       SET is_active = false,
+           session_version = session_version + 1,
+           modifiedat = NOW()
        WHERE id = $1`, [managerId]);
         await client.query("COMMIT");
         (0, socket_1.emitToOrg)(orgId, events_1.USER_LIST_CHANGED, {
