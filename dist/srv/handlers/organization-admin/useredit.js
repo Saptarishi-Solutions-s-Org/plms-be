@@ -90,9 +90,7 @@ const updateOrgUserHandler = async (req) => {
             ? existing.reporting_manager_id
             : reportingManager;
         const reportingManagerChanged = nextReportingManager !== existing.reporting_manager_id;
-        const sessionAffectingChange = roleId !== existing.role_id ||
-            reportingManagerChanged ||
-            nextIsActive !== existing.is_active;
+        const sessionAffectingChange = reportingManagerChanged || nextIsActive !== existing.is_active;
         await client.query(`UPDATE crm_user
        SET name = COALESCE($1, name),
            email = COALESCE($2, email),
@@ -106,8 +104,7 @@ const updateOrgUserHandler = async (req) => {
            reporting_manager_id = $10::varchar,
            is_active = $11::boolean,
            session_version = CASE
-             WHEN role_id IS DISTINCT FROM $9::varchar
-               OR reporting_manager_id IS DISTINCT FROM $10::varchar
+             WHEN reporting_manager_id IS DISTINCT FROM $10::varchar
                OR is_active IS DISTINCT FROM $11::boolean
              THEN session_version + 1
              ELSE session_version
