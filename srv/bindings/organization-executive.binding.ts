@@ -4,6 +4,7 @@ import { getexecutivestats } from "../handlers/executive/getexecutivestats";
 import { executiveRecentLeadsHandler } from "../handlers/executive/getexecutiverecentleads";
 import { executiveLeadStatsHandler } from "../handlers/executive/getleadstats";
 import { getExecutiveOffersHandler } from "../handlers/offer/get-executive-offers";
+import { assignOfferToLeadHandler } from "../handlers/executive/assign-offers-to-leads";
 
 export const bindExecutiveDashboard = () => {
   const service = cds.services["OrganizationExecutiveService"];
@@ -35,6 +36,14 @@ export const bindExecutiveDashboard = () => {
   service.on(
     "getExecutiveOffers",
     withAuth(getExecutiveOffersHandler, {
+      roles: ["Executive"],
+      modules: { offers: ["view"] },
+    }),
+  );
+
+  service.on(
+    "assignOfferToLead",
+    withAuth(assignOfferToLeadHandler, {
       roles: ["Executive"],
       modules: { offers: ["view"] },
     }),
