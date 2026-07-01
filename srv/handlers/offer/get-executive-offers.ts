@@ -12,6 +12,7 @@ export const getExecutiveOffersHandler = async (req: any) => {
     const res = await pool.query(
       `
       SELECT
+        o.id                     AS "id",
         o.title                  AS "title",
         o.description            AS "description",
         o.discount_type          AS "discountType",

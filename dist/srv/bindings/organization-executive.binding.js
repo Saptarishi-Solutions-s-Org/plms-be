@@ -10,6 +10,7 @@ const getexecutivestats_1 = require("../handlers/executive/getexecutivestats");
 const getexecutiverecentleads_1 = require("../handlers/executive/getexecutiverecentleads");
 const getleadstats_1 = require("../handlers/executive/getleadstats");
 const get_executive_offers_1 = require("../handlers/offer/get-executive-offers");
+const assign_offers_to_leads_1 = require("../handlers/executive/assign-offers-to-leads");
 const bindExecutiveDashboard = () => {
     const service = cds_1.default.services["OrganizationExecutiveService"];
     if (!service)
@@ -27,6 +28,10 @@ const bindExecutiveDashboard = () => {
         modules: { lead: ["view"] },
     }));
     service.on("getExecutiveOffers", (0, withAuth_1.withAuth)(get_executive_offers_1.getExecutiveOffersHandler, {
+        roles: ["Executive"],
+        modules: { offers: ["view"] },
+    }));
+    service.on("assignOfferToLead", (0, withAuth_1.withAuth)(assign_offers_to_leads_1.assignOfferToLeadHandler, {
         roles: ["Executive"],
         modules: { offers: ["view"] },
     }));
