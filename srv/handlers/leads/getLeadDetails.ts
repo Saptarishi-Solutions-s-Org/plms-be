@@ -3,10 +3,10 @@ import { pool } from "../../lib/db";
 export const getLeadDetailHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
-    const { leadCode } = req.data;
+    const { id, leadCode } = req.data ?? {};
 
     if (!orgId) return req.error(401, "Unauthorized");
-    if (!leadCode) return req.error(400, "Lead code is required");
+    if (!id && !leadCode) return req.error(400, "Lead id or code is required");
 
     const [activitiesRes, offersRes] = await Promise.all([
       pool.query(
@@ -25,10 +25,11 @@ export const getLeadDetailHandler = async (req: any) => {
          LEFT JOIN crm_organizationroles orr ON orr.id = u.role_id
          LEFT JOIN crm_roles           r   ON r.id  = orr.role_id
          JOIN crm_leads                 l   ON l.id = la.lead_id
-         WHERE l.code = $1
-           AND l.organization_id = $2
+         WHERE ($1::text IS NULL OR l.id::text = $1)
+           AND ($2::text IS NULL OR l.code = $2 OR l.id::text = $2)
+           AND l.organization_id = $3
          ORDER BY la.createdat DESC`,
-        [leadCode, orgId],
+        [id || null, leadCode || null, orgId],
       ),
       pool.query(
         `SELECT
@@ -46,10 +47,11 @@ export const getLeadDetailHandler = async (req: any) => {
          JOIN crm_offer o   ON o.id = loa."offer_ID"
          LEFT JOIN crm_user u ON u.id::text = loa."assigned_by_ID"::text
          JOIN crm_leads l   ON l.id = loa."lead_ID"
-         WHERE loa."lead_ID" = $1
-           AND l.organization_id = $2
+         WHERE ($1::text IS NULL OR l.id::text = $1)
+           AND ($2::text IS NULL OR l.code = $2 OR l.id::text = $2)
+           AND l.organization_id = $3
          ORDER BY loa."createdAt" DESC`,
-        [id, orgId],
+        [id || null, leadCode || null, orgId],
       ),
     ]);
 

@@ -13,8 +13,8 @@ service LeadService {
                                status: String,
                                priority: String,
                                leadSource: String,
-                               assignedTo: String) returns {
-        leads : many {
+                               assignedTo: String)   returns {
+        leads      : many {
             uuid           : String;
             id             : String;
             leadCode       : String;
@@ -36,7 +36,7 @@ service LeadService {
             createdAt      : Timestamp;
             notes          : String;
         };
-        stats : {
+        stats      : {
             total     : Integer;
             new       : Integer;
             contacted : Integer;
@@ -44,8 +44,8 @@ service LeadService {
         };
         pagination : PaginationMeta;
     };
-    
-    function getExecutiveUsers() returns many {
+
+    function getExecutiveUsers()                     returns many {
         id   : String;
         name : String;
     };
@@ -62,7 +62,7 @@ service LeadService {
                         status: String,
                         assignedTo: String,
                         priority: String,
-                        notes: String) returns {
+                        notes: String)               returns {
         message  : String;
         leadCode : String;
     };
@@ -80,11 +80,11 @@ service LeadService {
                         status: String,
                         assignedTo: String,
                         priority: String,
-                        notes: String) returns {
+                        notes: String)               returns {
         message : String;
     };
 
-    action   exportLeads()             returns many {
+    action   exportLeads()                           returns many {
         leadCode   : String;
         name       : String;
         gender     : String;
@@ -107,20 +107,21 @@ service LeadService {
         email      : String;
         phone      : String;
         city       : String;
-        state    : String;
-        country  : String;
+        state      : String;
+        country    : String;
         postalCode : String;
         leadSource : String;
         status     : String;
         assignedTo : String;
         priority   : String;
         notes      : String;
-    })                                 returns {
+    })                                               returns {
         imported   : Integer;
         failed     : Integer;
     };
 
-    function getLeadDetail(leadCode: String) returns {
+    function getLeadDetail(id: String,
+                           leadCode: String)         returns {
         activities : many {
             id               : String;
             type             : String;
@@ -132,7 +133,7 @@ service LeadService {
             createdByName    : String;
             createdByRole    : String;
         };
-        offers : many {
+        offers     : many {
             assignmentId   : String;
             assignedAt     : Timestamp;
             assignedByName : String;
@@ -145,15 +146,13 @@ service LeadService {
             validTo        : Date;
         };
     };
- 
-    action addLeadActivity(
-        leadId           : String,
-        type             : String,
-        notes            : String,
-        freeText         : String,
-        callStatus       : String,
-        nextFollowUpDate : Date
-    ) returns {
+
+    action   addLeadActivity(leadId: String,
+                             type: String,
+                             notes: String,
+                             freeText: String,
+                             callStatus: String,
+                             nextFollowUpDate: Date) returns {
         message  : String;
         activity : {
             id               : String;
