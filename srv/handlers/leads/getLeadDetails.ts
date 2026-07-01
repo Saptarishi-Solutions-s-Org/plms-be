@@ -3,10 +3,10 @@ import { pool } from "../../lib/db";
 export const getLeadDetailHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
-    const { id } = req.data;
+    const { leadCode } = req.data;
 
     if (!orgId) return req.error(401, "Unauthorized");
-    if (!id)    return req.error(400, "Lead ID is required");
+    if (!leadCode) return req.error(400, "Lead code is required");
 
     const [activitiesRes, offersRes] = await Promise.all([
       pool.query(
@@ -25,10 +25,10 @@ export const getLeadDetailHandler = async (req: any) => {
          LEFT JOIN crm_organizationroles orr ON orr.id = u.role_id
          LEFT JOIN crm_roles           r   ON r.id  = orr.role_id
          JOIN crm_leads                 l   ON l.id = la.lead_id
-         WHERE la.lead_id = $1
+         WHERE l.code = $1
            AND l.organization_id = $2
          ORDER BY la.createdat DESC`,
-        [id, orgId],
+        [leadCode, orgId],
       ),
       pool.query(
         `SELECT
