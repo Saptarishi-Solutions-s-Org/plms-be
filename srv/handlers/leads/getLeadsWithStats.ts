@@ -1,15 +1,70 @@
 import { pool } from "../../lib/db";
 import { createPaginationMeta, parsePaginationParams } from "../../lib/pagination";
 
+const normalizeFilter = (value: unknown) => {
+  if (typeof value !== "string") return "";
+  return value.trim();
+};
+
 export const getLeadsWithStatsHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
     const userId = req.user?.id;
     const { page, limit, offset } = parsePaginationParams(req.data);
+    const { search, status, priority, leadSource, assignedTo } = req.data ?? {};
 
     if (!orgId || !userId) {
       return req.error(400, "User or Organization ID missing");
     }
+
+    const searchTerm = normalizeFilter(search);
+    const statusFilter = normalizeFilter(status);
+    const priorityFilter = normalizeFilter(priority);
+    const leadSourceFilter = normalizeFilter(leadSource);
+    const assignedToFilter = normalizeFilter(assignedTo);
+
+    const queryValues = [
+      orgId,
+      userId,
+      searchTerm ? `%${searchTerm.toLowerCase()}%` : null,
+      statusFilter || null,
+      priorityFilter || null,
+      leadSourceFilter || null,
+      assignedToFilter || null,
+    ];
+
+    const filtersSql = `
+       WHERE l.organization_id = $1
+         AND (
+           l.assigned_to_id = $2
+           OR u.reporting_manager_id = $2
+           OR (l.assigned_to_id IS NULL AND l.createdby = $2)
+         )
+         AND (
+           $3::text IS NULL
+           OR LOWER(l.code) LIKE $3
+           OR LOWER(l.name) LIKE $3
+           OR LOWER(l.email) LIKE $3
+           OR LOWER(l.phone) LIKE $3
+           OR LOWER(l.source) LIKE $3
+           OR LOWER(COALESCE(u.name, '')) LIKE $3
+         )
+         AND (
+           $4::text IS NULL
+           OR LOWER(l.status) = ANY(regexp_split_to_array(LOWER(REPLACE($4, ' ', '')), ','))
+         )
+         AND (
+           $5::text IS NULL
+           OR LOWER(l.priority) = ANY(regexp_split_to_array(LOWER(REPLACE($5, ' ', '')), ','))
+         )
+         AND (
+           $6::text IS NULL
+           OR LOWER(l.source) = ANY(regexp_split_to_array(LOWER(REPLACE($6, ' ', '')), ','))
+         )
+         AND (
+           $7::text IS NULL
+           OR l.assigned_to_id = $7
+         )`;
 
     const leadsRes = await pool.query(
       `SELECT
@@ -46,15 +101,10 @@ export const getLeadsWithStatsHandler = async (req: any) => {
          ORDER BY createdat DESC LIMIT 1
        ) la ON true
 
-       WHERE l.organization_id = $1
-         AND (
-           l.assigned_to_id = $2
-           OR u.reporting_manager_id = $2
-           OR (l.assigned_to_id IS NULL AND l.createdby = $2)
-         )
+       ${filtersSql}
        ORDER BY l.createdat DESC
-       LIMIT $3 OFFSET $4`,
-      [orgId, userId, limit, offset],
+       LIMIT $8 OFFSET $9`,
+      [...queryValues, limit, offset],
     );
 
     const statsRes = await pool.query(
@@ -65,13 +115,8 @@ export const getLeadsWithStatsHandler = async (req: any) => {
          COUNT(*) FILTER (WHERE status = 'Qualified') AS qualified
        FROM crm_leads l
        LEFT JOIN crm_user u ON u.id = l.assigned_to_id
-      WHERE l.organization_id = $1
-         AND (
-           l.assigned_to_id = $2
-           OR u.reporting_manager_id = $2
-           OR (l.assigned_to_id IS NULL AND l.createdby = $2)
-         )`,
-      [orgId, userId],
+       ${filtersSql}`,
+      queryValues,
     );
 
     return {

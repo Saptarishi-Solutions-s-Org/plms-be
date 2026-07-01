@@ -7,7 +7,13 @@ type PaginationMeta {
 
 service LeadService {
 
-    function getLeadsWithStats(page: Integer, limit: Integer) returns {
+    function getLeadsWithStats(page: Integer,
+                               limit: Integer,
+                               search: String,
+                               status: String,
+                               priority: String,
+                               leadSource: String,
+                               assignedTo: String) returns {
         leads : many {
             uuid           : String;
             id             : String;
