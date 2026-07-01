@@ -120,7 +120,7 @@ service LeadService {
         failed     : Integer;
     };
 
-    function getLeadDetail(id: String) returns {
+    function getLeadDetail(leadCode: String) returns {
         activities : many {
             id               : String;
             type             : String;
