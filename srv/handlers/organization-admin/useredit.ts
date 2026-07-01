@@ -1,4 +1,5 @@
 import { pool } from "../../lib/db";
+import { revokeOtherRefreshTokens } from "../../lib/refreshToken";
 import { emitToOrg, emitToUser } from "../../realtime/socket";
 import {
   LEAD_LIST_CHANGED,
@@ -140,6 +141,10 @@ export const updateOrgUserHandler = async (req: any) => {
         : reportingManager;
     const reportingManagerChanged =
       nextReportingManager !== existing.reporting_manager_id;
+    const sessionAffectingChange =
+      roleId !== existing.role_id ||
+      reportingManagerChanged ||
+      nextIsActive !== existing.is_active;
 
     await client.query(
       `UPDATE crm_user
@@ -151,9 +156,16 @@ export const updateOrgUserHandler = async (req: any) => {
            country_id = COALESCE($6, country_id),
            state_id = COALESCE($7, state_id),
            city = COALESCE($8, city),
-           role_id = $9,
-           reporting_manager_id = $10,
-           is_active = $11,
+           role_id = $9::varchar,
+           reporting_manager_id = $10::varchar,
+           is_active = $11::boolean,
+           session_version = CASE
+             WHEN role_id IS DISTINCT FROM $9::varchar
+               OR reporting_manager_id IS DISTINCT FROM $10::varchar
+               OR is_active IS DISTINCT FROM $11::boolean
+             THEN session_version + 1
+             ELSE session_version
+           END,
            modifiedat = NOW(),
            modifiedby = $12
        WHERE id = $13
@@ -177,6 +189,14 @@ export const updateOrgUserHandler = async (req: any) => {
     );
 
     await client.query("COMMIT");
+
+    if (sessionAffectingChange) {
+      try {
+        await revokeOtherRefreshTokens(id);
+      } catch (error) {
+        console.error("Failed to revoke refresh tokens after user update:", error);
+      }
+    }
 
     emitToOrg(orgId, USER_LIST_CHANGED, {
       reason: "user-updated",
