@@ -132,6 +132,18 @@ service LeadService {
             createdByName    : String;
             createdByRole    : String;
         };
+        offers : many {
+            assignmentId   : String;
+            assignedAt     : Timestamp;
+            assignedByName : String;
+            offerId        : String;
+            title          : String;
+            code           : String;
+            description    : String;
+            status         : String;
+            validFrom      : Date;
+            validTo        : Date;
+        };
     };
  
     action addLeadActivity(
