@@ -60,10 +60,11 @@ type OfferStatus      : String enum {
 }
 
 type LeadSource       : String enum {
-    Socil_Media;
+    Social_Media;
     Advertisement;
     Referral;
     Manual_Entry;
+    Other;
 }
 
 entity Modules : cuid, managed {
@@ -150,6 +151,8 @@ entity User : cuid, managed {
     country              : Association to Country not null;
     is_active            : Boolean not null;
     must_change_password : Boolean;
+
+    session_version      : Integer default 1 not null;
 
     executiveAssignments : Association to many ExecutiveOfferAssignment
                                on executiveAssignments.executive = $self;
@@ -255,4 +258,10 @@ entity State : cuid, managed {
 
 entity Settings : cuid {
     maintenance_mode : Boolean not null;
+}
+
+entity LeadOfferAssignment : cuid, managed {
+    lead        : Association to Leads not null;
+    offer       : Association to Offer not null;
+    assigned_by : Association to User not null;
 }

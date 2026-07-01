@@ -79,6 +79,13 @@ service ManagerDashboardService {
   message      : String;
  };
 
+ function getAvailableExecutivesForOffer(offerId: UUID) returns array of {
+  id    : UUID;
+  name  : String;
+  email : String;
+  phone : String;
+ };
+
  action deactivateExecutiveForManager(
   executiveId       : UUID,
   targetExecutiveId : UUID

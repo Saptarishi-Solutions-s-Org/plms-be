@@ -8,10 +8,12 @@ export type WithAuthTokenPayload = {
   role?:        string;
   roles?:       string[];
   permissions?: ModulePermissions; 
+  mustChangePassword?: boolean;
   isSuper?:     boolean;
 };
 
 export type WithAuthRequirements = {
-  roles?:   string[];
-  modules?: ModulePermissions;
+  roles?:                     string[];
+  modules?:                   ModulePermissions;
+  allowForcedPasswordChange?: boolean;
 };

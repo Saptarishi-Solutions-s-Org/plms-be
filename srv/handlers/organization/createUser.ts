@@ -58,8 +58,8 @@ export const createUserHandler = async (req: any) => {
 
     await client.query(
       `INSERT INTO crm_user
-      (id, name, email, phone, password, gender, dob, organization_id, role_id, state_id, country_id, is_active, createdat, createdby, modifiedat, modifiedby)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,true,NOW(),$12,NOW(),$12)`,
+      (id, name, email, phone, password, gender, dob, organization_id, role_id, state_id, country_id, is_active, must_change_password, createdat, createdby, modifiedat, modifiedby)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,true,true,NOW(),$12,NOW(),$12)`,
       [
         userId,
         name,

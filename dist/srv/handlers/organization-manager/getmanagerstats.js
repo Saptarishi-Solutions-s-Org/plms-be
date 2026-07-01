@@ -4,9 +4,12 @@ exports.managerDashboardHandler = exports.getAssignedLeads = exports.getTotalLea
 const db_1 = require("../../lib/db");
 const getTotalLeads = async (orgId, userId) => {
     const res = await db_1.pool.query(`SELECT COUNT(*) AS count
-     FROM crm_leads
-     WHERE organization_id = $1
-     AND createdby = $2`, [orgId, userId]);
+     FROM crm_leads l
+     JOIN crm_user u
+       ON u.id = l.assigned_to_id
+      AND u.organization_id = l.organization_id
+     WHERE l.organization_id = $1
+       AND u.reporting_manager_id = $2`, [orgId, userId]);
     return Number(res.rows[0]?.count) || 0;
 };
 exports.getTotalLeads = getTotalLeads;
@@ -26,7 +29,7 @@ const managerDashboardHandler = async (req) => {
         if (!orgId || !userId) {
             return req.error(400, "Organization ID missing");
         }
-        const assignedLeads = await (0, exports.getAssignedLeads)(orgId, userId);
+        const totalLeads = await (0, exports.getTotalLeads)(orgId, userId);
         // Converted Leads
         const convertedLeadsRes = await db_1.pool.query(`SELECT COUNT(*) AS count
        FROM crm_leads l
@@ -50,7 +53,7 @@ const managerDashboardHandler = async (req) => {
        AND valid_from <= CURRENT_DATE
        AND valid_to >= CURRENT_DATE`, [orgId]);
         return {
-            totalLeads: assignedLeads,
+            totalLeads,
             convertedLeads: Number(convertedLeadsRes.rows[0]?.count) || 0,
             thisWeekLeads: Number(thisWeekLeadsRes.rows[0]?.count) || 0,
             activeOffers: Number(activeOffersRes.rows[0]?.count) || 0,

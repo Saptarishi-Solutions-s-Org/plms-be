@@ -9,6 +9,7 @@ import { deactivateManagerHandler } from "../handlers/organization-admin/deactiv
 import { getExecutivesForManagerHandler } from "../handlers/organization-admin/getExecutivesForManager";
 import { getManagersForReassignHandler } from "../handlers/organization-admin/getManagersForReassign";
 import { activateUserHandler } from "../handlers/organization-admin/activateUser";
+import { updateOrgUserHandler } from "../handlers/organization-admin/useredit";
 
 export const bindOrganizationAdmin = () => {
   const service = cds.services["OrganizationAdminService"];
@@ -31,6 +32,14 @@ export const bindOrganizationAdmin = () => {
       modules: { user: ["create"] },
       roles: ["ADMIN"],
     })
+  );
+
+  service.on(
+    "updateOrgUser",
+    withAuth(updateOrgUserHandler, {
+      modules: { user: ["update"] },
+      roles: ["ADMIN"],
+    }),
   );
 
   service.on("getAllManagers", withAuth(getManagersHandler, {
@@ -63,4 +72,4 @@ export const bindOrganizationAdmin = () => {
     roles: ["ADMIN"],
   }));
 
-} 
+}
