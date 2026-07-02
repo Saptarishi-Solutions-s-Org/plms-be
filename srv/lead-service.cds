@@ -44,7 +44,7 @@ service LeadService {
         };
         pagination : PaginationMeta;
     };
-    
+
     function getExecutiveUsers() returns many {
         id   : String;
         name : String;
@@ -120,7 +120,8 @@ service LeadService {
         failed     : Integer;
     };
 
-    function getLeadDetail(id: String) returns {
+    function getLeadDetail(id: String,
+                           leadCode: String)         returns {
         activities : many {
             id               : String;
             type             : String;
@@ -145,7 +146,7 @@ service LeadService {
             validTo        : Date;
         };
     };
- 
+
     action addLeadActivity(
         leadId           : String,
         type             : String,
