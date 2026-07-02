@@ -5,11 +5,11 @@ const db_1 = require("../../lib/db");
 const getLeadDetailHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
-        const { id } = req.data;
+        const { id, leadCode } = req.data ?? {};
         if (!orgId)
             return req.error(401, "Unauthorized");
-        if (!id)
-            return req.error(400, "Lead ID is required");
+        if (!id && !leadCode)
+            return req.error(400, "Lead id or code is required");
         const [activitiesRes, offersRes] = await Promise.all([
             db_1.pool.query(`SELECT
            la.id                              AS "id",
@@ -26,9 +26,10 @@ const getLeadDetailHandler = async (req) => {
          LEFT JOIN crm_organizationroles orr ON orr.id = u.role_id
          LEFT JOIN crm_roles           r   ON r.id  = orr.role_id
          JOIN crm_leads                 l   ON l.id = la.lead_id
-         WHERE la.lead_id = $1
-           AND l.organization_id = $2
-         ORDER BY la.createdat DESC`, [id, orgId]),
+         WHERE ($1::text IS NULL OR l.id::text = $1)
+           AND ($2::text IS NULL OR l.code = $2 OR l.id::text = $2)
+           AND l.organization_id = $3
+         ORDER BY la.createdat DESC`, [id || null, leadCode || null, orgId]),
             db_1.pool.query(`SELECT
            loa."ID"               AS "assignmentId",
            loa."createdAt"        AS "assignedAt",
@@ -44,9 +45,10 @@ const getLeadDetailHandler = async (req) => {
          JOIN crm_offer o   ON o.id = loa."offer_ID"
          LEFT JOIN crm_user u ON u.id::text = loa."assigned_by_ID"::text
          JOIN crm_leads l   ON l.id = loa."lead_ID"
-         WHERE loa."lead_ID" = $1
-           AND l.organization_id = $2
-         ORDER BY loa."createdAt" DESC`, [id, orgId]),
+         WHERE ($1::text IS NULL OR l.id::text = $1)
+           AND ($2::text IS NULL OR l.code = $2 OR l.id::text = $2)
+           AND l.organization_id = $3
+         ORDER BY loa."createdAt" DESC`, [id || null, leadCode || null, orgId]),
         ]);
         return {
             activities: activitiesRes.rows,
