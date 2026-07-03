@@ -35,7 +35,8 @@ service OrganizationExecutiveService {
     };
 
     function getExecutiveOffers(page: Integer,
-                                limit: Integer) returns {
+                                limit: Integer,
+                                status: String) returns {
         offers     : many ExecutiveOfferItem;
         pagination : PaginationMeta;
     };

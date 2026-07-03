@@ -8,6 +8,14 @@ const getExecutiveOffersHandler = async (req) => {
         const orgId = req.user?.orgId;
         const executiveId = req.user?.id;
         const { page, limit, offset } = (0, pagination_1.parsePaginationParams)(req.data);
+        const statusFilter = typeof req.data?.status === "string" ? req.data.status.trim() : "";
+        const normalizedStatuses = statusFilter && statusFilter.toLowerCase() !== "all"
+            ? decodeURIComponent(statusFilter)
+                .split(",")
+                .map((status) => status.trim().toLowerCase())
+                .filter(Boolean)
+            : [];
+        const statusParams = normalizedStatuses.length ? normalizedStatuses : null;
         if (!orgId || !executiveId) {
             return req.error(401, "Unauthorized");
         }
@@ -25,7 +33,8 @@ const getExecutiveOffersHandler = async (req) => {
         AND executive.organization_id = $2
         AND manager.organization_id = $2
         AND (o.organization_id = $2 OR o.is_global = true)
-      `, [executiveId, orgId]);
+        AND ($3::text[] IS NULL OR LOWER(o.status) = ANY($3::text[]))
+      `, [executiveId, orgId, statusParams]);
         const res = await db_1.pool.query(`
       SELECT
         o.id                     AS "id",
@@ -53,9 +62,10 @@ const getExecutiveOffersHandler = async (req) => {
         AND executive.organization_id = $2
         AND manager.organization_id = $2
         AND (o.organization_id = $2 OR o.is_global = true)
+        AND ($3::text[] IS NULL OR LOWER(o.status) = ANY($3::text[]))
       ORDER BY ea."createdAt" DESC
-      LIMIT $3 OFFSET $4
-      `, [executiveId, orgId, limit, offset]);
+      LIMIT $4 OFFSET $5
+      `, [executiveId, orgId, statusParams, limit, offset]);
         const total = Number(countRes.rows[0]?.total) || 0;
         return {
             offers: res.rows,
