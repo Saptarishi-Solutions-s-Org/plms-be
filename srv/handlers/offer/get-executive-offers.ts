@@ -1,13 +1,34 @@
 import { pool } from "../../lib/db";
+import { createPaginationMeta, parsePaginationParams } from "../../lib/pagination";
 
 export const getExecutiveOffersHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
     const executiveId = req.user?.id;
+    const { page, limit, offset } = parsePaginationParams(req.data);
 
     if (!orgId || !executiveId) {
       return req.error(401, "Unauthorized");
     }
+
+    const countRes = await pool.query(
+      `
+      SELECT COUNT(*) AS total
+      FROM crm_executiveofferassignment ea
+      JOIN crm_offer o
+        ON o.id = ea."offer_ID"
+      JOIN crm_user executive
+        ON executive.id = ea."executive_ID"
+      JOIN crm_user manager
+        ON manager.id = ea."assigned_by_ID"
+      WHERE ea."executive_ID" = $1
+        AND ea."assigned_by_ID" = executive.reporting_manager_id
+        AND executive.organization_id = $2
+        AND manager.organization_id = $2
+        AND (o.organization_id = $2 OR o.is_global = true)
+      `,
+      [executiveId, orgId],
+    );
 
     const res = await pool.query(
       `
@@ -38,11 +59,21 @@ export const getExecutiveOffersHandler = async (req: any) => {
         AND manager.organization_id = $2
         AND (o.organization_id = $2 OR o.is_global = true)
       ORDER BY ea."createdAt" DESC
+      LIMIT $3 OFFSET $4
       `,
-      [executiveId, orgId],
+      [executiveId, orgId, limit, offset],
     );
 
-    return res.rows;
+    const total = Number(countRes.rows[0]?.total) || 0;
+
+    return {
+      offers: res.rows,
+      pagination: createPaginationMeta({
+        page,
+        limit,
+        total,
+      }),
+    };
   } catch (error: any) {
     console.error("Error fetching executive offers:", error?.message ?? error);
     return req.error(500, "Failed to fetch executive offers");

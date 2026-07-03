@@ -1,4 +1,11 @@
 service ManagerDashboardService {
+  type PaginationMeta {
+    page       : Integer;
+    limit      : Integer;
+    total      : Integer;
+    totalPages : Integer;
+  };
+
   type ManagerOfferItem {
     id                   : UUID;
     title                : String;
@@ -61,14 +68,17 @@ service ManagerDashboardService {
   executives : many ManagerExecutiveItem;
  };
 
- function getManagerOfferOverview() returns {
+ function getManagerOfferOverview(page: Integer,
+                                  limit: Integer,
+                                  status: String) returns {
   stats : {
     totalOffers    : Integer;
     activeOffers   : Integer;
     inactiveOffers : Integer;
     globalOffers   : Integer;
   };
-  offers : many ManagerOfferItem;
+  offers     : many ManagerOfferItem;
+  pagination : PaginationMeta;
  };
 
  action assignOfferToExecutive(

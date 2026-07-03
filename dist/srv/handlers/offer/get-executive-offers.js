@@ -2,15 +2,33 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getExecutiveOffersHandler = void 0;
 const db_1 = require("../../lib/db");
+const pagination_1 = require("../../lib/pagination");
 const getExecutiveOffersHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
         const executiveId = req.user?.id;
+        const { page, limit, offset } = (0, pagination_1.parsePaginationParams)(req.data);
         if (!orgId || !executiveId) {
             return req.error(401, "Unauthorized");
         }
+        const countRes = await db_1.pool.query(`
+      SELECT COUNT(*) AS total
+      FROM crm_executiveofferassignment ea
+      JOIN crm_offer o
+        ON o.id = ea."offer_ID"
+      JOIN crm_user executive
+        ON executive.id = ea."executive_ID"
+      JOIN crm_user manager
+        ON manager.id = ea."assigned_by_ID"
+      WHERE ea."executive_ID" = $1
+        AND ea."assigned_by_ID" = executive.reporting_manager_id
+        AND executive.organization_id = $2
+        AND manager.organization_id = $2
+        AND (o.organization_id = $2 OR o.is_global = true)
+      `, [executiveId, orgId]);
         const res = await db_1.pool.query(`
       SELECT
+        o.id                     AS "id",
         o.title                  AS "title",
         o.description            AS "description",
         o.discount_type          AS "discountType",
@@ -36,8 +54,17 @@ const getExecutiveOffersHandler = async (req) => {
         AND manager.organization_id = $2
         AND (o.organization_id = $2 OR o.is_global = true)
       ORDER BY ea."createdAt" DESC
-      `, [executiveId, orgId]);
-        return res.rows;
+      LIMIT $3 OFFSET $4
+      `, [executiveId, orgId, limit, offset]);
+        const total = Number(countRes.rows[0]?.total) || 0;
+        return {
+            offers: res.rows,
+            pagination: (0, pagination_1.createPaginationMeta)({
+                page,
+                limit,
+                total,
+            }),
+        };
     }
     catch (error) {
         console.error("Error fetching executive offers:", error?.message ?? error);

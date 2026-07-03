@@ -1,4 +1,22 @@
 service OrganizationExecutiveService {
+    type PaginationMeta {
+        page       : Integer;
+        limit      : Integer;
+        total      : Integer;
+        totalPages : Integer;
+    };
+
+    type ExecutiveOfferItem {
+        id            : UUID;
+        title         : String;
+        description   : String;
+        discountType  : String;
+        discountValue : Decimal(10, 2);
+        validFrom     : Date;
+        validTo       : Date;
+        status        : String;
+    };
+
     function getExecutiveStats() returns {
         myLeads      : Integer;
         converted    : Integer;
@@ -21,15 +39,10 @@ service OrganizationExecutiveService {
         status    : String;
     };
 
-    function getExecutiveOffers() returns array of {
-        id            : UUID;
-        title         : String;
-        description   : String;
-        discountType  : String;
-        discountValue : Decimal(10, 2);
-        validFrom     : Date;
-        validTo       : Date;
-        status        : String;
+    function getExecutiveOffers(page: Integer,
+                                limit: Integer) returns {
+        offers     : many ExecutiveOfferItem;
+        pagination : PaginationMeta;
     };
 
     action assignOfferToLead(

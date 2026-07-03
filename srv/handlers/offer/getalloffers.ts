@@ -1,8 +1,20 @@
 import { pool } from "../../lib/db";
+import { createPaginationMeta, parsePaginationParams } from "../../lib/pagination";
 
 export const getOffersHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
+    const { page, limit, offset } = parsePaginationParams(req.data);
+    const statusFilter =
+      typeof req.data?.status === "string" ? req.data.status.trim() : "";
+    const normalizedStatuses =
+      statusFilter && statusFilter.toLowerCase() !== "all"
+        ? decodeURIComponent(statusFilter)
+            .split(",")
+            .map((status) => status.trim().toLowerCase())
+            .filter(Boolean)
+        : [];
+    const statusParams = normalizedStatuses.length ? normalizedStatuses : null;
 
     if (!orgId) {
       return req.error(401, "Unauthorized");
@@ -16,7 +28,17 @@ export const getOffersHandler = async (req: any) => {
     AND LOWER(status) != 'expired'
 `);
 
-    const result = await pool.query(    
+    const countResult = await pool.query(
+      `
+      SELECT COUNT(*) AS total
+      FROM crm_offer o
+      WHERE (o.is_global = true OR o.organization_id = $1)
+        AND ($2::text[] IS NULL OR LOWER(o.status) = ANY($2::text[]))
+      `,
+      [orgId, statusParams],
+    );
+
+    const result = await pool.query(
       `
       SELECT 
          o.id,
@@ -59,17 +81,27 @@ export const getOffersHandler = async (req: any) => {
        LEFT JOIN crm_user u
         ON u.id = a."user_ID"
 
-       WHERE o.is_global = true
-          OR o.organization_id = $1
+       WHERE (o.is_global = true OR o.organization_id = $1)
+         AND ($2::text[] IS NULL OR LOWER(o.status) = ANY($2::text[]))
 
        GROUP BY o.id
 
        ORDER BY o.createdat DESC
+       LIMIT $3 OFFSET $4
       `,
-      [orgId]
+      [orgId, statusParams, limit, offset]
     );
 
-    return result.rows;
+    const total = Number(countResult.rows[0]?.total) || 0;
+
+    return {
+      offers: result.rows,
+      pagination: createPaginationMeta({
+        page,
+        limit,
+        total,
+      }),
+    };
 
   } catch (err: any) {
 
