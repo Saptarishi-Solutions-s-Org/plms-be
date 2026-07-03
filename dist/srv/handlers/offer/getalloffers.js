@@ -2,9 +2,20 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getOffersHandler = void 0;
 const db_1 = require("../../lib/db");
+const pagination_1 = require("../../lib/pagination");
 const getOffersHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
+        const { page, limit, offset } = (0, pagination_1.parsePaginationParams)(req.data);
+        const shouldReturnAll = req.data?.all === true || req.data?.all === "true";
+        const statusFilter = typeof req.data?.status === "string" ? req.data.status.trim() : "";
+        const normalizedStatuses = statusFilter && statusFilter.toLowerCase() !== "all"
+            ? decodeURIComponent(statusFilter)
+                .split(",")
+                .map((status) => status.trim().toLowerCase())
+                .filter(Boolean)
+            : [];
+        const statusParams = normalizedStatuses.length ? normalizedStatuses : null;
         if (!orgId) {
             return req.error(401, "Unauthorized");
         }
@@ -14,6 +25,12 @@ const getOffersHandler = async (req) => {
   WHERE valid_to::date < CURRENT_DATE
     AND LOWER(status) != 'expired'
 `);
+        const countResult = await db_1.pool.query(`
+      SELECT COUNT(*) AS total
+      FROM crm_offer o
+      WHERE (o.is_global = true OR o.organization_id = $1)
+        AND ($2::text[] IS NULL OR LOWER(o.status) = ANY($2::text[]))
+      `, [orgId, statusParams]);
         const result = await db_1.pool.query(`
       SELECT 
          o.id,
@@ -56,14 +73,23 @@ const getOffersHandler = async (req) => {
        LEFT JOIN crm_user u
         ON u.id = a."user_ID"
 
-       WHERE o.is_global = true
-          OR o.organization_id = $1
+       WHERE (o.is_global = true OR o.organization_id = $1)
+         AND ($2::text[] IS NULL OR LOWER(o.status) = ANY($2::text[]))
 
        GROUP BY o.id
 
        ORDER BY o.createdat DESC
-      `, [orgId]);
-        return result.rows;
+       ${shouldReturnAll ? "" : "LIMIT $3 OFFSET $4"}
+      `, shouldReturnAll ? [orgId, statusParams] : [orgId, statusParams, limit, offset]);
+        const total = Number(countResult.rows[0]?.total) || 0;
+        return {
+            offers: result.rows,
+            pagination: (0, pagination_1.createPaginationMeta)({
+                page,
+                limit: shouldReturnAll ? Math.max(total, limit) : limit,
+                total,
+            }),
+        };
     }
     catch (err) {
         return req.error(500, err?.message || "Failed to fetch offers");
