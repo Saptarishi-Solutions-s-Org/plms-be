@@ -20,7 +20,11 @@ const activateUserHandler = async (req) => {
        AND u.organization_id = $2`, [userId, orgId]);
         if (!res.rows.length)
             return req.error(404, "User not found");
-        await client.query(`UPDATE crm_user SET is_active = true, modifiedat = NOW() WHERE id = $1`, [userId]);
+        await client.query(`UPDATE crm_user
+       SET is_active = true,
+           session_version = session_version + 1,
+           modifiedat = NOW()
+       WHERE id = $1`, [userId]);
         (0, socket_1.emitToOrg)(orgId, events_1.USER_LIST_CHANGED, {
             reason: "user-activated",
             userId,

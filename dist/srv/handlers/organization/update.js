@@ -19,6 +19,7 @@ const updateOrganizationHandler = async (req) => {
         if (is_active === false) {
             await client.query(`UPDATE crm_user
          SET is_active = false,
+             session_version = session_version + 1,
              modifiedat = NOW(),
              modifiedby = $1
          WHERE organization_id = $2`, [userId, id]);

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateOrgUserHandler = void 0;
 const db_1 = require("../../lib/db");
+const refreshToken_1 = require("../../lib/refreshToken");
 const socket_1 = require("../../realtime/socket");
 const events_1 = require("../../realtime/events");
 const updateOrgUserHandler = async (req) => {
@@ -89,6 +90,7 @@ const updateOrgUserHandler = async (req) => {
             ? existing.reporting_manager_id
             : reportingManager;
         const reportingManagerChanged = nextReportingManager !== existing.reporting_manager_id;
+        const sessionAffectingChange = reportingManagerChanged || nextIsActive !== existing.is_active;
         await client.query(`UPDATE crm_user
        SET name = COALESCE($1, name),
            email = COALESCE($2, email),
@@ -98,9 +100,15 @@ const updateOrgUserHandler = async (req) => {
            country_id = COALESCE($6, country_id),
            state_id = COALESCE($7, state_id),
            city = COALESCE($8, city),
-           role_id = $9,
-           reporting_manager_id = $10,
-           is_active = $11,
+           role_id = $9::varchar,
+           reporting_manager_id = $10::varchar,
+           is_active = $11::boolean,
+           session_version = CASE
+             WHEN reporting_manager_id IS DISTINCT FROM $10::varchar
+               OR is_active IS DISTINCT FROM $11::boolean
+             THEN session_version + 1
+             ELSE session_version
+           END,
            modifiedat = NOW(),
            modifiedby = $12
        WHERE id = $13
@@ -121,6 +129,14 @@ const updateOrgUserHandler = async (req) => {
             orgId,
         ]);
         await client.query("COMMIT");
+        if (sessionAffectingChange) {
+            try {
+                await (0, refreshToken_1.revokeOtherRefreshTokens)(id);
+            }
+            catch (error) {
+                console.error("Failed to revoke refresh tokens after user update:", error);
+            }
+        }
         (0, socket_1.emitToOrg)(orgId, events_1.USER_LIST_CHANGED, {
             reason: "user-updated",
             userId: id,

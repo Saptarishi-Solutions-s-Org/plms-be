@@ -33,6 +33,7 @@ type AuthUserRow = {
   isSuper: boolean;
   orgRoleId: string;
   role: string;
+  sessionVersion: number;
   mustChangePassword: boolean;
 };
 
@@ -51,6 +52,7 @@ async function getAuthUserByEmail(email: string) {
       o.is_super_organization as "isSuper",
       u.role_id as "orgRoleId",
       r.name as "role",
+      COALESCE(u.session_version, 1) as "sessionVersion",
       COALESCE(u.must_change_password, false) as "mustChangePassword"
     FROM crm_user u
     JOIN crm_organization o ON o.id = u.organization_id
@@ -78,6 +80,7 @@ async function getAuthUserById(userId: string) {
       o.is_super_organization as "isSuper",
       u.role_id as "orgRoleId",
       r.name as "role",
+      COALESCE(u.session_version, 1) as "sessionVersion",
       COALESCE(u.must_change_password, false) as "mustChangePassword"
     FROM crm_user u
     JOIN crm_organization o ON o.id = u.organization_id
@@ -132,6 +135,7 @@ async function buildAuthResponse(user: AuthUserRow) {
     orgId: user.orgId,
     roleId: user.orgRoleId,
     role: user.role,
+    sessionVersion: user.sessionVersion,
     permissions,
     mustChangePassword: user.mustChangePassword,
     isSuper: user.isSuper,

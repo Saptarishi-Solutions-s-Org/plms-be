@@ -17,6 +17,7 @@ export type AccessTokenPayload = JwtPayload & {
   orgId: string;
   roleId: string;
   role: string;
+  sessionVersion: number;
   permissions: Record<string, string[]>;
   mustChangePassword?: boolean;
   isSuper?: boolean;

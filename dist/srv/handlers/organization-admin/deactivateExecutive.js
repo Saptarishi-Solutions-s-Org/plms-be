@@ -57,7 +57,9 @@ const deactivateExecutiveHandler = async (req) => {
         }
         // Deactivate the executive
         await client.query(`UPDATE crm_user
-       SET is_active = false, modifiedat = NOW()
+       SET is_active = false,
+           session_version = session_version + 1,
+           modifiedat = NOW()
        WHERE id = $1`, [executiveId]);
         await client.query("COMMIT");
         (0, socket_1.emitToOrg)(orgId, events_1.USER_LIST_CHANGED, {

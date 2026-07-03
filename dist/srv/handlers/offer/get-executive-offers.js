@@ -71,6 +71,7 @@ const getExecutiveOffersHandler = async (req) => {
         const res = await db_1.pool.query(`
       SELECT
         o.id                     AS "id",
+        o.id                     AS "id",
         o.title                  AS "title",
         o.description            AS "description",
         o.discount_type          AS "discountType",
