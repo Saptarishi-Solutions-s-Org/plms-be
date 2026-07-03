@@ -65,7 +65,8 @@ service ManagerDashboardService {
 
  function getManagerOfferOverview(page: Integer,
                                   limit: Integer,
-                                  status: String) returns {
+                                  status: String,
+                                  all: Boolean) returns {
   stats : {
     totalOffers    : Integer;
     activeOffers   : Integer;

@@ -16,6 +16,25 @@ export const getExecutiveOffersHandler = async (req: any) => {
             .filter(Boolean)
         : [];
     const statusParams = normalizedStatuses.length ? normalizedStatuses : null;
+    const searchFilter =
+      typeof req.data?.search === "string"
+        ? decodeURIComponent(req.data.search).trim()
+        : "";
+    const searchParam = searchFilter ? `%${searchFilter}%` : null;
+    const discountTypeFilter =
+      typeof req.data?.discountType === "string"
+        ? req.data.discountType.trim()
+        : "";
+    const normalizedDiscountTypes =
+      discountTypeFilter && discountTypeFilter.toLowerCase() !== "all"
+        ? decodeURIComponent(discountTypeFilter)
+            .split(",")
+            .map((discountType) => discountType.trim().toLowerCase())
+            .filter(Boolean)
+        : [];
+    const discountTypeParams = normalizedDiscountTypes.length
+      ? normalizedDiscountTypes
+      : null;
 
     if (!orgId || !executiveId) {
       return req.error(401, "Unauthorized");
@@ -37,8 +56,15 @@ export const getExecutiveOffersHandler = async (req: any) => {
         AND manager.organization_id = $2
         AND (o.organization_id = $2 OR o.is_global = true)
         AND ($3::text[] IS NULL OR LOWER(o.status) = ANY($3::text[]))
+        AND (
+          $4::text IS NULL
+          OR o.title ILIKE $4
+          OR o.code ILIKE $4
+          OR o.description ILIKE $4
+        )
+        AND ($5::text[] IS NULL OR LOWER(o.discount_type) = ANY($5::text[]))
       `,
-      [executiveId, orgId, statusParams],
+      [executiveId, orgId, statusParams, searchParam, discountTypeParams],
     );
 
     const res = await pool.query(
@@ -70,10 +96,25 @@ export const getExecutiveOffersHandler = async (req: any) => {
         AND manager.organization_id = $2
         AND (o.organization_id = $2 OR o.is_global = true)
         AND ($3::text[] IS NULL OR LOWER(o.status) = ANY($3::text[]))
+        AND (
+          $4::text IS NULL
+          OR o.title ILIKE $4
+          OR o.code ILIKE $4
+          OR o.description ILIKE $4
+        )
+        AND ($5::text[] IS NULL OR LOWER(o.discount_type) = ANY($5::text[]))
       ORDER BY ea."createdAt" DESC
-      LIMIT $4 OFFSET $5
+      LIMIT $6 OFFSET $7
       `,
-      [executiveId, orgId, statusParams, limit, offset],
+      [
+        executiveId,
+        orgId,
+        statusParams,
+        searchParam,
+        discountTypeParams,
+        limit,
+        offset,
+      ],
     );
 
     const total = Number(countRes.rows[0]?.total) || 0;

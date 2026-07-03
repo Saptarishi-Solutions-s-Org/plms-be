@@ -72,7 +72,8 @@ service OfferService {
 
     function getOffers(page: Integer,
                        limit: Integer,
-                       status: String)          returns {
+                       status: String,
+                       all: Boolean)            returns {
         offers     : many OfferItem;
         pagination : PaginationMeta;
     };

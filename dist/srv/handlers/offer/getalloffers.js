@@ -7,6 +7,7 @@ const getOffersHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
         const { page, limit, offset } = (0, pagination_1.parsePaginationParams)(req.data);
+        const shouldReturnAll = req.data?.all === true || req.data?.all === "true";
         const statusFilter = typeof req.data?.status === "string" ? req.data.status.trim() : "";
         const normalizedStatuses = statusFilter && statusFilter.toLowerCase() !== "all"
             ? decodeURIComponent(statusFilter)
@@ -78,14 +79,14 @@ const getOffersHandler = async (req) => {
        GROUP BY o.id
 
        ORDER BY o.createdat DESC
-       LIMIT $3 OFFSET $4
-      `, [orgId, statusParams, limit, offset]);
+       ${shouldReturnAll ? "" : "LIMIT $3 OFFSET $4"}
+      `, shouldReturnAll ? [orgId, statusParams] : [orgId, statusParams, limit, offset]);
         const total = Number(countResult.rows[0]?.total) || 0;
         return {
             offers: result.rows,
             pagination: (0, pagination_1.createPaginationMeta)({
                 page,
-                limit,
+                limit: shouldReturnAll ? Math.max(total, limit) : limit,
                 total,
             }),
         };

@@ -8,6 +8,7 @@ const getManagerOfferOverviewHandler = async (req) => {
         const orgId = req.user?.orgId;
         const managerId = req.user?.id;
         const { page, limit, offset } = (0, pagination_1.parsePaginationParams)(req.data);
+        const shouldReturnAll = req.data?.all === true || req.data?.all === "true";
         const statusFilter = typeof req.data?.status === "string" ? req.data.status.trim() : "";
         const normalizedStatuses = statusFilter && statusFilter.toLowerCase() !== "all"
             ? decodeURIComponent(statusFilter)
@@ -58,14 +59,13 @@ const getManagerOfferOverviewHandler = async (req) => {
         AND (o.is_global = true OR oa."user_ID" = $2)
         AND ($3::text[] IS NULL OR LOWER(o.status) = ANY($3::text[]))
       ORDER BY o.createdat DESC
-      LIMIT $4 OFFSET $5
+      ${shouldReturnAll ? "" : "LIMIT $4 OFFSET $5"}
     `;
         const offersResult = await db_1.pool.query(offersQuery, [
             orgId,
             managerId,
             statusParams,
-            limit,
-            offset,
+            ...(shouldReturnAll ? [] : [limit, offset]),
         ]);
         const statsQuery = `
       WITH manager_offers AS (
@@ -103,7 +103,7 @@ const getManagerOfferOverviewHandler = async (req) => {
             offers: offersResult.rows,
             pagination: (0, pagination_1.createPaginationMeta)({
                 page,
-                limit,
+                limit: shouldReturnAll ? Math.max(Number(stats.total_count) || 0, limit) : limit,
                 total: Number(stats.total_count) || 0,
             }),
         };

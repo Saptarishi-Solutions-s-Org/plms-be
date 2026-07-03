@@ -6,6 +6,7 @@ export const getManagerOfferOverviewHandler = async (req: any) => {
     const orgId = req.user?.orgId;
     const managerId = req.user?.id;
     const { page, limit, offset } = parsePaginationParams(req.data);
+    const shouldReturnAll = req.data?.all === true || req.data?.all === "true";
     const statusFilter =
       typeof req.data?.status === "string" ? req.data.status.trim() : "";
     const normalizedStatuses =
@@ -61,15 +62,14 @@ export const getManagerOfferOverviewHandler = async (req: any) => {
         AND (o.is_global = true OR oa."user_ID" = $2)
         AND ($3::text[] IS NULL OR LOWER(o.status) = ANY($3::text[]))
       ORDER BY o.createdat DESC
-      LIMIT $4 OFFSET $5
+      ${shouldReturnAll ? "" : "LIMIT $4 OFFSET $5"}
     `;
 
     const offersResult = await pool.query(offersQuery, [
       orgId,
       managerId,
       statusParams,
-      limit,
-      offset,
+      ...(shouldReturnAll ? [] : [limit, offset]),
     ]);
 
     const statsQuery = `
@@ -110,7 +110,7 @@ export const getManagerOfferOverviewHandler = async (req: any) => {
       offers: offersResult.rows,
       pagination: createPaginationMeta({
         page,
-        limit,
+        limit: shouldReturnAll ? Math.max(Number(stats.total_count) || 0, limit) : limit,
         total: Number(stats.total_count) || 0,
       }),
     };
