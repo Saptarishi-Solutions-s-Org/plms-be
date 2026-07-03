@@ -1,11 +1,6 @@
-service OfferService {
-    type PaginationMeta {
-        page       : Integer;
-        limit      : Integer;
-        total      : Integer;
-        totalPages : Integer;
-    };
+using { plms.common.PaginationMeta } from './types/pagination';
 
+service OfferService {
     type OfferManagerItem {
         id    : UUID;
         name  : String;

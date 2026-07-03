@@ -1,11 +1,6 @@
-service OrganizationExecutiveService {
-    type PaginationMeta {
-        page       : Integer;
-        limit      : Integer;
-        total      : Integer;
-        totalPages : Integer;
-    };
+using { plms.common.PaginationMeta } from './types/pagination';
 
+service OrganizationExecutiveService {
     type ExecutiveOfferItem {
         id            : UUID;
         title         : String;
