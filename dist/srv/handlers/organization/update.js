@@ -7,15 +7,33 @@ const events_1 = require("../../realtime/events");
 const updateOrganizationHandler = async (req) => {
     const client = await db_1.pool.connect();
     try {
-        const { id, name, is_active } = req.data;
+        const { id, name, is_active, email, phone, address, state, country, trial, trailtype, } = req.data;
         const userId = req.user?.id || null;
+        const trialType = trial ?? trailtype;
         await client.query("BEGIN");
         await client.query(`UPDATE crm_organization
        SET name = $1,
            is_active = $2,
+           email = $3,
+           phone = $4,
+           address = $5,
+           state_id = $6,
+           country_id = $7,
+           trial = $8,
            modifiedat = NOW(),
-           modifiedby = $3
-       WHERE id = $4`, [name, is_active, userId, id]);
+           modifiedby = $9
+       WHERE id = $10`, [
+            name,
+            is_active,
+            email,
+            phone,
+            address,
+            state,
+            country,
+            trialType,
+            userId,
+            id,
+        ]);
         if (is_active === false) {
             await client.query(`UPDATE crm_user
          SET is_active = false,
