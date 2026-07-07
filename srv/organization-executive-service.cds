@@ -50,5 +50,15 @@ service OrganizationExecutiveService {
         assignmentId : UUID;
         message      : String;
     };
+
+    action assignOffersToLeads(
+        offerId: UUID,
+        leadIds: many UUID
+       ) returns {
+        assignmentIds : many UUID;
+        assignedCount : Integer;
+        skippedCount  : Integer;
+        message       : String;
+    };
 }
  
