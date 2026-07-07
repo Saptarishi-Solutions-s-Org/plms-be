@@ -36,6 +36,10 @@ function bindServicesOnce() {
 }
 
 cds.on("bootstrap", (app: Express) => {
+  app.get("/health", (req, res) => {
+    res.status(200).json({ status: "UP", timestamp: new Date().toISOString() });
+  });
+
   app.use((req, res, next) => {
     const origin = req.headers.origin as string | undefined;
 
