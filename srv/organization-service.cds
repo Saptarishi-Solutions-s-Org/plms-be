@@ -59,7 +59,10 @@ service OrganizationService {
                                 is_active: Boolean,
                                 email: String,
                                 phone: String,
-                                address: String) returns {
+                                address: String,
+                                state: UUID,
+                                country: UUID,
+                                trial: String) returns {
         message : String;
     };
 

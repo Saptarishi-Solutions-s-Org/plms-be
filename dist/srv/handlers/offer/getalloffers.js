@@ -2,9 +2,36 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getOffersHandler = void 0;
 const db_1 = require("../../lib/db");
+const pagination_1 = require("../../lib/pagination");
 const getOffersHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
+        const { page, limit, offset } = (0, pagination_1.parsePaginationParams)(req.data);
+        const shouldReturnAll = req.data?.all === true || req.data?.all === "true";
+        const statusFilter = typeof req.data?.status === "string" ? req.data.status.trim() : "";
+        const normalizedStatuses = statusFilter && statusFilter.toLowerCase() !== "all"
+            ? decodeURIComponent(statusFilter)
+                .split(",")
+                .map((status) => status.trim().toLowerCase())
+                .filter(Boolean)
+            : [];
+        const statusParams = normalizedStatuses.length ? normalizedStatuses : null;
+        const searchFilter = typeof req.data?.search === "string"
+            ? decodeURIComponent(req.data.search).trim()
+            : "";
+        const searchParam = searchFilter ? `%${searchFilter}%` : null;
+        const discountTypeFilter = typeof req.data?.discountType === "string"
+            ? req.data.discountType.trim()
+            : "";
+        const normalizedDiscountTypes = discountTypeFilter && discountTypeFilter.toLowerCase() !== "all"
+            ? decodeURIComponent(discountTypeFilter)
+                .split(",")
+                .map((discountType) => discountType.trim().toLowerCase())
+                .filter(Boolean)
+            : [];
+        const discountTypeParams = normalizedDiscountTypes.length
+            ? normalizedDiscountTypes
+            : null;
         if (!orgId) {
             return req.error(401, "Unauthorized");
         }
@@ -14,6 +41,28 @@ const getOffersHandler = async (req) => {
   WHERE valid_to::date < CURRENT_DATE
     AND LOWER(status) != 'expired'
 `);
+        const filterParams = [
+            orgId,
+            statusParams,
+            searchParam,
+            discountTypeParams,
+        ];
+        const offersFilterSql = `
+      WHERE (o.is_global = true OR o.organization_id = $1)
+        AND ($2::text[] IS NULL OR LOWER(o.status) = ANY($2::text[]))
+        AND (
+          $3::text IS NULL
+          OR o.title ILIKE $3
+          OR o.code ILIKE $3
+          OR o.description ILIKE $3
+        )
+        AND ($4::text[] IS NULL OR LOWER(o.discount_type) = ANY($4::text[]))
+    `;
+        const countResult = await db_1.pool.query(`
+      SELECT COUNT(*) AS total
+      FROM crm_offer o
+      ${offersFilterSql}
+      `, filterParams);
         const result = await db_1.pool.query(`
       SELECT 
          o.id,
@@ -56,14 +105,22 @@ const getOffersHandler = async (req) => {
        LEFT JOIN crm_user u
         ON u.id = a."user_ID"
 
-       WHERE o.is_global = true
-          OR o.organization_id = $1
+       ${offersFilterSql}
 
        GROUP BY o.id
 
        ORDER BY o.createdat DESC
-      `, [orgId]);
-        return result.rows;
+       ${shouldReturnAll ? "" : "LIMIT $5 OFFSET $6"}
+      `, shouldReturnAll ? filterParams : [...filterParams, limit, offset]);
+        const total = Number(countResult.rows[0]?.total) || 0;
+        return {
+            offers: result.rows,
+            pagination: (0, pagination_1.createPaginationMeta)({
+                page,
+                limit: shouldReturnAll ? Math.max(total, limit) : limit,
+                total,
+            }),
+        };
     }
     catch (err) {
         return req.error(500, err?.message || "Failed to fetch offers");

@@ -34,6 +34,9 @@ function bindServicesOnce() {
     servicesBound = true;
 }
 cds_1.default.on("bootstrap", (app) => {
+    app.get("/health", (req, res) => {
+        res.status(200).json({ status: "UP", timestamp: new Date().toISOString() });
+    });
     app.use((req, res, next) => {
         const origin = req.headers.origin;
         if (origin && allowedOrigins.includes(origin)) {

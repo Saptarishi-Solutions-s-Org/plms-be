@@ -2,10 +2,21 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getManagerOfferOverviewHandler = void 0;
 const db_1 = require("../../lib/db");
+const pagination_1 = require("../../lib/pagination");
 const getManagerOfferOverviewHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
         const managerId = req.user?.id;
+        const { page, limit, offset } = (0, pagination_1.parsePaginationParams)(req.data);
+        const shouldReturnAll = req.data?.all === true || req.data?.all === "true";
+        const statusFilter = typeof req.data?.status === "string" ? req.data.status.trim() : "";
+        const normalizedStatuses = statusFilter && statusFilter.toLowerCase() !== "all"
+            ? decodeURIComponent(statusFilter)
+                .split(",")
+                .map((status) => status.trim().toLowerCase())
+                .filter(Boolean)
+            : [];
+        const statusParams = normalizedStatuses.length ? normalizedStatuses : null;
         if (!orgId) {
             return req.error(400, "Organization ID missing");
         }
@@ -46,9 +57,16 @@ const getManagerOfferOverviewHandler = async (req) => {
         ON oa."offer_ID" = o.id
       WHERE (o.organization_id = $1 OR o.is_global = true)
         AND (o.is_global = true OR oa."user_ID" = $2)
+        AND ($3::text[] IS NULL OR LOWER(o.status) = ANY($3::text[]))
       ORDER BY o.createdat DESC
+      ${shouldReturnAll ? "" : "LIMIT $4 OFFSET $5"}
     `;
-        const offersResult = await db_1.pool.query(offersQuery, [orgId, managerId]);
+        const offersResult = await db_1.pool.query(offersQuery, [
+            orgId,
+            managerId,
+            statusParams,
+            ...(shouldReturnAll ? [] : [limit, offset]),
+        ]);
         const statsQuery = `
       WITH manager_offers AS (
         SELECT DISTINCT
@@ -60,6 +78,7 @@ const getManagerOfferOverviewHandler = async (req) => {
           ON oa."offer_ID" = o.id
         WHERE (o.organization_id = $1 OR o.is_global = true)
           AND (o.is_global = true OR oa."user_ID" = $2)
+          AND ($3::text[] IS NULL OR LOWER(o.status) = ANY($3::text[]))
       )
       SELECT
         COUNT(*) AS total_count,
@@ -68,7 +87,11 @@ const getManagerOfferOverviewHandler = async (req) => {
         COUNT(*) FILTER (WHERE is_global = true) AS global_count
       FROM manager_offers
     `;
-        const statsResult = await db_1.pool.query(statsQuery, [orgId, managerId]);
+        const statsResult = await db_1.pool.query(statsQuery, [
+            orgId,
+            managerId,
+            statusParams,
+        ]);
         const stats = statsResult.rows[0] || {};
         return {
             stats: {
@@ -78,6 +101,11 @@ const getManagerOfferOverviewHandler = async (req) => {
                 globalOffers: Number(stats.global_count) || 0,
             },
             offers: offersResult.rows,
+            pagination: (0, pagination_1.createPaginationMeta)({
+                page,
+                limit: shouldReturnAll ? Math.max(Number(stats.total_count) || 0, limit) : limit,
+                total: Number(stats.total_count) || 0,
+            }),
         };
     }
     catch (error) {

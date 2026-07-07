@@ -1,9 +1,4 @@
-type PaginationMeta {
-    page       : Integer;
-    limit      : Integer;
-    total      : Integer;
-    totalPages : Integer;
-}
+using { plms.common.PaginationMeta } from './types/pagination';
 
 service LeadService {
 
@@ -45,7 +40,7 @@ service LeadService {
         pagination : PaginationMeta;
     };
 
-    function getExecutiveUsers()                     returns many {
+    function getExecutiveUsers() returns many {
         id   : String;
         name : String;
     };
@@ -153,12 +148,14 @@ service LeadService {
         };
     };
 
-    action   addLeadActivity(leadId: String,
-                             type: String,
-                             notes: String,
-                             freeText: String,
-                             callStatus: String,
-                             nextFollowUpDate: Date) returns {
+    action addLeadActivity(
+        leadId           : String,
+        type             : String,
+        notes            : String,
+        freeText         : String,
+        callStatus       : String,
+        nextFollowUpDate : Date
+    ) returns {
         message  : String;
         activity : {
             id               : String;

@@ -1,4 +1,12 @@
+using { plms.common.PaginationMeta } from './types/pagination';
+
 service OfferService {
+    type OfferManagerItem {
+        id    : UUID;
+        name  : String;
+        email : String;
+    };
+
     type OfferItem {
         id                   : UUID;
         organization_ID      : UUID;
@@ -20,6 +28,7 @@ service OfferService {
         valid_from           : Date;
         valid_to             : Date;
         created_at           : DateTime;
+        managers             : many OfferManagerItem;
     };
 
     type ManagerItem {
@@ -61,7 +70,15 @@ service OfferService {
     };
 
 
-    function getOffers()                         returns many OfferItem;
+    function getOffers(page: Integer,
+                       limit: Integer,
+                       status: String,
+                       search: String,
+                       discountType: String,
+                       all: Boolean)            returns {
+        offers     : many OfferItem;
+        pagination : PaginationMeta;
+    };
     function getManagers()                       returns many ManagerItem;
     function getExecutivesByOffer(offerId: UUID) returns many AssignedExecutiveItem;
 
@@ -78,3 +95,4 @@ service OfferService {
         assignedCount : Integer;
     };
 }
+ 

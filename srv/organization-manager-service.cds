@@ -1,3 +1,5 @@
+using { plms.common.PaginationMeta } from './types/pagination';
+
 service ManagerDashboardService {
   type ManagerOfferItem {
     id                   : UUID;
@@ -61,14 +63,18 @@ service ManagerDashboardService {
   executives : many ManagerExecutiveItem;
  };
 
- function getManagerOfferOverview() returns {
+ function getManagerOfferOverview(page: Integer,
+                                  limit: Integer,
+                                  status: String,
+                                  all: Boolean) returns {
   stats : {
     totalOffers    : Integer;
     activeOffers   : Integer;
     inactiveOffers : Integer;
     globalOffers   : Integer;
   };
-  offers : many ManagerOfferItem;
+  offers     : many ManagerOfferItem;
+  pagination : PaginationMeta;
  };
 
  action assignOfferToExecutive(
@@ -77,6 +83,27 @@ service ManagerDashboardService {
  ) returns {
   assignmentId : UUID;
   message      : String;
+ };
+
+ type BulkOfferAssignmentItem {
+  offerId      : UUID;
+  executiveId  : UUID;
+  assignmentId : UUID;
+ };
+
+ type BulkOfferAssignmentSkip {
+  offerId      : UUID;
+  executiveId  : UUID;
+  reason       : String;
+ };
+
+ action bulkAssignOffersToExecutives(
+  offerIds     : many UUID,
+  executiveIds : many UUID
+ ) returns {
+  message  : String;
+  assigned : many BulkOfferAssignmentItem;
+  skipped  : many BulkOfferAssignmentSkip;
  };
 
  function getAvailableExecutivesForOffer(offerId: UUID) returns array of {

@@ -1,4 +1,17 @@
+using { plms.common.PaginationMeta } from './types/pagination';
+
 service OrganizationExecutiveService {
+    type ExecutiveOfferItem {
+        id            : UUID;
+        title         : String;
+        description   : String;
+        discountType  : String;
+        discountValue : Decimal(10, 2);
+        validFrom     : Date;
+        validTo       : Date;
+        status        : String;
+    };
+
     function getExecutiveStats() returns {
         myLeads      : Integer;
         converted    : Integer;
@@ -21,15 +34,13 @@ service OrganizationExecutiveService {
         status    : String;
     };
 
-    function getExecutiveOffers() returns array of {
-        id            : UUID;
-        title         : String;
-        description   : String;
-        discountType  : String;
-        discountValue : Decimal(10, 2);
-        validFrom     : Date;
-        validTo       : Date;
-        status        : String;
+    function getExecutiveOffers(page: Integer,
+                                limit: Integer,
+                                status: String,
+                                search: String,
+                                discountType: String) returns {
+        offers     : many ExecutiveOfferItem;
+        pagination : PaginationMeta;
     };
 
     action assignOfferToLead(
@@ -38,6 +49,16 @@ service OrganizationExecutiveService {
        ) returns {
         assignmentId : UUID;
         message      : String;
+    };
+
+    action assignOffersToLeads(
+        offerId: UUID,
+        leadIds: many UUID
+       ) returns {
+        assignmentIds : many UUID;
+        assignedCount : Integer;
+        skippedCount  : Integer;
+        message       : String;
     };
 }
  
