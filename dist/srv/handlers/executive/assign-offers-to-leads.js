@@ -114,7 +114,7 @@ const assignOffersToLeadsHandler = async (req) => {
         const validLeads = await db_1.pool.query(`
       SELECT id
       FROM crm_leads
-      WHERE id = ANY($1::uuid[])
+      WHERE id = ANY($1::text[])
         AND organization_id = $2
         AND assigned_to_id = $3
       `, [uniqueLeadIds, orgId, executiveId]);
@@ -125,7 +125,7 @@ const assignOffersToLeadsHandler = async (req) => {
         const duplicateResult = await db_1.pool.query(`
       SELECT "lead_ID"
       FROM crm_leadofferassignment
-      WHERE "lead_ID" = ANY($1::uuid[])
+      WHERE "lead_ID" = ANY($1::text[])
         AND "offer_ID" = $2
       `, [validLeadIds, offerId]);
         const duplicateLeadIds = new Set(duplicateResult.rows.map((assignment) => assignment.lead_ID));
