@@ -35,5 +35,9 @@ const bindExecutiveDashboard = () => {
         roles: ["Executive"],
         modules: { offers: ["view"] },
     }));
+    service.on("assignOffersToLeads", (0, withAuth_1.withAuth)(assign_offers_to_leads_1.assignOffersToLeadsHandler, {
+        roles: ["Executive"],
+        modules: { offers: ["view"] },
+    }));
 };
 exports.bindExecutiveDashboard = bindExecutiveDashboard;
