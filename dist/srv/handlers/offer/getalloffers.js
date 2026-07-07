@@ -16,6 +16,22 @@ const getOffersHandler = async (req) => {
                 .filter(Boolean)
             : [];
         const statusParams = normalizedStatuses.length ? normalizedStatuses : null;
+        const searchFilter = typeof req.data?.search === "string"
+            ? decodeURIComponent(req.data.search).trim()
+            : "";
+        const searchParam = searchFilter ? `%${searchFilter}%` : null;
+        const discountTypeFilter = typeof req.data?.discountType === "string"
+            ? req.data.discountType.trim()
+            : "";
+        const normalizedDiscountTypes = discountTypeFilter && discountTypeFilter.toLowerCase() !== "all"
+            ? decodeURIComponent(discountTypeFilter)
+                .split(",")
+                .map((discountType) => discountType.trim().toLowerCase())
+                .filter(Boolean)
+            : [];
+        const discountTypeParams = normalizedDiscountTypes.length
+            ? normalizedDiscountTypes
+            : null;
         if (!orgId) {
             return req.error(401, "Unauthorized");
         }
@@ -25,12 +41,28 @@ const getOffersHandler = async (req) => {
   WHERE valid_to::date < CURRENT_DATE
     AND LOWER(status) != 'expired'
 `);
+        const filterParams = [
+            orgId,
+            statusParams,
+            searchParam,
+            discountTypeParams,
+        ];
+        const offersFilterSql = `
+      WHERE (o.is_global = true OR o.organization_id = $1)
+        AND ($2::text[] IS NULL OR LOWER(o.status) = ANY($2::text[]))
+        AND (
+          $3::text IS NULL
+          OR o.title ILIKE $3
+          OR o.code ILIKE $3
+          OR o.description ILIKE $3
+        )
+        AND ($4::text[] IS NULL OR LOWER(o.discount_type) = ANY($4::text[]))
+    `;
         const countResult = await db_1.pool.query(`
       SELECT COUNT(*) AS total
       FROM crm_offer o
-      WHERE (o.is_global = true OR o.organization_id = $1)
-        AND ($2::text[] IS NULL OR LOWER(o.status) = ANY($2::text[]))
-      `, [orgId, statusParams]);
+      ${offersFilterSql}
+      `, filterParams);
         const result = await db_1.pool.query(`
       SELECT 
          o.id,
@@ -73,14 +105,13 @@ const getOffersHandler = async (req) => {
        LEFT JOIN crm_user u
         ON u.id = a."user_ID"
 
-       WHERE (o.is_global = true OR o.organization_id = $1)
-         AND ($2::text[] IS NULL OR LOWER(o.status) = ANY($2::text[]))
+       ${offersFilterSql}
 
        GROUP BY o.id
 
        ORDER BY o.createdat DESC
-       ${shouldReturnAll ? "" : "LIMIT $3 OFFSET $4"}
-      `, shouldReturnAll ? [orgId, statusParams] : [orgId, statusParams, limit, offset]);
+       ${shouldReturnAll ? "" : "LIMIT $5 OFFSET $6"}
+      `, shouldReturnAll ? filterParams : [...filterParams, limit, offset]);
         const total = Number(countResult.rows[0]?.total) || 0;
         return {
             offers: result.rows,
