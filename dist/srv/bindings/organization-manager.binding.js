@@ -12,6 +12,7 @@ const getexecutiveperformance_1 = require("../handlers/organization-manager/gete
 const getexecutiveoverview_1 = require("../handlers/organization-manager/getexecutiveoverview");
 const getmanagerofferoverview_1 = require("../handlers/organization-manager/getmanagerofferoverview");
 const assign_offer_to_executive_1 = require("../handlers/organization-manager/assign-offer-to-executive");
+const bulk_assign_offers_to_executives_1 = require("../handlers/organization-manager/bulk-assign-offers-to-executives");
 const deactivateExecutiveForManager_1 = require("../handlers/organization-manager/deactivateExecutiveForManager");
 const getOtherExecutivesForReassign_1 = require("../handlers/organization-manager/getOtherExecutivesForReassign");
 const getAvailableExecutivesForOffer_1 = require("../handlers/organization-manager/getAvailableExecutivesForOffer");
@@ -40,6 +41,10 @@ const bindManagerDashboard = () => {
         modules: { offers: ["view"] },
     }));
     service.on("assignOfferToExecutive", (0, withAuth_1.withAuth)(assign_offer_to_executive_1.assignOfferToExecutiveHandler, {
+        roles: ["manager"],
+        modules: { offers: ["view"] },
+    }));
+    service.on("bulkAssignOffersToExecutives", (0, withAuth_1.withAuth)(bulk_assign_offers_to_executives_1.bulkAssignOffersToExecutivesHandler, {
         roles: ["manager"],
         modules: { offers: ["view"] },
     }));

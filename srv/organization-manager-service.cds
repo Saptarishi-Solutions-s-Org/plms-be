@@ -85,6 +85,27 @@ service ManagerDashboardService {
   message      : String;
  };
 
+ type BulkOfferAssignmentItem {
+  offerId      : UUID;
+  executiveId  : UUID;
+  assignmentId : UUID;
+ };
+
+ type BulkOfferAssignmentSkip {
+  offerId      : UUID;
+  executiveId  : UUID;
+  reason       : String;
+ };
+
+ action bulkAssignOffersToExecutives(
+  offerIds     : many UUID,
+  executiveIds : many UUID
+ ) returns {
+  message  : String;
+  assigned : many BulkOfferAssignmentItem;
+  skipped  : many BulkOfferAssignmentSkip;
+ };
+
  function getAvailableExecutivesForOffer(offerId: UUID) returns array of {
   id    : UUID;
   name  : String;

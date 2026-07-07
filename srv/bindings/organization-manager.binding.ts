@@ -6,6 +6,7 @@ import { executivePerformanceHandler } from "../handlers/organization-manager/ge
 import { getExecutiveOverviewHandler } from "../handlers/organization-manager/getexecutiveoverview";
 import { getManagerOfferOverviewHandler } from "../handlers/organization-manager/getmanagerofferoverview";
 import { assignOfferToExecutiveHandler } from "../handlers/organization-manager/assign-offer-to-executive";
+import { bulkAssignOffersToExecutivesHandler } from "../handlers/organization-manager/bulk-assign-offers-to-executives";
 import { deactivateExecutiveForManagerHandler } from "../handlers/organization-manager/deactivateExecutiveForManager";
 import { getOtherExecutivesForReassignHandler } from "../handlers/organization-manager/getOtherExecutivesForReassign";
 import { getAvailableExecutivesForOfferHandler } from "../handlers/organization-manager/getAvailableExecutivesForOffer";
@@ -58,6 +59,14 @@ export const bindManagerDashboard = () => {
       roles: ["manager"],
       modules: { offers: ["view"] },
      }),
+  );
+
+  service.on(
+    "bulkAssignOffersToExecutives",
+    withAuth(bulkAssignOffersToExecutivesHandler, {
+      roles: ["manager"],
+      modules: { offers: ["view"] },
+    }),
   );
 
   service.on(
