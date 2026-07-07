@@ -73,6 +73,8 @@ service OfferService {
     function getOffers(page: Integer,
                        limit: Integer,
                        status: String,
+                       search: String,
+                       discountType: String,
                        all: Boolean)            returns {
         offers     : many OfferItem;
         pagination : PaginationMeta;
@@ -93,3 +95,4 @@ service OfferService {
         assignedCount : Integer;
     };
 }
+ 
