@@ -8,8 +8,8 @@ service LeadService {
                                status: String,
                                priority: String,
                                leadSource: String,
-                               assignedTo: String) returns {
-        leads : many {
+                               assignedTo: String)   returns {
+        leads      : many {
             uuid           : String;
             id             : String;
             leadCode       : String;
@@ -31,7 +31,7 @@ service LeadService {
             createdAt      : Timestamp;
             notes          : String;
         };
-        stats : {
+        stats      : {
             total     : Integer;
             new       : Integer;
             contacted : Integer;
@@ -57,7 +57,7 @@ service LeadService {
                         status: String,
                         assignedTo: String,
                         priority: String,
-                        notes: String) returns {
+                        notes: String)               returns {
         message  : String;
         leadCode : String;
     };
@@ -75,11 +75,17 @@ service LeadService {
                         status: String,
                         assignedTo: String,
                         priority: String,
-                        notes: String) returns {
+                        notes: String)               returns {
         message : String;
     };
 
-    action   exportLeads()             returns many {
+    action   bulkAssignLeads(leadIds: many String,
+                             assignedTo: String)     returns {
+        message       : String;
+        assignedCount : Integer;
+    };
+
+    action   exportLeads()                           returns many {
         leadCode   : String;
         name       : String;
         gender     : String;
@@ -102,15 +108,15 @@ service LeadService {
         email      : String;
         phone      : String;
         city       : String;
-        state    : String;
-        country  : String;
+        state      : String;
+        country    : String;
         postalCode : String;
         leadSource : String;
         status     : String;
         assignedTo : String;
         priority   : String;
         notes      : String;
-    })                                 returns {
+    })                                               returns {
         imported   : Integer;
         failed     : Integer;
     };
@@ -128,7 +134,7 @@ service LeadService {
             createdByName    : String;
             createdByRole    : String;
         };
-        offers : many {
+        offers     : many {
             assignmentId   : String;
             assignedAt     : Timestamp;
             assignedByName : String;
