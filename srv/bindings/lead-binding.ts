@@ -4,7 +4,7 @@ import { withAuth } from "../lib/withAuth";
 import { getLeadsWithStatsHandler } from "../handlers/leads/getLeadsWithStats";
 import { getExecutiveUsersHandler }  from "../handlers/leads/getExecutiveUsers";
 import { createLeadHandler }         from "../handlers/leads/createLead";
-import { updateLeadHandler }         from "../handlers/leads/updateLead";
+import { bulkAssignLeadsHandler, updateLeadHandler } from "../handlers/leads/updateLead";
 import { exportLeadsHandler }        from "../handlers/leads/exportLeads";
 import { importLeadsHandler }        from "../handlers/leads/importLeads";
 import { getLeadDetailHandler }      from "../handlers/leads/getLeadDetails";     
@@ -42,6 +42,14 @@ export const bindLead = () => {
     "updateLead",
     withAuth(updateLeadHandler, {
       roles: ["manager", "executive"],
+      modules: { lead: ["update"] },
+    }),
+  );
+
+  service.on(
+    "bulkAssignLeads",
+    withAuth(bulkAssignLeadsHandler, {
+      roles: ["manager"],
       modules: { lead: ["update"] },
     }),
   );

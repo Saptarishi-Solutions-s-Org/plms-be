@@ -34,6 +34,10 @@ const bindLead = () => {
         roles: ["manager", "executive"],
         modules: { lead: ["update"] },
     }));
+    service.on("bulkAssignLeads", (0, withAuth_1.withAuth)(updateLead_1.bulkAssignLeadsHandler, {
+        roles: ["manager"],
+        modules: { lead: ["update"] },
+    }));
     service.on("exportLeads", (0, withAuth_1.withAuth)(exportLeads_1.exportLeadsHandler, {
         roles: ["manager", "executive"],
         modules: { lead: ["export"] },

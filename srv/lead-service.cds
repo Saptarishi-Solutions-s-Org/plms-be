@@ -84,6 +84,12 @@ service LeadService {
         message : String;
     };
 
+    action   bulkAssignLeads(leadIds: many String,
+                             assignedTo: String)     returns {
+        message       : String;
+        assignedCount : Integer;
+    };
+
     action   exportLeads()                           returns many {
         leadCode   : String;
         name       : String;
