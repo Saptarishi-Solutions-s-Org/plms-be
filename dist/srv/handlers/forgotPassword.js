@@ -14,13 +14,13 @@ const RESET_TOKEN_VALIDITY_MINUTES = 30;
 const GENERIC_FORGOT_PASSWORD_MESSAGE = "If the email exists, reset link sent";
 const getResetUrl = (token) => {
     const frontendUrl = process.env.ALLOWED_ORIGINS?.split(",")[0]?.trim();
-    const resetPageUrl = process.env.APP_URL ||
-        (frontendUrl ? `${frontendUrl}/reset-password` : "");
-    if (!resetPageUrl) {
+    const appUrl = process.env.APP_URL || frontendUrl || "";
+    if (!appUrl) {
         throw new Error("APP_URL or ALLOWED_ORIGINS is missing");
     }
+    const resetPageUrl = `${appUrl.replace(/\/$/, "")}/reset-password`;
     const separator = resetPageUrl.includes("?") ? "&" : "?";
-    return `${resetPageUrl.replace(/\/$/, "")}${separator}token=${encodeURIComponent(token)}`;
+    return `${resetPageUrl}${separator}token=${encodeURIComponent(token)}`;
 };
 const forgotPasswordHandler = async (req) => {
     try {

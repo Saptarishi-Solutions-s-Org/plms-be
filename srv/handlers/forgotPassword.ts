@@ -11,17 +11,16 @@ const GENERIC_FORGOT_PASSWORD_MESSAGE =
 
 const getResetUrl = (token: string) => {
   const frontendUrl =process.env.ALLOWED_ORIGINS?.split(",")[0]?.trim();
-  const resetPageUrl =
-    process.env.APP_URL ||
-    (frontendUrl ? `${frontendUrl}/reset-password` : "");
+  const appUrl = process.env.APP_URL || frontendUrl || "";
 
-  if (!resetPageUrl) {
+  if (!appUrl) {
     throw new Error("APP_URL or ALLOWED_ORIGINS is missing");
   }
 
+  const resetPageUrl = `${appUrl.replace(/\/$/, "")}/reset-password`;
   const separator = resetPageUrl.includes("?") ? "&" : "?";
 
-  return `${resetPageUrl.replace(/\/$/, "")}${separator}token=${encodeURIComponent(token)}`;
+  return `${resetPageUrl}${separator}token=${encodeURIComponent(token)}`;
 };
 
 export const forgotPasswordHandler = async (req: any) => {
