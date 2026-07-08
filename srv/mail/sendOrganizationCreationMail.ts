@@ -13,6 +13,17 @@ export const sendOrganizationCreationMail = async ({
   orgCode: string;
 }) => {
   try {
+    const frontendUrl = process.env.ALLOWED_ORIGINS?.split(",")[0]?.trim();
+    const appUrl = process.env.APP_URL || frontendUrl || "";
+
+    if (!appUrl) {
+      throw new Error("APP_URL or ALLOWED_ORIGINS is missing");
+    }
+
+    const dashboardUrl = `${appUrl.replace(/\/$/, "")}/${encodeURIComponent(
+      orgCode,
+    )}/dashboard`;
+
     const content = `
 <p style="margin:0 0 8px; font-weight:600;">
   Dear ${name},
@@ -34,7 +45,7 @@ export const sendOrganizationCreationMail = async ({
 
 <p style="margin:0 0 10px;">
   <a
-    href="http://localhost:3000/${orgCode}/dashboard/"
+    href="${dashboardUrl}"
     target="_blank"
     style="color:#2563eb; text-decoration:none; word-break:break-all;"
   >

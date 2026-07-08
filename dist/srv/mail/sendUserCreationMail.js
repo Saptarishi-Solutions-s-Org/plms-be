@@ -5,6 +5,12 @@ const core_1 = require("../lib/mail/core");
 const template_1 = require("../lib/mail/template");
 const sendUserCreationMail = async ({ to, name, orgName, orgCode, email, password, }) => {
     try {
+        const frontendUrl = process.env.ALLOWED_ORIGINS?.split(",")[0]?.trim();
+        const appUrl = process.env.APP_URL || frontendUrl || "";
+        if (!appUrl) {
+            throw new Error("APP_URL or ALLOWED_ORIGINS is missing");
+        }
+        const dashboardUrl = `${appUrl.replace(/\/$/, "")}/${encodeURIComponent(orgCode)}/dashboard`;
         const content = `
 <p><b>Dear ${name},</b></p>
 
@@ -22,7 +28,7 @@ const sendUserCreationMail = async ({ to, name, orgName, orgCode, email, passwor
 
 <p>
 <b> Please Access the Application here : <br/>
-  <a href="http://localhost:3000/${orgCode}/dashboard">
+  <a href="${dashboardUrl}">
     Login to Dashboard
   </a>
 </p>
