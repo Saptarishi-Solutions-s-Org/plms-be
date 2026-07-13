@@ -1,5 +1,4 @@
 import { pool } from "../../lib/db";
-import { formatLabel, sortRoleMatrix } from "../../lib/formatLabel";
 
 export const systemAdminDashboardHandler = async (req: any) => {
   try {
@@ -50,7 +49,7 @@ export const systemAdminDashboardHandler = async (req: any) => {
         LEFT JOIN crm_user u ON u.organization_id = o.id
         WHERE o.id != $1
         GROUP BY o.id
-        ORDER BY o.name ASC
+        ORDER BY count DESC
       `,
         [systemOrgId],
       ),
@@ -63,7 +62,6 @@ export const systemAdminDashboardHandler = async (req: any) => {
         FROM crm_organizationroles orr
         JOIN crm_roles r ON r.id = orr.role_id
         WHERE orr.organization_id = $1
-        ORDER BY r.name ASC
       `,
         [systemOrgId],
       ),
@@ -84,7 +82,6 @@ export const systemAdminDashboardHandler = async (req: any) => {
         JOIN crm_roles r ON r.id = orr.role_id
         WHERE ormp.organization_id = $1
           AND ormp.access = true
-        ORDER BY r.name ASC, m.name ASC, p.name ASC
       `,
         [systemOrgId],
       ),
@@ -93,36 +90,27 @@ export const systemAdminDashboardHandler = async (req: any) => {
     const roleMap: Record<string, any> = {};
 
     for (const row of permissionsRes.rows) {
-      const formattedRole = formatLabel(row.role);
-      const formattedModule = formatLabel(row.module);
-      const permissionKey = row.permission.toLowerCase();
-
       if (!roleMap[row.orgRoleId]) {
         roleMap[row.orgRoleId] = {
-          role: formattedRole,
+          role: row.role,
           orgRoleId: row.orgRoleId,
           modules: {},
         };
       }
 
-      if (!roleMap[row.orgRoleId].modules[formattedModule]) {
-        roleMap[row.orgRoleId].modules[formattedModule] = {};
+      if (!roleMap[row.orgRoleId].modules[row.module]) {
+        roleMap[row.orgRoleId].modules[row.module] = {};
       }
 
-      roleMap[row.orgRoleId].modules[formattedModule][permissionKey] = true;
+      roleMap[row.orgRoleId].modules[row.module][row.permission] = true;
     }
-
-    const formattedRoles = rolesRes.rows.map((role) => ({
-      ...role,
-      name: formatLabel(role.name),
-    }));
 
     return {
       totalOrganizations: Number(orgCountRes.rows[0].count),
       totalUsers: Number(userCountRes.rows[0].count),
       usersPerOrg: usersPerOrgRes.rows,
-      roles: formattedRoles,
-      roleMatrix: sortRoleMatrix(roleMap),
+      roles: rolesRes.rows,
+      roleMatrix: Object.values(roleMap),
     };
   } catch (err: any) {
     console.error(err);
