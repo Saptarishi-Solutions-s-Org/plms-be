@@ -52,6 +52,19 @@ service OrganizationAdminService {
         message : String;
     };
 
+    function getPermissions() returns {
+        roles: array of {
+            id   : UUID;
+            name : String;
+        };
+        permissions: array of {
+            role       : String;
+            module     : String;
+            permission : String;
+            access     : Boolean;
+        };
+    };
+
     function getAllManagers() returns array of {
         id   : UUID;
         name : String;

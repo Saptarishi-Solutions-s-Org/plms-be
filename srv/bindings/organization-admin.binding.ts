@@ -1,5 +1,6 @@
 import cds from "@sap/cds";
 import { getAllUsersHandler } from "../handlers/organization-admin/getAllUsers";
+import { getPermissionsHandler } from "../handlers/organization-admin/getPermissions";
 import { withAuth } from "../lib/withAuth";
 import { createOrgUserHandler } from "../handlers/organization-admin/createOrgUser";
 import { getManagersHandler } from "../handlers/organization-admin/getAllManagers";
@@ -41,6 +42,11 @@ export const bindOrganizationAdmin = () => {
       roles: ["ADMIN"],
     }),
   );
+
+  service.on("getPermissions", withAuth(getPermissionsHandler, {
+    modules: { user: ["view"] },
+    roles: ["ADMIN"],
+  }));
 
   service.on("getAllManagers", withAuth(getManagersHandler, {
     modules: { user: ["view"] },
