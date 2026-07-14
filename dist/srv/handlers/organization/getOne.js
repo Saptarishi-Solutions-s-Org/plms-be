@@ -20,7 +20,8 @@ const getOrganizationByCodeHandler = async (req) => {
         db_1.pool.query(`SELECT orr.id, r.id as "roleId", r.name
        FROM crm_organizationroles orr
        JOIN crm_roles r ON r.id = orr.role_id
-       WHERE orr.organization_id=$1`, [orgId]),
+       WHERE orr.organization_id=$1
+       ORDER BY r,name ASC`, [orgId]),
         db_1.pool.query(`SELECT
          o.id                          AS "organizationId",
          orr.id                        AS "orgRoleId",
