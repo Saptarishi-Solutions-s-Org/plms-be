@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.bindOrganizationAdmin = void 0;
 const cds_1 = __importDefault(require("@sap/cds"));
 const getAllUsers_1 = require("../handlers/organization-admin/getAllUsers");
+const getPermissions_1 = require("../handlers/organization-admin/getPermissions");
 const withAuth_1 = require("../lib/withAuth");
 const createOrgUser_1 = require("../handlers/organization-admin/createOrgUser");
 const getAllManagers_1 = require("../handlers/organization-admin/getAllManagers");
@@ -31,6 +32,10 @@ const bindOrganizationAdmin = () => {
     }));
     service.on("updateOrgUser", (0, withAuth_1.withAuth)(useredit_1.updateOrgUserHandler, {
         modules: { user: ["update"] },
+        roles: ["ADMIN"],
+    }));
+    service.on("getPermissions", (0, withAuth_1.withAuth)(getPermissions_1.getPermissionsHandler, {
+        modules: { user: ["view"] },
         roles: ["ADMIN"],
     }));
     service.on("getAllManagers", (0, withAuth_1.withAuth)(getAllManagers_1.getManagersHandler, {
