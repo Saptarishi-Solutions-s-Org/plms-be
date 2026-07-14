@@ -1,4 +1,5 @@
 import { randomBytes, randomUUID, createHash } from "crypto";
+import { PoolClient } from "pg";
 import { pool } from "./db";
 import { ENV } from "../config/env";
 import { parseDurationMs } from "./duration";
@@ -192,6 +193,28 @@ export async function revokeOtherRefreshTokens(
     `,
     params,
   );
+}
+
+export async function revokeRefreshTokensForUsers(
+  userIds: string[],
+  client?: PoolClient,
+) {
+  if (!userIds.length) return 0;
+
+  const shape = await getDbShape();
+  const db = client || pool;
+  const res = await db.query(
+    `
+    UPDATE ${quoteIdentifier(shape.table)}
+    SET ${quoteIdentifier(shape.revokedAt)} = COALESCE(${quoteIdentifier(shape.revokedAt)}, NOW()),
+        ${quoteIdentifier(shape.modifiedAt)} = NOW()
+    WHERE ${quoteIdentifier(shape.userId)}::text = ANY($1::text[])
+      AND ${quoteIdentifier(shape.revokedAt)} IS NULL
+    `,
+    [userIds],
+  );
+
+  return res.rowCount ?? 0;
 }
 
 export async function rotateRefreshToken(input: {

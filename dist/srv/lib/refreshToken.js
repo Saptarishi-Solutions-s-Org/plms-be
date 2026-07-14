@@ -7,6 +7,7 @@ exports.createRefreshTokenSession = createRefreshTokenSession;
 exports.findRefreshToken = findRefreshToken;
 exports.revokeRefreshToken = revokeRefreshToken;
 exports.revokeOtherRefreshTokens = revokeOtherRefreshTokens;
+exports.revokeRefreshTokensForUsers = revokeRefreshTokensForUsers;
 exports.rotateRefreshToken = rotateRefreshToken;
 exports.isRefreshTokenUsable = isRefreshTokenUsable;
 const crypto_1 = require("crypto");
@@ -130,6 +131,20 @@ async function revokeOtherRefreshTokens(userId, currentTokenId) {
       AND ${quoteIdentifier(shape.revokedAt)} IS NULL
       ${excludeCurrent}
     `, params);
+}
+async function revokeRefreshTokensForUsers(userIds, client) {
+    if (!userIds.length)
+        return 0;
+    const shape = await getDbShape();
+    const db = client || db_1.pool;
+    const res = await db.query(`
+    UPDATE ${quoteIdentifier(shape.table)}
+    SET ${quoteIdentifier(shape.revokedAt)} = COALESCE(${quoteIdentifier(shape.revokedAt)}, NOW()),
+        ${quoteIdentifier(shape.modifiedAt)} = NOW()
+    WHERE ${quoteIdentifier(shape.userId)}::text = ANY($1::text[])
+      AND ${quoteIdentifier(shape.revokedAt)} IS NULL
+    `, [userIds]);
+    return res.rowCount ?? 0;
 }
 async function rotateRefreshToken(input) {
     const replacement = await createRefreshTokenSession({

@@ -113,9 +113,49 @@ export const withAuth = (handler: any, requirements?: WithAuthRequirements) => {
         return handler(req);
       }
 
-      const { roles: requiredRoles, modules: moduleRequirements } =
-        requirements;
+      const { roles: requiredRoles, modules: moduleRequirements } = requirements;
 
+      const hasModuleRequirements =
+        moduleRequirements && Object.keys(moduleRequirements).length > 0;
+
+      if (hasModuleRequirements) {
+        for (const [moduleName, requiredActions] of Object.entries(
+          moduleRequirements,
+        )) {
+          if (!Array.isArray(requiredActions) || requiredActions.length === 0) {
+            console.warn(`[RBAC] Invalid config for module: ${moduleName}`);
+            return req.error(500, "Invalid authorization configuration");
+          }
+
+          const normalizedModule = moduleName.toLowerCase();
+          const normalizedActions = normalizeList(requiredActions);
+          const modulePerms = jwtPermissions[normalizedModule] ?? [];
+          const finalPerms = new Set<string>(modulePerms);
+
+          if (finalPerms.has("*")) continue;
+
+          const hasAll = normalizedActions.every((action) =>
+            finalPerms.has(action),
+          );
+
+          if (!hasAll) {
+            const missingActions = normalizedActions.filter(
+              (action) => !finalPerms.has(action),
+            );
+            console.warn(
+              `[RBAC] DENIED (module) | user=${req.user.id} | roles=${jwtRoles.join(",")} | ` +
+                `module=${normalizedModule} | required=${normalizedActions.join(",")} | ` +
+                `missing=${missingActions.join(",")} | orgId=${req.user.orgId}`,
+            );
+            return req.error(403, "Forbidden: insufficient permissions");
+          }
+        }
+        
+        // If module requirements are met, grant access immediately.
+        return handler(req);
+      }
+
+      // Fallback to role-based check if no module requirements are specified
       if (requiredRoles && requiredRoles.length > 0) {
         const normalizedRequired = normalizeList(requiredRoles);
         const hasRole = jwtRoles.some((role) =>
@@ -131,42 +171,8 @@ export const withAuth = (handler: any, requirements?: WithAuthRequirements) => {
           );
           return req.error(403, "Forbidden: insufficient role");
         }
-      }
-
-      if (!moduleRequirements || Object.keys(moduleRequirements).length === 0) {
+        
         return handler(req);
-      }
-
-      for (const [moduleName, requiredActions] of Object.entries(
-        moduleRequirements,
-      )) {
-        if (!Array.isArray(requiredActions) || requiredActions.length === 0) {
-          console.warn(`[RBAC] Invalid config for module: ${moduleName}`);
-          return req.error(500, "Invalid authorization configuration");
-        }
-
-        const normalizedModule = moduleName.toLowerCase();
-        const normalizedActions = normalizeList(requiredActions);
-        const modulePerms = jwtPermissions[normalizedModule] ?? [];
-        const finalPerms = new Set<string>(modulePerms);
-
-        if (finalPerms.has("*")) continue;
-
-        const hasAll = normalizedActions.every((action) =>
-          finalPerms.has(action),
-        );
-
-        if (!hasAll) {
-          const missingActions = normalizedActions.filter(
-            (action) => !finalPerms.has(action),
-          );
-          console.warn(
-            `[RBAC] DENIED | user=${req.user.id} | roles=${jwtRoles.join(",")} | ` +
-              `module=${normalizedModule} | required=${normalizedActions.join(",")} | ` +
-              `missing=${missingActions.join(",")} | orgId=${req.user.orgId}`,
-          );
-          return req.error(403, "Forbidden: insufficient permissions");
-        }
       }
 
       return handler(req);
