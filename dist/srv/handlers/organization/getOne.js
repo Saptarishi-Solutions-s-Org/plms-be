@@ -12,29 +12,63 @@ const getOrganizationByCodeHandler = async (req) => {
         db_1.pool.query(`SELECT id,name,email FROM crm_user WHERE organization_id=$1`, [
             orgId,
         ]),
-        db_1.pool.query(`SELECT m.name FROM crm_organizationmodules om
+        db_1.pool.query(`SELECT m.id, m.name FROM crm_organizationmodules om
        JOIN crm_modules m ON m.id = om.module_id
        WHERE om.organization_id=$1`, [orgId]),
-        db_1.pool.query(`SELECT orr.id, r.name
+        db_1.pool.query(`SELECT orr.id, r.id as "roleId", r.name
        FROM crm_organizationroles orr
        JOIN crm_roles r ON r.id = orr.role_id
        WHERE orr.organization_id=$1`, [orgId]),
-        db_1.pool.query(`SELECT r.name as role, m.name as module, p.name as permission, ormp.access
-       FROM crm_organizationrolemodulepermissions ormp
-       JOIN crm_rolemodulepermissions rmp ON rmp.id = ormp.rmp_id
-       JOIN crm_modulepermissions mp ON mp.id = rmp.module_permission_id
-       JOIN crm_modules m ON m.id = mp.module_id
-       JOIN crm_permissions p ON p.id = mp.permission_id
-       JOIN crm_organizationroles orr ON orr.id = ormp.organizationrole_id
-       JOIN crm_roles r ON r.id = orr.role_id
-       WHERE ormp.organization_id=$1`, [orgId]),
+        db_1.pool.query(`SELECT
+         o.id                          AS "organizationId",
+         orr.id                        AS "orgRoleId",
+         r.id                          AS "roleId",
+         r.name                        AS role,
+         ormp.id                       AS "orgRoleModulePermissionId",
+         rmp.id                        AS "rmpId",
+         mp.id                         AS "modulePermissionId",
+         m.id                          AS "moduleId",
+         m.name                        AS module,
+         p.id                          AS "permissionId",
+         p.name                        AS permission,
+         ormp.access
+       FROM crm_organization o
+       JOIN crm_organizationroles orr
+         ON orr.organization_id = o.id
+       JOIN crm_roles r
+         ON r.id = orr.role_id
+       JOIN crm_organizationrolemodulepermissions ormp
+         ON ormp.organization_id = o.id
+         AND ormp.organizationrole_id = orr.id
+       JOIN crm_rolemodulepermissions rmp
+         ON rmp.id = ormp.rmp_id
+       JOIN crm_modulepermissions mp
+         ON mp.id = rmp.module_permission_id
+       JOIN crm_modules m
+         ON m.id = mp.module_id
+       JOIN crm_permissions p
+         ON p.id = mp.permission_id
+       WHERE o.id = $1
+       ORDER BY r.name, m.name, p.name`, [orgId]),
     ]);
     return {
         organization: org.rows[0],
         users: users.rows,
         modules: modules.rows,
         roles: roles.rows,
-        permissions: permissions.rows,
+        permissions: permissions.rows.map((row) => ({
+            organizationId: row.organizationId,
+            orgRoleId: row.orgRoleId,
+            roleId: row.roleId,
+            role: row.role,
+            moduleId: row.moduleId,
+            module: row.module,
+            permissionId: row.permissionId,
+            permission: row.permission,
+            rmpId: row.rmpId,
+            orgRoleModulePermissionId: row.orgRoleModulePermissionId,
+            access: row.access === true,
+        })),
     };
 };
 exports.getOrganizationByCodeHandler = getOrganizationByCodeHandler;
