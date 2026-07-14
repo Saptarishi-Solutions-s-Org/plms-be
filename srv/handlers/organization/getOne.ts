@@ -1,4 +1,5 @@
 import { pool } from "../../lib/db";
+import { formatLabel } from "../../lib/formatlabel";
 
 export const getOrganizationByCodeHandler = async (req: any) => {
   const { code } = req.data;
@@ -19,14 +20,16 @@ export const getOrganizationByCodeHandler = async (req: any) => {
     pool.query(
       `SELECT m.id, m.name FROM crm_organizationmodules om
        JOIN crm_modules m ON m.id = om.module_id
-       WHERE om.organization_id=$1`,
+       WHERE om.organization_id=$1
+       ORDER BY m.name ASC`,
       [orgId],
     ),
     pool.query(
       `SELECT orr.id, r.id as "roleId", r.name
        FROM crm_organizationroles orr
        JOIN crm_roles r ON r.id = orr.role_id
-       WHERE orr.organization_id=$1`,
+       WHERE orr.organization_id=$1
+       ORDER BY r,name ASC`,
       [orgId],
     ),
     pool.query(
@@ -64,6 +67,23 @@ export const getOrganizationByCodeHandler = async (req: any) => {
       [orgId],
     ),
   ]);
+
+  const formattedModules = modules.rows.map((module) => ({
+    ...module,
+    name: formatLabel(module.name),
+  }));
+
+  const formattedRoles = roles.rows.map((role) => ({
+    ...role,
+    name: formatLabel(role.name),
+  }));
+
+  const formattedPermissions = permissions.rows.map((permission) => ({
+    ...permission,
+    role: formatLabel(permission.role),
+    module: formatLabel(permission.module),
+    permission: permission.permission.toLowerCase(),
+  }));
 
   return {
     organization: org.rows[0],
