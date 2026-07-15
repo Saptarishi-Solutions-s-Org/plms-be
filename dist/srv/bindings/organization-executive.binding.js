@@ -15,29 +15,11 @@ const bindExecutiveDashboard = () => {
     const service = cds_1.default.services["OrganizationExecutiveService"];
     if (!service)
         return;
-    service.on("getExecutiveStats", (0, withAuth_1.withAuth)(getexecutivestats_1.getexecutivestats, {
-        roles: ["Executive"],
-        modules: { lead: ["view"] },
-    }));
-    service.on("getExecutiveRecentLeads", (0, withAuth_1.withAuth)(getexecutiverecentleads_1.executiveRecentLeadsHandler, {
-        roles: ["Executive"],
-        modules: { lead: ["view"] },
-    }));
-    service.on("getExecutiveLeadStats", (0, withAuth_1.withAuth)(getleadstats_1.executiveLeadStatsHandler, {
-        roles: ["Executive"],
-        modules: { lead: ["view"] },
-    }));
-    service.on("getExecutiveOffers", (0, withAuth_1.withAuth)(get_executive_offers_1.getExecutiveOffersHandler, {
-        roles: ["Executive"],
-        modules: { offers: ["view"] },
-    }));
-    service.on("assignOfferToLead", (0, withAuth_1.withAuth)(assign_offers_to_leads_1.assignOfferToLeadHandler, {
-        roles: ["Executive"],
-        modules: { offers: ["view"] },
-    }));
-    service.on("assignOffersToLeads", (0, withAuth_1.withAuth)(assign_offers_to_leads_1.assignOffersToLeadsHandler, {
-        roles: ["Executive"],
-        modules: { offers: ["view"] },
-    }));
+    service.on("getExecutiveStats", (0, withAuth_1.withAuth)(getexecutivestats_1.getexecutivestats));
+    service.on("getExecutiveRecentLeads", (0, withAuth_1.withAuth)(getexecutiverecentleads_1.executiveRecentLeadsHandler));
+    service.on("getExecutiveLeadStats", (0, withAuth_1.withAuth)(getleadstats_1.executiveLeadStatsHandler));
+    service.on("getExecutiveOffers", (0, withAuth_1.withAuth)(get_executive_offers_1.getExecutiveOffersHandler));
+    service.on("assignOfferToLead", (0, withAuth_1.withAuth)(assign_offers_to_leads_1.assignOfferToLeadHandler));
+    service.on("assignOffersToLeads", (0, withAuth_1.withAuth)(assign_offers_to_leads_1.assignOffersToLeadsHandler));
 };
 exports.bindExecutiveDashboard = bindExecutiveDashboard;
