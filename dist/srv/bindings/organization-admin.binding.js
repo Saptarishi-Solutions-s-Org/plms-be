@@ -17,6 +17,7 @@ const getExecutivesForManager_1 = require("../handlers/organization-admin/getExe
 const getManagersForReassign_1 = require("../handlers/organization-admin/getManagersForReassign");
 const activateUser_1 = require("../handlers/organization-admin/activateUser");
 const useredit_1 = require("../handlers/organization-admin/useredit");
+const updateRolePermissions_1 = require("../handlers/organization-admin/updateRolePermissions");
 const bindOrganizationAdmin = () => {
     const service = cds_1.default.services["OrganizationAdminService"];
     if (!service) {
@@ -35,7 +36,11 @@ const bindOrganizationAdmin = () => {
         roles: ["ADMIN"],
     }));
     service.on("getPermissions", (0, withAuth_1.withAuth)(getPermissions_1.getPermissionsHandler, {
-        modules: { user: ["view"] },
+        modules: { permission: ["view"] },
+        roles: ["ADMIN"],
+    }));
+    service.on("updateRolePermissions", (0, withAuth_1.withAuth)(updateRolePermissions_1.updateRolePermissionsHandler, {
+        modules: { permission: ["update"] },
         roles: ["ADMIN"],
     }));
     service.on("getAllManagers", (0, withAuth_1.withAuth)(getAllManagers_1.getManagersHandler, {

@@ -58,11 +58,24 @@ service OrganizationAdminService {
             name : String;
         };
         permissions: array of {
+            orgRoleModulePermissionId : UUID;
             role       : String;
             module     : String;
             permission : String;
             access     : Boolean;
         };
+    };
+
+    action updateRolePermissions(
+        orgRoleId   : UUID,
+        permissions : array of {
+            orgRoleModulePermissionId : UUID;
+            access                    : Boolean;
+        }
+    ) returns {
+        message              : String;
+        updatedCount         : Integer;
+        affectedSessionUsers : Integer;
     };
 
     function getAllManagers() returns array of {

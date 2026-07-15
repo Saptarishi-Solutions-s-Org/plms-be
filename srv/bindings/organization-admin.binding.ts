@@ -11,6 +11,7 @@ import { getExecutivesForManagerHandler } from "../handlers/organization-admin/g
 import { getManagersForReassignHandler } from "../handlers/organization-admin/getManagersForReassign";
 import { activateUserHandler } from "../handlers/organization-admin/activateUser";
 import { updateOrgUserHandler } from "../handlers/organization-admin/useredit";
+import { updateRolePermissionsHandler } from "../handlers/organization-admin/updateRolePermissions";
 
 export const bindOrganizationAdmin = () => {
   const service = cds.services["OrganizationAdminService"];
@@ -44,7 +45,12 @@ export const bindOrganizationAdmin = () => {
   );
 
   service.on("getPermissions", withAuth(getPermissionsHandler, {
-    modules: { user: ["view"] },
+    modules: { permission: ["view"] },
+    roles: ["ADMIN"],
+  }));
+
+  service.on("updateRolePermissions", withAuth(updateRolePermissionsHandler, {
+    modules: { permission: ["update"] },
     roles: ["ADMIN"],
   }));
 

@@ -14,7 +14,7 @@ const getPermissionsHandler = async (req) => {
        JOIN crm_roles r ON r.id = orr.role_id
        WHERE orr.organization_id=$1
        ORDER BY r.name ASC`, [orgId]),
-        db_1.pool.query(`SELECT r.name as role, m.name as module, p.name as permission, ormp.access
+        db_1.pool.query(`SELECT ormp.id as "orgRoleModulePermissionId", r.name as role, m.name as module, p.name as permission, ormp.access
        FROM crm_organizationrolemodulepermissions ormp
        JOIN crm_rolemodulepermissions rmp ON rmp.id = ormp.rmp_id
        JOIN crm_modulepermissions mp ON mp.id = rmp.module_permission_id
