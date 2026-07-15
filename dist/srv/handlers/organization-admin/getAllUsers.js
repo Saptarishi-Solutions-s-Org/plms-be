@@ -2,11 +2,33 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAllUsersHandler = void 0;
 const db_1 = require("../../lib/db");
+const pagination_1 = require("../../lib/pagination");
+const normalizeFilter = (value) => {
+    if (typeof value !== "string")
+        return "";
+    return value.trim();
+};
 const getAllUsersHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
+        const { page, limit, offset } = (0, pagination_1.parsePaginationParams)(req.data);
+        const { status, role } = req.data ?? {};
         if (!orgId) {
             return req.error(401, "Unauthorized");
+        }
+        const statusFilter = normalizeFilter(status);
+        const roleFilter = normalizeFilter(role);
+        let activeCondition = "1=1";
+        if (statusFilter) {
+            const statuses = statusFilter.split(',').map(s => s.trim().toLowerCase());
+            const wantsActive = statuses.includes('active');
+            const wantsInactive = statuses.includes('inactive');
+            if (wantsActive && !wantsInactive) {
+                activeCondition = "u.is_active = true";
+            }
+            else if (!wantsActive && wantsInactive) {
+                activeCondition = "u.is_active = false";
+            }
         }
         const usersRes = await db_1.pool.query(`SELECT 
          u.id,
@@ -29,7 +51,13 @@ const getAllUsersHandler = async (req) => {
         AND manager.organization_id = u.organization_id
        WHERE u.organization_id = $1 
          AND rl.name IN ('Manager', 'Executive')
-       ORDER BY rl.name`, [orgId]);
+         AND ${activeCondition}
+         AND (
+           $2::text IS NULL
+           OR LOWER(rl.name) = ANY(regexp_split_to_array(LOWER(REPLACE($2, ' ', '')), ','))
+         )
+       ORDER BY rl.name, u.name
+       LIMIT $3 OFFSET $4`, [orgId, roleFilter || null, limit, offset]);
         const countRes = await db_1.pool.query(`SELECT 
          COUNT(*) AS total_users,
          COUNT(*) FILTER (WHERE u.is_active = true) AS active_users,
@@ -40,10 +68,23 @@ const getAllUsersHandler = async (req) => {
        JOIN crm_roles rl 
          ON r.role_id = rl.id
        WHERE u.organization_id = $1
-         AND rl.name IN ('Manager', 'Executive')`, [orgId]);
+         AND rl.name IN ('Manager', 'Executive')
+         AND ${activeCondition}
+         AND (
+           $2::text IS NULL
+           OR LOWER(rl.name) = ANY(regexp_split_to_array(LOWER(REPLACE($2, ' ', '')), ','))
+         )`, [orgId, roleFilter || null]);
+        const stats = countRes.rows[0];
+        const totalUsers = parseInt(stats.total_users || "0", 10);
+        const pagination = (0, pagination_1.createPaginationMeta)({ total: totalUsers, page, limit });
         return {
             users: usersRes.rows,
-            stats: countRes.rows[0],
+            stats: {
+                total_users: parseInt(stats.total_users || "0", 10),
+                active_users: parseInt(stats.active_users || "0", 10),
+                inactive_users: parseInt(stats.inactive_users || "0", 10),
+            },
+            pagination
         };
     }
     catch (err) {
