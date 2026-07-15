@@ -22,60 +22,33 @@ export const bindOrganizationAdmin = () => {
 
   service.on(
     "getAllUsers",
-    withAuth(getAllUsersHandler, {
-      modules: { user: ["view"] },
-    })
+    withAuth(getAllUsersHandler)
   );
 
   service.on(
     "createOrgUser",
-    withAuth(createOrgUserHandler , {
-      modules: { user: ["create"] },
-      roles: ["ADMIN"],
-    })
+    withAuth(createOrgUserHandler)
   );
 
   service.on(
     "updateOrgUser",
-    withAuth(updateOrgUserHandler, {
-      modules: { user: ["update"] },
-      roles: ["ADMIN"],
-    }),
+    withAuth(updateOrgUserHandler),
   );
 
-  service.on("getPermissions", withAuth(getPermissionsHandler, {
-    modules: { user: ["view"] },
-    roles: ["ADMIN"],
-  }));
+  service.on("getPermissions", withAuth(getPermissionsHandler));
 
-  service.on("getAllManagers", withAuth(getManagersHandler, {
-    modules: { user: ["view"] },
-  }));
+  service.on("getAllManagers", withAuth(getManagersHandler));
 
-  service.on("getAllExecutives", withAuth(getExecutivesHandler, {
-    modules: { user: ["view"] },
-  }));
+  service.on("getAllExecutives", withAuth(getExecutivesHandler));
 
-  service.on("getExecutivesForManager", withAuth(getExecutivesForManagerHandler, {
-    modules: { user: ["view"] },
-  }));
+  service.on("getExecutivesForManager", withAuth(getExecutivesForManagerHandler));
 
-  service.on("getManagersForReassign", withAuth(getManagersForReassignHandler, {
-    modules: { user: ["view"] },
-  }));
+  service.on("getManagersForReassign", withAuth(getManagersForReassignHandler));
 
-  service.on("deactivateExecutive", withAuth(deactivateExecutiveHandler, {
-    modules: { user: ["update"] },
-    roles: ["ADMIN"],
-  }));
+  service.on("deactivateExecutive", withAuth(deactivateExecutiveHandler));
 
-  service.on("deactivateManager", withAuth(deactivateManagerHandler, {
-    modules: { user: ["update"] },
-    roles: ["ADMIN"],
-  }));
-  service.on("activateUser", withAuth(activateUserHandler, {
-    modules: { user: ["update"] },
-    roles: ["ADMIN"],
-  }));
+  service.on("deactivateManager", withAuth(deactivateManagerHandler));
+  
+  service.on("activateUser", withAuth(activateUserHandler));
 
 }

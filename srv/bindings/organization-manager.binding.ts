@@ -17,80 +17,50 @@ export const bindManagerDashboard = () => {
 
   service.on(
     "getManagerDashboard",
-    withAuth(managerDashboardHandler, {
-      roles: ["manager"],
-      modules: { lead: ["view"] },
-    }),
+    withAuth(managerDashboardHandler),
   );
   service.on(
     "getLeadStatusOverview",
-    withAuth(leadStatusOverviewHandler, {
-      roles: ["manager"],
-      modules: { lead: ["view"] },
-    }),
+    withAuth(leadStatusOverviewHandler),
   );
   service.on(
     "getExecutivePerformance",
-    withAuth(executivePerformanceHandler, {
-      roles: ["manager"],
-      modules: { lead: ["view"] },
-    }),
+    withAuth(executivePerformanceHandler),
   );
 
   service.on(
     "getExecutiveOverview",
-    withAuth(getExecutiveOverviewHandler, {
-      roles: ["manager"],
-      modules: { lead: ["view"], offers: ["view"] },
-    }),
+    withAuth(getExecutiveOverviewHandler),
   );
 
   service.on(
     "getManagerOfferOverview",
-    withAuth(getManagerOfferOverviewHandler, {
-      roles: ["manager"],
-      modules: { offers: ["view"] },
-    }),
+    withAuth(getManagerOfferOverviewHandler),
   );
   
   service.on(
     "assignOfferToExecutive",
-    withAuth(assignOfferToExecutiveHandler, {
-      roles: ["manager"],
-      modules: { offers: ["view"] },
-     }),
+    withAuth(assignOfferToExecutiveHandler),
   );
 
   service.on(
     "bulkAssignOffersToExecutives",
-    withAuth(bulkAssignOffersToExecutivesHandler, {
-      roles: ["manager"],
-      modules: { offers: ["view"] },
-    }),
+    withAuth(bulkAssignOffersToExecutivesHandler),
   );
 
   service.on(
     "getAvailableExecutivesForOffer",
-    withAuth(getAvailableExecutivesForOfferHandler, {
-      roles: ["manager"],
-      modules: { offers: ["view"] },
-    }),
+    withAuth(getAvailableExecutivesForOfferHandler),
   );
 
   service.on(
     "deactivateExecutiveForManager",
-    withAuth(deactivateExecutiveForManagerHandler, {
-      roles: ["manager"],
-      modules: { lead: ["update"] },
-    }),
+    withAuth(deactivateExecutiveForManagerHandler),
   );
 
   service.on(
     "getOtherExecutivesForReassign",
-    withAuth(getOtherExecutivesForReassignHandler, {
-      roles: ["manager"],
-      modules: { lead: ["view"] },
-    }),
+    withAuth(getOtherExecutivesForReassignHandler),
   );
   
 };

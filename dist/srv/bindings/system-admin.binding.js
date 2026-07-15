@@ -14,12 +14,8 @@ const bindSystemAdmin = () => {
         console.error("SystemAdminService not found");
         return;
     }
-    service.on("getDashboard", (0, withAuth_1.withAuth)(dashboard_1.systemAdminDashboardHandler, {
-        roles: ["SYSTEM ADMIN"],
-    }));
-    service.on("updateOrganizationAdminPermissions", (0, withAuth_1.withAuth)(updateAdminPermissions_1.updateAdminPermissionsHandler, {
-        roles: ["SYSTEM ADMIN"],
-    }));
+    service.on("getDashboard", (0, withAuth_1.withAuth)(dashboard_1.systemAdminDashboardHandler));
+    service.on("updateOrganizationAdminPermissions", (0, withAuth_1.withAuth)(updateAdminPermissions_1.updateAdminPermissionsHandler));
     console.log("SystemAdminService secured & bound");
 };
 exports.bindSystemAdmin = bindSystemAdmin;

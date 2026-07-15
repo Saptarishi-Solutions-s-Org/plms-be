@@ -23,44 +23,16 @@ const bindOrganizationAdmin = () => {
         console.error("OrganizationAdminService not found");
         return;
     }
-    service.on("getAllUsers", (0, withAuth_1.withAuth)(getAllUsers_1.getAllUsersHandler, {
-        modules: { user: ["view"] },
-    }));
-    service.on("createOrgUser", (0, withAuth_1.withAuth)(createOrgUser_1.createOrgUserHandler, {
-        modules: { user: ["create"] },
-        roles: ["ADMIN"],
-    }));
-    service.on("updateOrgUser", (0, withAuth_1.withAuth)(useredit_1.updateOrgUserHandler, {
-        modules: { user: ["update"] },
-        roles: ["ADMIN"],
-    }));
-    service.on("getPermissions", (0, withAuth_1.withAuth)(getPermissions_1.getPermissionsHandler, {
-        modules: { user: ["view"] },
-        roles: ["ADMIN"],
-    }));
-    service.on("getAllManagers", (0, withAuth_1.withAuth)(getAllManagers_1.getManagersHandler, {
-        modules: { user: ["view"] },
-    }));
-    service.on("getAllExecutives", (0, withAuth_1.withAuth)(getAllExecutives_1.getExecutivesHandler, {
-        modules: { user: ["view"] },
-    }));
-    service.on("getExecutivesForManager", (0, withAuth_1.withAuth)(getExecutivesForManager_1.getExecutivesForManagerHandler, {
-        modules: { user: ["view"] },
-    }));
-    service.on("getManagersForReassign", (0, withAuth_1.withAuth)(getManagersForReassign_1.getManagersForReassignHandler, {
-        modules: { user: ["view"] },
-    }));
-    service.on("deactivateExecutive", (0, withAuth_1.withAuth)(deactivateExecutive_1.deactivateExecutiveHandler, {
-        modules: { user: ["update"] },
-        roles: ["ADMIN"],
-    }));
-    service.on("deactivateManager", (0, withAuth_1.withAuth)(deactivateManager_1.deactivateManagerHandler, {
-        modules: { user: ["update"] },
-        roles: ["ADMIN"],
-    }));
-    service.on("activateUser", (0, withAuth_1.withAuth)(activateUser_1.activateUserHandler, {
-        modules: { user: ["update"] },
-        roles: ["ADMIN"],
-    }));
+    service.on("getAllUsers", (0, withAuth_1.withAuth)(getAllUsers_1.getAllUsersHandler));
+    service.on("createOrgUser", (0, withAuth_1.withAuth)(createOrgUser_1.createOrgUserHandler));
+    service.on("updateOrgUser", (0, withAuth_1.withAuth)(useredit_1.updateOrgUserHandler));
+    service.on("getPermissions", (0, withAuth_1.withAuth)(getPermissions_1.getPermissionsHandler));
+    service.on("getAllManagers", (0, withAuth_1.withAuth)(getAllManagers_1.getManagersHandler));
+    service.on("getAllExecutives", (0, withAuth_1.withAuth)(getAllExecutives_1.getExecutivesHandler));
+    service.on("getExecutivesForManager", (0, withAuth_1.withAuth)(getExecutivesForManager_1.getExecutivesForManagerHandler));
+    service.on("getManagersForReassign", (0, withAuth_1.withAuth)(getManagersForReassign_1.getManagersForReassignHandler));
+    service.on("deactivateExecutive", (0, withAuth_1.withAuth)(deactivateExecutive_1.deactivateExecutiveHandler));
+    service.on("deactivateManager", (0, withAuth_1.withAuth)(deactivateManager_1.deactivateManagerHandler));
+    service.on("activateUser", (0, withAuth_1.withAuth)(activateUser_1.activateUserHandler));
 };
 exports.bindOrganizationAdmin = bindOrganizationAdmin;

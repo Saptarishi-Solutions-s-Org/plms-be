@@ -17,62 +17,32 @@ export const bindOffer = () => {
 
   service.on(
     "createOffer",
-    withAuth(createOfferHandler, {
-      roles: ["admin"],
-      modules: {
-        offers: ["create"],
-      },
-    })
+    withAuth(createOfferHandler)
   );
 
   service.on(
     "getOffers",
-    withAuth(getOffersHandler, {
-      roles: ["admin"],
-      modules: {
-        offers: ["view"],
-      },
-    })
+    withAuth(getOffersHandler)
   );
 
   service.on(
     "toggleOfferStatus",
-    withAuth(toggleOfferStatusHandler, {
-      roles: ["admin"],
-      modules: {
-        offers: ["update"],
-      },
-    })
+    withAuth(toggleOfferStatusHandler)
   );
 
   service.on(
     "getManagers",
-    withAuth(getManagersHandler, {
-      roles: ["admin"],
-      modules: {
-        offers: ["view"],
-      },
-    })
+    withAuth(getManagersHandler)
   );
 
   service.on(
     "getOfferSummary",
-    withAuth(getsummarycards, {
-      roles: ["admin"],
-      modules: {
-        offers: ["view"],
-      },
-    })
+    withAuth(getsummarycards)
   );
 
   service.on(
     "getExecutivesByOffer",
-    withAuth(getExecutivesByOfferHandler, {
-      roles: ["manager"],
-      modules: {
-        offers: ["view"],
-      },
-    })
+    withAuth(getExecutivesByOfferHandler)
   );
 
   console.log("OfferService bound successfully");
