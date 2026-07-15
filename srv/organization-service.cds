@@ -5,6 +5,11 @@ type OrgRole {
     name : String;
 }
 
+type OrgModule {
+    id   : UUID;
+    name : String;
+}
+
 type OrgPermission {
     role       : String;
     module     : String;
@@ -49,8 +54,10 @@ service OrganizationService {
     function getOrganizationByCode(code: String) returns {
         organization : OrgResponse;
         users        : many OrgUser;
-        modules      : many String;
+        modules      : many OrgModule;
         roles        : many OrgRole;
+        allModules   : many OrgModule;
+        allRoles     : many OrgRole;
         permissions  : many OrgPermission;
     };
 

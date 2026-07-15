@@ -13,7 +13,7 @@ export const getOrganizationByCodeHandler = async (req: any) => {
 
   const orgId = org.rows[0].id;
 
-  const [users, modules, roles, permissions] = await Promise.all([
+  const [users, modules, roles, permissions, allModules, allRoles] = await Promise.all([
     pool.query(`SELECT id,name,email FROM crm_user WHERE organization_id=$1`, [
       orgId,
     ]),
@@ -29,7 +29,7 @@ export const getOrganizationByCodeHandler = async (req: any) => {
        FROM crm_organizationroles orr
        JOIN crm_roles r ON r.id = orr.role_id
        WHERE orr.organization_id=$1
-       ORDER BY r,name ASC`,
+       ORDER BY r.name ASC`,
       [orgId],
     ),
     pool.query(
@@ -68,6 +68,12 @@ export const getOrganizationByCodeHandler = async (req: any) => {
        ORDER BY r.name, m.name, p.name`,
       [orgId],
     ),
+    pool.query(`SELECT id, name FROM crm_modules ORDER BY name ASC`),
+    pool.query(
+      `SELECT id, name FROM crm_roles 
+       WHERE LOWER(REGEXP_REPLACE(TRIM(name), '\\s+', ' ', 'g')) != 'system admin'
+       ORDER BY name ASC`
+    ),
   ]);
 
   const formattedModules = modules.rows.map((module) => ({
@@ -78,6 +84,16 @@ export const getOrganizationByCodeHandler = async (req: any) => {
   const formattedRoles = roles.rows.map((role) => ({
     ...role,
     name: formatLabel(role.name),
+  }));
+
+  const formattedAllModules = allModules.rows.map((m) => ({
+    id: m.id,
+    name: formatLabel(m.name),
+  }));
+
+  const formattedAllRoles = allRoles.rows.map((r) => ({
+    id: r.id,
+    name: formatLabel(r.name),
   }));
 
   const formattedPermissions = permissions.rows.map((permission) => ({
@@ -92,6 +108,8 @@ export const getOrganizationByCodeHandler = async (req: any) => {
     users: users.rows,
     modules: formattedModules,
     roles: formattedRoles,
+    allModules: formattedAllModules,
+    allRoles: formattedAllRoles,
     permissions: formattedPermissions.map((row: any) => ({
       organizationId: row.organizationId,
       orgRoleId: row.orgRoleId,

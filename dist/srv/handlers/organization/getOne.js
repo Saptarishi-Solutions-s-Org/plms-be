@@ -9,7 +9,7 @@ const getOrganizationByCodeHandler = async (req) => {
     if (!org.rows.length)
         return req.error(404, "Not found");
     const orgId = org.rows[0].id;
-    const [users, modules, roles, permissions] = await Promise.all([
+    const [users, modules, roles, permissions, allModules, allRoles] = await Promise.all([
         db_1.pool.query(`SELECT id,name,email FROM crm_user WHERE organization_id=$1`, [
             orgId,
         ]),
@@ -21,7 +21,7 @@ const getOrganizationByCodeHandler = async (req) => {
        FROM crm_organizationroles orr
        JOIN crm_roles r ON r.id = orr.role_id
        WHERE orr.organization_id=$1
-       ORDER BY r,name ASC`, [orgId]),
+       ORDER BY r.name ASC`, [orgId]),
         db_1.pool.query(`SELECT
          o.id                          AS "organizationId",
          orr.id                        AS "orgRoleId",
@@ -55,6 +55,10 @@ const getOrganizationByCodeHandler = async (req) => {
          ON om.module_id = m.id AND om.organization_id = o.id
        WHERE o.id = $1
        ORDER BY r.name, m.name, p.name`, [orgId]),
+        db_1.pool.query(`SELECT id, name FROM crm_modules ORDER BY name ASC`),
+        db_1.pool.query(`SELECT id, name FROM crm_roles 
+       WHERE LOWER(REGEXP_REPLACE(TRIM(name), '\\s+', ' ', 'g')) != 'system admin'
+       ORDER BY name ASC`),
     ]);
     const formattedModules = modules.rows.map((module) => ({
         ...module,
@@ -63,6 +67,14 @@ const getOrganizationByCodeHandler = async (req) => {
     const formattedRoles = roles.rows.map((role) => ({
         ...role,
         name: (0, formatlabel_1.formatLabel)(role.name),
+    }));
+    const formattedAllModules = allModules.rows.map((m) => ({
+        id: m.id,
+        name: (0, formatlabel_1.formatLabel)(m.name),
+    }));
+    const formattedAllRoles = allRoles.rows.map((r) => ({
+        id: r.id,
+        name: (0, formatlabel_1.formatLabel)(r.name),
     }));
     const formattedPermissions = permissions.rows.map((permission) => ({
         ...permission,
@@ -75,6 +87,8 @@ const getOrganizationByCodeHandler = async (req) => {
         users: users.rows,
         modules: formattedModules,
         roles: formattedRoles,
+        allModules: formattedAllModules,
+        allRoles: formattedAllRoles,
         permissions: formattedPermissions.map((row) => ({
             organizationId: row.organizationId,
             orgRoleId: row.orgRoleId,
