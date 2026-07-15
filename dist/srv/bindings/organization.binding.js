@@ -17,13 +17,27 @@ const bindOrganization = () => {
     const service = cds_1.default.services["OrganizationService"];
     if (!service)
         return;
-    service.on("createOrganization", (0, withAuth_1.withAuth)(create_1.createOrganizationHandler));
-    service.on("getOrganizations", (0, withAuth_1.withAuth)(getAll_1.getOrganizationsHandler));
-    service.on("getOrganizationByCode", (0, withAuth_1.withAuth)(getOne_1.getOrganizationByCodeHandler));
-    service.on("updateOrganization", (0, withAuth_1.withAuth)(update_1.updateOrganizationHandler));
-    service.on("createUser", (0, withAuth_1.withAuth)(createUser_1.createUserHandler));
-    service.on("updateUser", (0, withAuth_1.withAuth)(updateUser_1.updateUserHandler));
-    service.on("getAdminUsers", (0, withAuth_1.withAuth)(getAdminUsers_1.getAdminUsersHandler));
+    service.on("createOrganization", (0, withAuth_1.withAuth)(create_1.createOrganizationHandler, {
+        modules: { organization: ["create"] },
+    }));
+    service.on("getOrganizations", (0, withAuth_1.withAuth)(getAll_1.getOrganizationsHandler, {
+        modules: { organization: ["view"] },
+    }));
+    service.on("getOrganizationByCode", (0, withAuth_1.withAuth)(getOne_1.getOrganizationByCodeHandler, {
+        modules: { organization: ["view"] },
+    }));
+    service.on("updateOrganization", (0, withAuth_1.withAuth)(update_1.updateOrganizationHandler, {
+        modules: { organization: ["update"] },
+    }));
+    service.on("createUser", (0, withAuth_1.withAuth)(createUser_1.createUserHandler, {
+        modules: { user: ["create"] },
+    }));
+    service.on("updateUser", (0, withAuth_1.withAuth)(updateUser_1.updateUserHandler, {
+        modules: { user: ["update"] },
+    }));
+    service.on("getAdminUsers", (0, withAuth_1.withAuth)(getAdminUsers_1.getAdminUsersHandler, {
+        modules: { user: ["view"] },
+    }));
     console.log("OrganizationService bound with Users");
 };
 exports.bindOrganization = bindOrganization;

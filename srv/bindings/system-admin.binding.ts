@@ -13,12 +13,16 @@ export const bindSystemAdmin = () => {
 
   service.on(
     "getDashboard",
-    withAuth(systemAdminDashboardHandler),
+    withAuth(systemAdminDashboardHandler, {
+      roles: ["SYSTEM ADMIN"],
+    }),
   );
 
   service.on(
     "updateOrganizationAdminPermissions",
-    withAuth(updateAdminPermissionsHandler),
+    withAuth(updateAdminPermissionsHandler, {
+      roles: ["SYSTEM ADMIN"],
+    }),
   );
 
   console.log("SystemAdminService secured & bound");

@@ -20,15 +20,45 @@ const bindManagerDashboard = () => {
     const service = cds_1.default.services["ManagerDashboardService"];
     if (!service)
         return;
-    service.on("getManagerDashboard", (0, withAuth_1.withAuth)(getmanagerstats_1.managerDashboardHandler));
-    service.on("getLeadStatusOverview", (0, withAuth_1.withAuth)(getleadstatusoverview_1.leadStatusOverviewHandler));
-    service.on("getExecutivePerformance", (0, withAuth_1.withAuth)(getexecutiveperformance_1.executivePerformanceHandler));
-    service.on("getExecutiveOverview", (0, withAuth_1.withAuth)(getexecutiveoverview_1.getExecutiveOverviewHandler));
-    service.on("getManagerOfferOverview", (0, withAuth_1.withAuth)(getmanagerofferoverview_1.getManagerOfferOverviewHandler));
-    service.on("assignOfferToExecutive", (0, withAuth_1.withAuth)(assign_offer_to_executive_1.assignOfferToExecutiveHandler));
-    service.on("bulkAssignOffersToExecutives", (0, withAuth_1.withAuth)(bulk_assign_offers_to_executives_1.bulkAssignOffersToExecutivesHandler));
-    service.on("getAvailableExecutivesForOffer", (0, withAuth_1.withAuth)(getAvailableExecutivesForOffer_1.getAvailableExecutivesForOfferHandler));
-    service.on("deactivateExecutiveForManager", (0, withAuth_1.withAuth)(deactivateExecutiveForManager_1.deactivateExecutiveForManagerHandler));
-    service.on("getOtherExecutivesForReassign", (0, withAuth_1.withAuth)(getOtherExecutivesForReassign_1.getOtherExecutivesForReassignHandler));
+    service.on("getManagerDashboard", (0, withAuth_1.withAuth)(getmanagerstats_1.managerDashboardHandler, {
+        roles: ["manager"],
+        modules: { lead: ["view"] },
+    }));
+    service.on("getLeadStatusOverview", (0, withAuth_1.withAuth)(getleadstatusoverview_1.leadStatusOverviewHandler, {
+        roles: ["manager"],
+        modules: { lead: ["view"] },
+    }));
+    service.on("getExecutivePerformance", (0, withAuth_1.withAuth)(getexecutiveperformance_1.executivePerformanceHandler, {
+        roles: ["manager"],
+        modules: { lead: ["view"] },
+    }));
+    service.on("getExecutiveOverview", (0, withAuth_1.withAuth)(getexecutiveoverview_1.getExecutiveOverviewHandler, {
+        roles: ["manager"],
+        modules: { lead: ["view"], offers: ["view"] },
+    }));
+    service.on("getManagerOfferOverview", (0, withAuth_1.withAuth)(getmanagerofferoverview_1.getManagerOfferOverviewHandler, {
+        roles: ["manager"],
+        modules: { offers: ["view"] },
+    }));
+    service.on("assignOfferToExecutive", (0, withAuth_1.withAuth)(assign_offer_to_executive_1.assignOfferToExecutiveHandler, {
+        roles: ["manager"],
+        modules: { offers: ["view"] },
+    }));
+    service.on("bulkAssignOffersToExecutives", (0, withAuth_1.withAuth)(bulk_assign_offers_to_executives_1.bulkAssignOffersToExecutivesHandler, {
+        roles: ["manager"],
+        modules: { offers: ["view"] },
+    }));
+    service.on("getAvailableExecutivesForOffer", (0, withAuth_1.withAuth)(getAvailableExecutivesForOffer_1.getAvailableExecutivesForOfferHandler, {
+        roles: ["manager"],
+        modules: { offers: ["view"] },
+    }));
+    service.on("deactivateExecutiveForManager", (0, withAuth_1.withAuth)(deactivateExecutiveForManager_1.deactivateExecutiveForManagerHandler, {
+        roles: ["manager"],
+        modules: { lead: ["update"] },
+    }));
+    service.on("getOtherExecutivesForReassign", (0, withAuth_1.withAuth)(getOtherExecutivesForReassign_1.getOtherExecutivesForReassignHandler, {
+        roles: ["manager"],
+        modules: { lead: ["view"] },
+    }));
 };
 exports.bindManagerDashboard = bindManagerDashboard;
