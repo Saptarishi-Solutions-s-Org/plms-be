@@ -17,6 +17,22 @@ const getManagerOfferOverviewHandler = async (req) => {
                 .filter(Boolean)
             : [];
         const statusParams = normalizedStatuses.length ? normalizedStatuses : null;
+        const searchFilter = typeof req.data?.search === "string"
+            ? decodeURIComponent(req.data.search).trim()
+            : "";
+        const searchParam = searchFilter ? `%${searchFilter}%` : null;
+        const discountTypeFilter = typeof req.data?.discountType === "string"
+            ? req.data.discountType.trim()
+            : "";
+        const normalizedDiscountTypes = discountTypeFilter && discountTypeFilter.toLowerCase() !== "all"
+            ? decodeURIComponent(discountTypeFilter)
+                .split(",")
+                .map((discountType) => discountType.trim().toLowerCase())
+                .filter(Boolean)
+            : [];
+        const discountTypeParams = normalizedDiscountTypes.length
+            ? normalizedDiscountTypes
+            : null;
         if (!orgId) {
             return req.error(400, "Organization ID missing");
         }
@@ -58,13 +74,22 @@ const getManagerOfferOverviewHandler = async (req) => {
       WHERE (o.organization_id = $1 OR o.is_global = true)
         AND (o.is_global = true OR oa."user_ID" = $2)
         AND ($3::text[] IS NULL OR LOWER(o.status) = ANY($3::text[]))
+        AND (
+          $4::text IS NULL
+          OR o.title ILIKE $4
+          OR o.code ILIKE $4
+          OR o.description ILIKE $4
+        )
+        AND ($5::text[] IS NULL OR LOWER(o.discount_type) = ANY($5::text[]))
       ORDER BY o.createdat DESC
-      ${shouldReturnAll ? "" : "LIMIT $4 OFFSET $5"}
+      ${shouldReturnAll ? "" : "LIMIT $6 OFFSET $7"}
     `;
         const offersResult = await db_1.pool.query(offersQuery, [
             orgId,
             managerId,
             statusParams,
+            searchParam,
+            discountTypeParams,
             ...(shouldReturnAll ? [] : [limit, offset]),
         ]);
         const statsQuery = `
@@ -79,6 +104,13 @@ const getManagerOfferOverviewHandler = async (req) => {
         WHERE (o.organization_id = $1 OR o.is_global = true)
           AND (o.is_global = true OR oa."user_ID" = $2)
           AND ($3::text[] IS NULL OR LOWER(o.status) = ANY($3::text[]))
+          AND (
+            $4::text IS NULL
+            OR o.title ILIKE $4
+            OR o.code ILIKE $4
+            OR o.description ILIKE $4
+          )
+          AND ($5::text[] IS NULL OR LOWER(o.discount_type) = ANY($5::text[]))
       )
       SELECT
         COUNT(*) AS total_count,
@@ -91,6 +123,8 @@ const getManagerOfferOverviewHandler = async (req) => {
             orgId,
             managerId,
             statusParams,
+            searchParam,
+            discountTypeParams,
         ]);
         const stats = statsResult.rows[0] || {};
         return {

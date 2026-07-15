@@ -1,6 +1,11 @@
+using { plms.common.PaginationMeta } from './types/pagination';
+
 service OrganizationAdminService {
 
-    function getAllUsers() returns {
+    function getAllUsers(page: Integer,
+                         limit: Integer,
+                         status: String,
+                         role: String) returns {
         users: array of {
             id         : UUID;
             name       : String;
@@ -16,6 +21,7 @@ service OrganizationAdminService {
             active_users   : Integer;
             inactive_users : Integer;
         };
+        pagination : PaginationMeta;
     };
 
     action createOrgUser(
