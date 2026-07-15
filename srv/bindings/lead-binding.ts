@@ -16,46 +16,73 @@ export const bindLead = () => {
 
   service.on(
     "getLeadsWithStats",
-    withAuth(getLeadsWithStatsHandler),
+    withAuth(getLeadsWithStatsHandler, {
+      roles: ["manager", "executive"],
+      modules: { lead: ["view"] },
+    }),
   );
 
   service.on(
     "getExecutiveUsers",
-    withAuth(getExecutiveUsersHandler),
+    withAuth(getExecutiveUsersHandler, {
+      roles: ["manager"],
+      modules: { lead: ["view"] },
+    }),
   );
 
   service.on(
     "createLead",
-    withAuth(createLeadHandler),
+    withAuth(createLeadHandler, {
+      roles: ["manager", "executive"],
+      modules: { lead: ["create"] },
+    }),
   );
 
   service.on(
     "updateLead",
-    withAuth(updateLeadHandler),
+    withAuth(updateLeadHandler, {
+      roles: ["manager", "executive"],
+      modules: { lead: ["update"] },
+    }),
   );
 
   service.on(
     "bulkAssignLeads",
-    withAuth(bulkAssignLeadsHandler),
+    withAuth(bulkAssignLeadsHandler, {
+      roles: ["manager"],
+      modules: { lead: ["update"] },
+    }),
   );
 
   service.on(
     "exportLeads",
-    withAuth(exportLeadsHandler),
+    withAuth(exportLeadsHandler, {
+      roles: ["manager", "executive"],
+      modules: { lead: ["export"] },
+    }),
   );
 
   service.on(
     "importLeads",
-    withAuth(importLeadsHandler),
+    withAuth(importLeadsHandler, {
+      roles: ["manager"],
+      modules: { lead: ["import"] },
+    }),
   );
 
   service.on(
     "getLeadDetail",
-    withAuth(getLeadDetailHandler),
+    withAuth(getLeadDetailHandler, {
+      roles: ["manager", "executive"],
+      modules: { lead: ["view"] },
+    }),
   );
 
   service.on(
     "addLeadActivity",
-    withAuth(addLeadActivityHandler),
+    withAuth(addLeadActivityHandler, {
+      roles: ["manager", "executive"],
+      modules: { lead: ["update"] },
+    }),
   );
 };

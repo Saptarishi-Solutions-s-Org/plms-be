@@ -13,8 +13,17 @@ const bindOrganizationReports = () => {
     const service = cds_1.default.services["ReportDashboardService"];
     if (!service)
         return;
-    service.on("getReportStats", (0, withAuth_1.withAuth)(stat_cards_1.ReportDashboardHandler));
-    service.on("getLeadSourceAnalytics", (0, withAuth_1.withAuth)(reports_leadsource_sourceconversionrate_1.leadSourceAnalyticsHandler));
-    service.on("exportExecutives", (0, withAuth_1.withAuth)(exportExecutives_1.exportExecutivesHandler));
+    service.on("getReportStats", (0, withAuth_1.withAuth)(stat_cards_1.ReportDashboardHandler, {
+        roles: ["manager"],
+        modules: { lead: ["view"] },
+    }));
+    service.on("getLeadSourceAnalytics", (0, withAuth_1.withAuth)(reports_leadsource_sourceconversionrate_1.leadSourceAnalyticsHandler, {
+        roles: ["manager"],
+        modules: { lead: ["view"] },
+    }));
+    service.on("exportExecutives", (0, withAuth_1.withAuth)(exportExecutives_1.exportExecutivesHandler, {
+        roles: ["manager"],
+        modules: { lead: ["export"] },
+    }));
 };
 exports.bindOrganizationReports = bindOrganizationReports;

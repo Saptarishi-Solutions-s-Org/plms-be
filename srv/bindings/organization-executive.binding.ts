@@ -15,30 +15,48 @@ export const bindExecutiveDashboard = () => {
 
   service.on(
     "getExecutiveStats",
-    withAuth(getexecutivestats),
+    withAuth(getexecutivestats, {
+      roles: ["Executive"],
+      modules: { lead: ["view"] },
+    }),
   );
 
   service.on(
     "getExecutiveRecentLeads",
-    withAuth(executiveRecentLeadsHandler),
+    withAuth(executiveRecentLeadsHandler, {
+      roles: ["Executive"],
+      modules: { lead: ["view"] },
+    }),
   );
   service.on(
     "getExecutiveLeadStats",
-    withAuth(executiveLeadStatsHandler),
+    withAuth(executiveLeadStatsHandler, {
+      roles: ["Executive"],
+      modules: { lead: ["view"] },
+    }),
   );
 
   service.on(
     "getExecutiveOffers",
-    withAuth(getExecutiveOffersHandler),
+    withAuth(getExecutiveOffersHandler, {
+      roles: ["Executive"],
+      modules: { offers: ["view"] },
+    }),
   );
 
   service.on(
     "assignOfferToLead",
-    withAuth(assignOfferToLeadHandler),
+    withAuth(assignOfferToLeadHandler, {
+      roles: ["Executive"],
+      modules: { offers: ["view"] },
+    }),
   );
 
   service.on(
     "assignOffersToLeads",
-    withAuth(assignOffersToLeadsHandler),
+    withAuth(assignOffersToLeadsHandler, {
+      roles: ["Executive"],
+      modules: { offers: ["view"] },
+    }),
   );
 };
