@@ -71,9 +71,9 @@ const getOrganizationByCodeHandler = async (req) => {
     return {
         organization: org.rows[0],
         users: users.rows,
-        modules: modules.rows,
-        roles: roles.rows,
-        permissions: permissions.rows.map((row) => ({
+        modules: formattedModules,
+        roles: formattedRoles,
+        permissions: formattedPermissions.map((row) => ({
             organizationId: row.organizationId,
             orgRoleId: row.orgRoleId,
             roleId: row.roleId,
