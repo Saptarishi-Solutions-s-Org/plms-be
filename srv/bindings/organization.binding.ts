@@ -15,51 +15,37 @@ export const bindOrganization = () => {
 
   service.on(
     "createOrganization",
-    withAuth(createOrganizationHandler, {
-      modules: { organization: ["create"] },
-    }),
+    withAuth(createOrganizationHandler),
   );
 
   service.on(
     "getOrganizations",
-    withAuth(getOrganizationsHandler, {
-      modules: { organization: ["view"] },
-    }),
+    withAuth(getOrganizationsHandler),
   );
 
   service.on(
     "getOrganizationByCode",
-    withAuth(getOrganizationByCodeHandler, {
-      modules: { organization: ["view"] },
-    }),
+    withAuth(getOrganizationByCodeHandler),
   );
 
   service.on(
     "updateOrganization",
-    withAuth(updateOrganizationHandler, {
-      modules: { organization: ["update"] },
-    }),
+    withAuth(updateOrganizationHandler),
   );
 
   service.on(
     "createUser",
-    withAuth(createUserHandler, {
-      modules: { user: ["create"] },
-    }),
+    withAuth(createUserHandler),
   );
 
   service.on(
     "updateUser",
-    withAuth(updateUserHandler, {
-      modules: { user: ["update"] },
-    }),
+    withAuth(updateUserHandler),
   );
 
   service.on(
     "getAdminUsers",
-    withAuth(getAdminUsersHandler, {
-      modules: { user: ["view"] },
-    }),
+    withAuth(getAdminUsersHandler),
   );
   console.log("OrganizationService bound with Users");
 };
