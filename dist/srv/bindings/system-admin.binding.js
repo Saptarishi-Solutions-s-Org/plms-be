@@ -7,6 +7,7 @@ exports.bindSystemAdmin = void 0;
 const cds_1 = __importDefault(require("@sap/cds"));
 const dashboard_1 = require("../handlers/system-admin/dashboard");
 const updateAdminPermissions_1 = require("../handlers/system-admin/updateAdminPermissions");
+const getDefaultTemplates_1 = require("../handlers/system-admin/getDefaultTemplates");
 const withAuth_1 = require("../lib/withAuth");
 const bindSystemAdmin = () => {
     const service = cds_1.default.services["SystemAdminService"];
@@ -18,6 +19,9 @@ const bindSystemAdmin = () => {
         roles: ["SYSTEM ADMIN"],
     }));
     service.on("updateOrganizationAdminPermissions", (0, withAuth_1.withAuth)(updateAdminPermissions_1.updateAdminPermissionsHandler, {
+        roles: ["SYSTEM ADMIN"],
+    }));
+    service.on("getDefaultTemplates", (0, withAuth_1.withAuth)(getDefaultTemplates_1.getDefaultTemplatesHandler, {
         roles: ["SYSTEM ADMIN"],
     }));
     console.log("SystemAdminService secured & bound");

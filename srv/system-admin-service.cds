@@ -72,6 +72,25 @@ service SystemAdminService {
         };
     };
 
+    function getDefaultTemplates() returns {
+        modules : many {
+            id      : UUID;
+            name    : String;
+            default : Boolean;
+        };
+        roles   : many {
+            id      : UUID;
+            name    : String;
+            default : Boolean;
+        };
+        rmp     : many {
+            role    : String;
+            module  : String;
+            permission : String;
+            access  : Boolean;
+        };
+    };
+
     action updateOrganizationAdminPermissions(organizationId : UUID,
                                               orgRoleId      : UUID,
                                               permissions    : many AdminPermissionUpdate) returns {

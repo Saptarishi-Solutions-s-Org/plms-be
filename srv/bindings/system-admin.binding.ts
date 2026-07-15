@@ -1,6 +1,7 @@
 import cds from "@sap/cds";
 import { systemAdminDashboardHandler } from "../handlers/system-admin/dashboard";
 import { updateAdminPermissionsHandler } from "../handlers/system-admin/updateAdminPermissions";
+import { getDefaultTemplatesHandler } from "../handlers/system-admin/getDefaultTemplates";
 import { withAuth } from "../lib/withAuth";
 
 export const bindSystemAdmin = () => {
@@ -21,6 +22,13 @@ export const bindSystemAdmin = () => {
   service.on(
     "updateOrganizationAdminPermissions",
     withAuth(updateAdminPermissionsHandler, {
+      roles: ["SYSTEM ADMIN"],
+    }),
+  );
+
+  service.on(
+    "getDefaultTemplates",
+    withAuth(getDefaultTemplatesHandler, {
       roles: ["SYSTEM ADMIN"],
     }),
   );
