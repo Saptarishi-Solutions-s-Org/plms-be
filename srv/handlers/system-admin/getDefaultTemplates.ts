@@ -5,7 +5,12 @@ export const getDefaultTemplatesHandler = async (req: any) => {
   try {
     const [modulesRes, rolesRes, rmpRes] = await Promise.all([
       pool.query(`SELECT id, name, "default" FROM crm_modules ORDER BY name ASC`),
-      pool.query(`SELECT id, name, "default" FROM crm_roles ORDER BY name ASC`),
+      pool.query(`
+        SELECT id, name, "default" 
+        FROM crm_roles 
+        WHERE LOWER(REGEXP_REPLACE(TRIM(name), '\\s+', ' ', 'g')) != 'system admin'
+        ORDER BY name ASC
+      `),
       pool.query(`
         SELECT r.name AS role, m.name AS module, p.name AS permission, rmp.access
         FROM crm_rolemodulepermissions rmp
@@ -13,6 +18,7 @@ export const getDefaultTemplatesHandler = async (req: any) => {
         JOIN crm_modules m ON m.id = mp.module_id
         JOIN crm_permissions p ON p.id = mp.permission_id
         JOIN crm_roles r ON r.id = rmp.role_id
+        WHERE LOWER(REGEXP_REPLACE(TRIM(r.name), '\\s+', ' ', 'g')) != 'system admin'
         ORDER BY r.name ASC, m.name ASC, p.name ASC
       `),
     ]);
