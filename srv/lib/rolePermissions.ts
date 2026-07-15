@@ -1,7 +1,7 @@
 export const canUpdateRoles = (permissions: Record<string, string[]> = {}) => {
   const rolePermissions = [
-    ...(permissions.roles ?? []),
-    ...(permissions.role ?? []),
+    ...(permissions.permission ?? []),
+    ...(permissions.permissions ?? []),
   ].map((permission) => String(permission).toLowerCase());
 
   return rolePermissions.some((permission) =>

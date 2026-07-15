@@ -51,6 +51,8 @@ const getOrganizationByCodeHandler = async (req) => {
          ON m.id = mp.module_id
        JOIN crm_permissions p
          ON p.id = mp.permission_id
+       JOIN crm_organizationmodules om
+         ON om.module_id = m.id AND om.organization_id = o.id
        WHERE o.id = $1
        ORDER BY r.name, m.name, p.name`, [orgId]),
     ]);
