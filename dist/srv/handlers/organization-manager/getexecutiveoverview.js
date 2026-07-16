@@ -2,15 +2,46 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getExecutiveOverviewHandler = void 0;
 const db_1 = require("../../lib/db");
+const pagination_1 = require("../../lib/pagination");
+const normalizeFilter = (value) => {
+    if (typeof value !== "string")
+        return "";
+    return value.trim();
+};
 const getExecutiveOverviewHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
-        const managerId = req.user?.id;
+        const currentManagerId = req.user?.id;
+        const paramsSource = { ...(req.data ?? {}), ...(req.query ?? {}) };
+        const { page, limit, offset } = (0, pagination_1.parsePaginationParams)(paramsSource);
+        const rawManagerId = normalizeFilter(paramsSource.managerId);
+        const rawSearch = normalizeFilter(paramsSource.search);
+        const rawStatus = normalizeFilter(paramsSource.status);
+        const managerId = rawManagerId || currentManagerId;
+        const search = rawSearch ? `%${rawSearch.toLowerCase()}%` : null;
+        const statusFilter = rawStatus ? rawStatus.toLowerCase() : "";
         if (!orgId) {
             return req.error(400, "Organization ID missing");
         }
         if (!managerId) {
             return req.error(400, "Manager ID missing");
+        }
+        const statusClauses = ["u.organization_id = $1", "u.reporting_manager_id = $2", "LOWER(r.name) LIKE '%executive%'"];
+        const params = [orgId, managerId];
+        if (search) {
+            params.push(search);
+            statusClauses.push(`(LOWER(u.name) LIKE $${params.length} OR LOWER(u.email) LIKE $${params.length} OR LOWER(u.phone) LIKE $${params.length})`);
+        }
+        if (statusFilter) {
+            const statuses = statusFilter.split(",").map((s) => s.trim().toLowerCase());
+            const wantsActive = statuses.includes("active");
+            const wantsInactive = statuses.includes("inactive");
+            if (wantsActive && !wantsInactive) {
+                statusClauses.push("u.is_active = true");
+            }
+            else if (!wantsActive && wantsInactive) {
+                statusClauses.push("u.is_active = false");
+            }
         }
         const executivesQuery = `
       WITH executive_base AS (
@@ -25,9 +56,7 @@ const getExecutiveOverviewHandler = async (req) => {
           ON orr.id = u.role_id
         JOIN crm_roles r
           ON r.id = orr.role_id
-        WHERE u.organization_id = $1
-          AND u.reporting_manager_id = $2
-          AND LOWER(r.name) LIKE '%executive%'
+        WHERE ${statusClauses.join(" AND ")}
       ),
       lead_counts AS (
         SELECT
@@ -59,10 +88,13 @@ const getExecutiveOverviewHandler = async (req) => {
       LEFT JOIN offer_counts oc
         ON oc.executive_id = eb.id
       ORDER BY eb.name ASC
+      LIMIT $${params.length + 1}
+      OFFSET $${params.length + 2}
     `;
         const executivesResult = await db_1.pool.query(executivesQuery, [
-            orgId,
-            managerId,
+            ...params,
+            limit,
+            offset,
         ]);
         const statsQuery = `
       WITH executive_base AS (
@@ -74,9 +106,7 @@ const getExecutiveOverviewHandler = async (req) => {
           ON orr.id = u.role_id
         JOIN crm_roles r
           ON r.id = orr.role_id
-        WHERE u.organization_id = $1
-          AND u.reporting_manager_id = $2
-          AND LOWER(r.name) LIKE '%executive%'
+        WHERE ${statusClauses.join(" AND ")}
       )
       SELECT
         COUNT(*) AS total_count,
@@ -84,11 +114,12 @@ const getExecutiveOverviewHandler = async (req) => {
         COUNT(*) FILTER (WHERE is_active = false) AS inactive_count
       FROM executive_base
     `;
-        const statsResult = await db_1.pool.query(statsQuery, [orgId, managerId]);
+        const statsResult = await db_1.pool.query(statsQuery, params);
         const stats = statsResult.rows[0] || {};
+        const totalExecutives = Number(stats.total_count) || 0;
         return {
             stats: {
-                totalExecutives: Number(stats.total_count) || 0,
+                totalExecutives,
                 activeExecutives: Number(stats.active_count) || 0,
                 inactiveExecutives: Number(stats.inactive_count) || 0,
             },
@@ -101,6 +132,11 @@ const getExecutiveOverviewHandler = async (req) => {
                 leadCount: Number(row.lead_count) || 0,
                 offerCount: Number(row.offer_count) || 0,
             })),
+            pagination: (0, pagination_1.createPaginationMeta)({
+                page,
+                limit,
+                total: totalExecutives,
+            }),
         };
     }
     catch (error) {

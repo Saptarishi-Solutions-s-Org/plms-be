@@ -40,9 +40,54 @@ service LeadService {
         pagination : PaginationMeta;
     };
 
-    function getExecutiveUsers() returns many {
-        id   : String;
-        name : String;
+    function getAllOrganizationLeads(page: Integer,
+                                     limit: Integer,
+                                     search: String,
+                                     status: String,
+                                     priority: String,
+                                     leadSource: String,
+                                     assignedTo: String) returns {
+        leads      : many {
+            uuid           : String;
+            id             : String;
+            leadCode       : String;
+            name           : String;
+            gender         : String;
+            email          : String;
+            phone          : String;
+            status         : String;
+            priority       : String;
+            leadSource     : String;
+            city           : String;
+            postalCode     : String;
+            state          : String;
+            country        : String;
+            assignedTo     : String;
+            assignedToName : String;
+            createdById    : String;
+            createdByName  : String;
+            createdAt      : Timestamp;
+            notes          : String;
+        };
+        stats      : {
+            total     : Integer;
+            new       : Integer;
+            contacted : Integer;
+            qualified : Integer;
+        };
+        pagination : PaginationMeta;
+    };
+
+    function getExecutiveUsers(page: Integer,
+                               limit: Integer,
+                               search: String,
+                               status: String,
+                               managerId: String) returns {
+        users : many {
+            id   : String;
+            name : String;
+        };
+        pagination : PaginationMeta;
     };
 
     action   createLead(name: String,
@@ -56,6 +101,7 @@ service LeadService {
                         leadSource: String,
                         status: String,
                         assignedTo: String,
+                        managerId: String,
                         priority: String,
                         notes: String)               returns {
         message  : String;
@@ -170,4 +216,14 @@ service LeadService {
         };
     };
 
+    action updateLeadActivity(
+        id               : String,
+        notes            : String
+    ) returns {
+        message  : String;
+        activity : {
+            id               : String;
+            notes            : String;
+        };
+    };
 }

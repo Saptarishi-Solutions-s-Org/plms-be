@@ -3,7 +3,9 @@ import { withAuth } from "../lib/withAuth";
 import { ReportDashboardHandler } from "../handlers/organization-reports/overview/stat-cards";
 import { leadSourceAnalyticsHandler } from "../handlers/organization-reports/overview/reports-leadsource-sourceconversionrate";
 import { exportExecutivesHandler } from "../handlers/organization-reports/exportExecutives";
-
+import { getReportLeadsHandler } from "../handlers/organization-reports/getReportLeads";
+import { getReportExecutivesHandler } from "../handlers/organization-reports/getReportExecutives";
+import { getReportExecutivePerformanceHandler } from "../handlers/organization-reports/getReportExecutivePerformance";
 
 export const bindOrganizationReports = () => {
   const service = cds.services["ReportDashboardService"];
@@ -13,21 +15,42 @@ export const bindOrganizationReports = () => {
     "getReportStats",
     withAuth(ReportDashboardHandler, {
       roles: ["manager"],
-      modules: { lead: ["view"] },
+      modules: { reports: ["view"] },
     }),
   );
   service.on(
     "getLeadSourceAnalytics",
     withAuth(leadSourceAnalyticsHandler, {
       roles: ["manager"],
-      modules: { lead: ["view"] },
+      modules: { reports: ["view"] },
+    }),
+  );
+  service.on(
+    "getReportExecutives",
+    withAuth(getReportExecutivesHandler, {
+      roles: ["manager"],
+      modules: { reports: ["view"] },
+    }),
+  );
+  service.on(
+    "getReportExecutivePerformance",
+    withAuth(getReportExecutivePerformanceHandler, {
+      roles: ["manager"],
+      modules: { reports: ["view"] },
+    }),
+  );
+  service.on(
+    "getReportLeads",
+    withAuth(getReportLeadsHandler, {
+      roles: ["manager"],
+      modules: { reports: ["view"] },
     }),
   );
   service.on(
     "exportExecutives",
     withAuth(exportExecutivesHandler, {
       roles: ["manager"],
-      modules: { lead: ["export"] },
+      modules: { reports: ["export"] },
     }),
   );
 };

@@ -54,13 +54,18 @@ service ManagerDashboardService {
   qualified     : Integer;
 };
 
- function getExecutiveOverview() returns {
+ function getExecutiveOverview(page: Integer,
+                                  limit: Integer,
+                                  search: String,
+                                  status: String,
+                                  managerId: String) returns {
   stats : {
     totalExecutives   : Integer;
     activeExecutives  : Integer;
     inactiveExecutives : Integer;
   };
   executives : many ManagerExecutiveItem;
+  pagination : PaginationMeta;
  };
 
  action createExecutive(
