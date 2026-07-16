@@ -29,6 +29,7 @@ export const createLeadHandler = async (req: any) => {
       leadSource,
       status,
       assignedTo,
+      managerId,
       priority,
       notes,
     } = req.data;
@@ -38,7 +39,17 @@ export const createLeadHandler = async (req: any) => {
       return req.error(400, "Missing required fields");
     }
 
-    if (assignedTo) {
+    let actualCreatedBy = createdBy;
+    let actualAssignedTo = assignedTo || null;
+
+    if (managerId) {
+      actualCreatedBy = managerId;
+      if (!assignedTo) {
+        actualAssignedTo = null;
+      }
+    }
+
+    if (actualAssignedTo) {
       const assignee = await client.query(
         `SELECT u.id
            FROM crm_user u
@@ -51,7 +62,7 @@ export const createLeadHandler = async (req: any) => {
             AND u.is_active = true
             AND LOWER(role.name) IN ('manager', 'executive')
           LIMIT 1`,
-        [assignedTo, orgId],
+        [actualAssignedTo, orgId],
       );
 
       if (!assignee.rowCount) {
@@ -109,8 +120,8 @@ export const createLeadHandler = async (req: any) => {
         state || null,
         country || null,
         orgId,
-        assignedTo || null,
-        createdBy,
+        actualAssignedTo,
+        actualCreatedBy,
       ]
     );
 
@@ -119,7 +130,7 @@ export const createLeadHandler = async (req: any) => {
         `INSERT INTO crm_leadactivity
            (id, lead_id, notes, createdat, createdby, modifiedat, modifiedby)
          VALUES ($1,$2,$3,NOW(),$4,NOW(),$4)`,
-        [randomUUID(), leadId, notes.trim(), createdBy]
+        [randomUUID(), leadId, notes.trim(), actualCreatedBy]
       );
     }
 
