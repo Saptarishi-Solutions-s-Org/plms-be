@@ -5,7 +5,6 @@ import { leadSourceAnalyticsHandler } from "../handlers/organization-reports/ove
 import { exportExecutivesHandler } from "../handlers/organization-reports/exportExecutives";
 import { getReportLeadsHandler } from "../handlers/organization-reports/getReportLeads";
 import { getReportExecutivesHandler } from "../handlers/organization-reports/getReportExecutives";
-import { getReportOffersHandler } from "../handlers/organization-reports/getReportOffers";
 import { getReportExecutivePerformanceHandler } from "../handlers/organization-reports/getReportExecutivePerformance";
 
 export const bindOrganizationReports = () => {
@@ -36,13 +35,6 @@ export const bindOrganizationReports = () => {
   service.on(
     "getReportExecutivePerformance",
     withAuth(getReportExecutivePerformanceHandler, {
-      roles: ["manager"],
-      modules: { reports: ["view"] },
-    }),
-  );
-  service.on(
-    "getReportOffers",
-    withAuth(getReportOffersHandler, {
       roles: ["manager"],
       modules: { reports: ["view"] },
     }),

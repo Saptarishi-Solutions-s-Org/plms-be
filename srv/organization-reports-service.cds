@@ -21,10 +21,12 @@ service ReportDashboardService {
             phone : String;
         };
         pagination : {
-            page       : Integer;
-            limit      : Integer;
-            total      : Integer;
-            totalPages : Integer;
+            page     : Integer;
+            limit    : Integer;
+            total    : Integer;
+            pages    : Integer;
+            hasNext  : Boolean;
+            hasPrev  : Boolean;
         };
     };
 
@@ -52,39 +54,6 @@ service ReportDashboardService {
         };
     };
 
-    function getReportOffers(search: String, status: String, discountType: String, page: Integer, limit: Integer, all: Boolean)
-                            returns {
-        offers : array of {
-            id                   : UUID;
-            title                : String;
-            code                 : String;
-            description          : String;
-            status               : String;
-            isGlobal             : Boolean;
-            discountType         : String;
-            discountAmount       : Decimal(10, 2);
-            discountPercentage   : Decimal(5, 2);
-            maxDiscountAmount    : Decimal(10, 2);
-            comboDescription     : String;
-            buyQuantity          : Integer;
-            getQuantity          : Integer;
-            minPurchaseAmount    : Decimal(10, 2);
-            discountValue        : Decimal(10, 2);
-            flagDiscountAmount   : Decimal(10, 2);
-            validFrom            : Date;
-            validTo              : Date;
-            createdAt            : Timestamp;
-            assignmentStatus     : String;
-        };
-        pagination : {
-            page     : Integer;
-            limit    : Integer;
-            total    : Integer;
-            pages    : Integer;
-            hasNext  : Boolean;
-            hasPrev  : Boolean;
-        };
-    };
 
     function getReportLeads(search: String, status: String, priority: String, leadSource: String, assignedTo: String, startDate: String, endDate: String, page: Integer, limit: Integer)
                             returns {
