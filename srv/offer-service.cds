@@ -114,5 +114,70 @@ service OfferService {
         assignStatus  : String;
         assignedCount : Integer;
     };
+
+    action   exportOffersAdmin()                 returns many {
+        offerCode           : String;
+        title               : String;
+        description         : String;
+        isGlobal            : Boolean;
+        status              : String;
+        discountType        : String;
+        discountAmount      : Decimal(10, 2);
+        discountPercentage  : Decimal(5, 2);
+        maxDiscountAmount   : Decimal(10, 2);
+        comboDescription    : String;
+        buyQuantity         : Integer;
+        getQuantity         : Integer;
+        minPurchaseAmount   : Decimal(10, 2);
+        discountValue       : Decimal(10, 2);
+        flagDiscountAmount  : Decimal(10, 2);
+        validFrom           : Date;
+        validTo             : Date;
+        createdAt           : DateTime;
+        assignedManagers    : String;
+    };
+
+    action   exportOffersManager()               returns many {
+        offerCode           : String;
+        title               : String;
+        description         : String;
+        isGlobal            : Boolean;
+        status              : String;
+        discountType        : String;
+        discountAmount      : Decimal(10, 2);
+        discountPercentage  : Decimal(5, 2);
+        maxDiscountAmount   : Decimal(10, 2);
+        comboDescription    : String;
+        buyQuantity         : Integer;
+        getQuantity         : Integer;
+        minPurchaseAmount   : Decimal(10, 2);
+        discountValue       : Decimal(10, 2);
+        flagDiscountAmount  : Decimal(10, 2);
+        validFrom           : Date;
+        validTo             : Date;
+        createdAt           : DateTime;
+        assignedExecutives  : String;
+    };
+
+    action   exportOffersExecutive()             returns many {
+        offerCode           : String;
+        title               : String;
+        description         : String;
+        isGlobal            : Boolean;
+        status              : String;
+        discountType        : String;
+        discountAmount      : Decimal(10, 2);
+        discountPercentage  : Decimal(5, 2);
+        maxDiscountAmount   : Decimal(10, 2);
+        comboDescription    : String;
+        buyQuantity         : Integer;
+        getQuantity         : Integer;
+        minPurchaseAmount   : Decimal(10, 2);
+        discountValue       : Decimal(10, 2);
+        flagDiscountAmount  : Decimal(10, 2);
+        validFrom           : Date;
+        validTo             : Date;
+        createdAt           : DateTime;
+    };
 }
  
