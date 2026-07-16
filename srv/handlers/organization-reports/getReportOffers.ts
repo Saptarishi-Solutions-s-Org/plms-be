@@ -23,7 +23,18 @@ export const getReportOffersHandler = async (req: any) => {
       return req.error(401, "Unauthorized");
     }
 
-    const paramsSource = { ...(req.data ?? {}), ...(req.query ?? {}) };
+    const rawRequest = req?._?.req ?? req?.req;
+    const url = rawRequest?.originalUrl ?? rawRequest?.url ?? "";
+    const queryIndex = url.indexOf("?");
+    const urlParams =
+      queryIndex >= 0
+        ? Object.fromEntries(new URLSearchParams(url.slice(queryIndex + 1)))
+        : {};
+    const paramsSource = {
+      ...(req.data ?? {}),
+      ...(rawRequest?.query ?? {}),
+      ...urlParams,
+    };
     const { page, limit, offset } = parsePaginationParams(paramsSource);
     const shouldReturnAll =
       paramsSource.all === true || paramsSource.all === "true";

@@ -16,7 +16,17 @@ const getReportLeadsHandler = async (req) => {
         if (!orgId || !userId) {
             return req.error(400, "User or Organization ID missing");
         }
-        const paramsSource = { ...(req.data ?? {}), ...(req.query ?? {}) };
+        const rawRequest = req?._?.req ?? req?.req;
+        const url = rawRequest?.originalUrl ?? rawRequest?.url ?? "";
+        const queryIndex = url.indexOf("?");
+        const urlParams = queryIndex >= 0
+            ? Object.fromEntries(new URLSearchParams(url.slice(queryIndex + 1)))
+            : {};
+        const paramsSource = {
+            ...(req.data ?? {}),
+            ...(rawRequest?.query ?? {}),
+            ...urlParams,
+        };
         const { page, limit, offset } = (0, pagination_1.parsePaginationParams)(paramsSource);
         const rawSearch = normalizeFilter(paramsSource.search);
         const rawStatus = normalizeFilter(paramsSource.status);

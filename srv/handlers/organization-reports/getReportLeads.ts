@@ -18,7 +18,18 @@ export const getReportLeadsHandler = async (req: any) => {
       return req.error(400, "User or Organization ID missing");
     }
 
-    const paramsSource = { ...(req.data ?? {}), ...(req.query ?? {}) };
+    const rawRequest = req?._?.req ?? req?.req;
+    const url = rawRequest?.originalUrl ?? rawRequest?.url ?? "";
+    const queryIndex = url.indexOf("?");
+    const urlParams =
+      queryIndex >= 0
+        ? Object.fromEntries(new URLSearchParams(url.slice(queryIndex + 1)))
+        : {};
+    const paramsSource = {
+      ...(req.data ?? {}),
+      ...(rawRequest?.query ?? {}),
+      ...urlParams,
+    };
     const { page, limit, offset } = parsePaginationParams(paramsSource);
 
     const rawSearch = normalizeFilter(paramsSource.search);
