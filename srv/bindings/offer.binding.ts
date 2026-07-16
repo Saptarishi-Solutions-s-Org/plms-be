@@ -4,6 +4,9 @@ import { createOfferHandler } from "../handlers/offer/create-offer";
 import { getOffersHandler } from "../handlers/offer/getalloffers";
 import { toggleOfferStatusHandler } from "../handlers/offer/toggle-status";
 import { editOfferHandler } from "../handlers/offer/edit-offer";
+import { exportOffersAdminHandler } from "../handlers/offer/export-offers-admin";
+import { exportOffersManagerHandler } from "../handlers/offer/export-offers-manager";
+import { exportOffersExecutiveHandler } from "../handlers/offer/export-offers-executive";
 import { getManagersHandler } from "../handlers/offer/get-managers";
 import { getsummarycards } from "../handlers/offer/offer-cards";
 import { getExecutivesByOfferHandler } from "../handlers/offer/get-executives-by-offer";
@@ -52,6 +55,36 @@ export const bindOffer = () => {
       roles: ["admin"],
       modules: {
         offers: ["update"],
+      },
+    })
+  );
+
+  service.on(
+    "exportOffersAdmin",
+    withAuth(exportOffersAdminHandler, {
+      roles: ["admin"],
+      modules: {
+        offers: ["export"],
+      },
+    })
+  );
+
+  service.on(
+    "exportOffersManager",
+    withAuth(exportOffersManagerHandler, {
+      roles: ["manager"],
+      modules: {
+        offers: ["export"],
+      },
+    })
+  );
+
+  service.on(
+    "exportOffersExecutive",
+    withAuth(exportOffersExecutiveHandler, {
+      roles: ["executive"],
+      modules: {
+        offers: ["export"],
       },
     })
   );
