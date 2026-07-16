@@ -1,4 +1,5 @@
 import { pool } from "../../lib/db";
+import { createPaginationMeta, parsePaginationParams } from "../../lib/pagination";
 
 const normalizeFilter = (value: unknown) => {
   if (typeof value !== "string") return "";
@@ -26,6 +27,7 @@ export const getReportExecutivePerformanceHandler = async (req: any) => {
       ...(rawRequest?.query ?? {}),
       ...urlParams,
     };
+    const { page, limit, offset } = parsePaginationParams(paramsSource);
     const rawSearch = normalizeFilter(paramsSource.search);
     const status = normalizeFilter(paramsSource.status).toLowerCase();
     const startDate = normalizeFilter(paramsSource.startDate) || null;
@@ -99,11 +101,32 @@ export const getReportExecutivePerformanceHandler = async (req: any) => {
       WHERE ${whereClause}
       GROUP BY u.id, u.name, u.email, u.phone, u.is_active
       ORDER BY u.name ASC
+      LIMIT $${params.length + 1}
+      OFFSET $${params.length + 2}
     `;
 
-    const performanceRes = await pool.query(performanceQuery, params);
+    const countQuery = `
+      SELECT COUNT(*) AS total
+      FROM crm_user u
+      JOIN crm_organizationroles org_role ON org_role.id = u.role_id
+      JOIN crm_roles role ON role.id = org_role.role_id
+      WHERE ${whereClause}
+    `;
 
-    return performanceRes.rows;
+    const [performanceRes, countRes] = await Promise.all([
+      pool.query(performanceQuery, [...params, limit, offset]),
+      pool.query(countQuery, params.slice(0, params.length - 2)),
+    ]);
+    const total = Number(countRes.rows[0]?.total ?? 0);
+
+    return {
+      executives: performanceRes.rows,
+      pagination: createPaginationMeta({
+        page,
+        limit,
+        total,
+      }),
+    };
   } catch (error: any) {
     console.error(
       "Error fetching report executive performance:",

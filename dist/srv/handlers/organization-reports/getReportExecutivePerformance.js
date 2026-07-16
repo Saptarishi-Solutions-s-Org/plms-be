@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getReportExecutivePerformanceHandler = void 0;
 const db_1 = require("../../lib/db");
+const pagination_1 = require("../../lib/pagination");
 const normalizeFilter = (value) => {
     if (typeof value !== "string")
         return "";
@@ -25,6 +26,7 @@ const getReportExecutivePerformanceHandler = async (req) => {
             ...(rawRequest?.query ?? {}),
             ...urlParams,
         };
+        const { page, limit, offset } = (0, pagination_1.parsePaginationParams)(paramsSource);
         const rawSearch = normalizeFilter(paramsSource.search);
         const status = normalizeFilter(paramsSource.status).toLowerCase();
         const startDate = normalizeFilter(paramsSource.startDate) || null;
@@ -92,9 +94,29 @@ const getReportExecutivePerformanceHandler = async (req) => {
       WHERE ${whereClause}
       GROUP BY u.id, u.name, u.email, u.phone, u.is_active
       ORDER BY u.name ASC
+      LIMIT $${params.length + 1}
+      OFFSET $${params.length + 2}
     `;
-        const performanceRes = await db_1.pool.query(performanceQuery, params);
-        return performanceRes.rows;
+        const countQuery = `
+      SELECT COUNT(*) AS total
+      FROM crm_user u
+      JOIN crm_organizationroles org_role ON org_role.id = u.role_id
+      JOIN crm_roles role ON role.id = org_role.role_id
+      WHERE ${whereClause}
+    `;
+        const [performanceRes, countRes] = await Promise.all([
+            db_1.pool.query(performanceQuery, [...params, limit, offset]),
+            db_1.pool.query(countQuery, params.slice(0, params.length - 2)),
+        ]);
+        const total = Number(countRes.rows[0]?.total ?? 0);
+        return {
+            executives: performanceRes.rows,
+            pagination: (0, pagination_1.createPaginationMeta)({
+                page,
+                limit,
+                total,
+            }),
+        };
     }
     catch (error) {
         console.error("Error fetching report executive performance:", error?.message ?? error);

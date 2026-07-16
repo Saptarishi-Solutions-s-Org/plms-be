@@ -21,17 +21,16 @@ service ReportDashboardService {
             phone : String;
         };
         pagination : {
-            page     : Integer;
-            limit    : Integer;
-            total    : Integer;
-            pages    : Integer;
-            hasNext  : Boolean;
-            hasPrev  : Boolean;
+            page       : Integer;
+            limit      : Integer;
+            total      : Integer;
+            totalPages : Integer;
         };
     };
 
-    function getReportExecutivePerformance(search: String, status: String, startDate: String, endDate: String)
-                            returns array of {
+    function getReportExecutivePerformance(search: String, status: String, startDate: String, endDate: String, page: Integer, limit: Integer)
+                            returns {
+        executives : array of {
             id              : UUID;
             name            : String;
             executiveName   : String;
@@ -44,6 +43,13 @@ service ReportDashboardService {
             qualified       : Integer;
             conversionRate  : Decimal(5, 2);
             assignedOffers  : Integer;
+        };
+        pagination : {
+            page       : Integer;
+            limit      : Integer;
+            total      : Integer;
+            totalPages : Integer;
+        };
     };
 
     function getReportOffers(search: String, status: String, discountType: String, page: Integer, limit: Integer, all: Boolean)
@@ -106,12 +112,10 @@ service ReportDashboardService {
             notes          : String;
         };
         pagination : {
-            page     : Integer;
-            limit    : Integer;
-            total    : Integer;
-            pages    : Integer;
-            hasNext  : Boolean;
-            hasPrev  : Boolean;
+            page       : Integer;
+            limit      : Integer;
+            total      : Integer;
+            totalPages : Integer;
         };
     };
 
