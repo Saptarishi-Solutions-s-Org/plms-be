@@ -2,6 +2,7 @@ import cds from "@sap/cds";
 import { withAuth } from "../lib/withAuth";
 import { createOfferHandler } from "../handlers/offer/create-offer";
 import { createManagerOfferHandler } from "../handlers/offer/create-manager-offer";
+import { updateManagerOfferHandler } from "../handlers/offer/update-manager-offer";
 import { getOffersHandler } from "../handlers/offer/getalloffers";
 import { toggleOfferStatusHandler } from "../handlers/offer/toggle-status";
 import { editOfferHandler } from "../handlers/offer/edit-offer";
@@ -36,6 +37,16 @@ export const bindOffer = () => {
       roles: ["manager"],
       modules: {
         offers: ["create"],
+      },
+    })
+  );
+
+  service.on(
+    "updateManagerOffer",
+    withAuth(updateManagerOfferHandler, {
+      roles: ["manager"],
+      modules: {
+        offers: ["update"],
       },
     })
   );
