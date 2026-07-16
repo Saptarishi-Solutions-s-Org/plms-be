@@ -40,9 +40,16 @@ service LeadService {
         pagination : PaginationMeta;
     };
 
-    function getExecutiveUsers() returns many {
-        id   : String;
-        name : String;
+    function getExecutiveUsers(page: Integer,
+                               limit: Integer,
+                               search: String,
+                               status: String,
+                               managerId: String) returns {
+        users : many {
+            id   : String;
+            name : String;
+        };
+        pagination : PaginationMeta;
     };
 
     action   createLead(name: String,

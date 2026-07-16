@@ -9,21 +9,36 @@ const withAuth_1 = require("../lib/withAuth");
 const stat_cards_1 = require("../handlers/organization-reports/overview/stat-cards");
 const reports_leadsource_sourceconversionrate_1 = require("../handlers/organization-reports/overview/reports-leadsource-sourceconversionrate");
 const exportExecutives_1 = require("../handlers/organization-reports/exportExecutives");
+const getReportLeads_1 = require("../handlers/organization-reports/getReportLeads");
+const getReportExecutives_1 = require("../handlers/organization-reports/getReportExecutives");
+const getReportExecutivePerformance_1 = require("../handlers/organization-reports/getReportExecutivePerformance");
 const bindOrganizationReports = () => {
     const service = cds_1.default.services["ReportDashboardService"];
     if (!service)
         return;
     service.on("getReportStats", (0, withAuth_1.withAuth)(stat_cards_1.ReportDashboardHandler, {
         roles: ["manager"],
-        modules: { lead: ["view"] },
+        modules: { reports: ["view"] },
     }));
     service.on("getLeadSourceAnalytics", (0, withAuth_1.withAuth)(reports_leadsource_sourceconversionrate_1.leadSourceAnalyticsHandler, {
         roles: ["manager"],
-        modules: { lead: ["view"] },
+        modules: { reports: ["view"] },
+    }));
+    service.on("getReportExecutives", (0, withAuth_1.withAuth)(getReportExecutives_1.getReportExecutivesHandler, {
+        roles: ["manager"],
+        modules: { reports: ["view"] },
+    }));
+    service.on("getReportExecutivePerformance", (0, withAuth_1.withAuth)(getReportExecutivePerformance_1.getReportExecutivePerformanceHandler, {
+        roles: ["manager"],
+        modules: { reports: ["view"] },
+    }));
+    service.on("getReportLeads", (0, withAuth_1.withAuth)(getReportLeads_1.getReportLeadsHandler, {
+        roles: ["manager"],
+        modules: { reports: ["view"] },
     }));
     service.on("exportExecutives", (0, withAuth_1.withAuth)(exportExecutives_1.exportExecutivesHandler, {
         roles: ["manager"],
-        modules: { lead: ["export"] },
+        modules: { reports: ["export"] },
     }));
 };
 exports.bindOrganizationReports = bindOrganizationReports;
