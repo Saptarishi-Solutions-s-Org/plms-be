@@ -69,6 +69,23 @@ service OfferService {
         status : String;
     };
 
+    action   createManagerOffer(title: String,
+                                description: String,
+                                discount_type: String,
+                                discount_amount: Decimal(10, 2),
+                                discount_percentage: Decimal(5, 2),
+                                max_discount_amount: Decimal(10, 2),
+                                combo_description: String,
+                                buy_quantity: Integer,
+                                get_quantity: Integer,
+                                min_purchase_amount: Decimal(10, 2),
+                                discount_value: Decimal(10, 2),
+                                flag_discount_amount: Decimal(10, 2),
+                                valid_from: Date,
+                                valid_to: Date) returns {
+        id : UUID;
+    };
+
     action   updateOffer(id: UUID,
                          is_global: Boolean,
                          title: String,
