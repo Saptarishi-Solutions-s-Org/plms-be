@@ -4,6 +4,7 @@ export const getExecutiveOverviewHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
     const managerId = req.user?.id;
+    const isManager = req.user?.roles?.includes("manager");
 
     if (!orgId) {
       return req.error(400, "Organization ID missing");
@@ -11,6 +12,10 @@ export const getExecutiveOverviewHandler = async (req: any) => {
 
     if (!managerId) {
       return req.error(400, "Manager ID missing");
+    }
+
+    if (!isManager) {
+      return req.error(403, "Forbidden: only managers can view executives");
     }
 
     const executivesQuery = `
