@@ -1,0 +1,134 @@
+import { pool } from "../../lib/db";
+import { emitToOrg } from "../../realtime/socket";
+import {
+  OFFER_LIST_CHANGED,
+  OFFER_DETAIL_CHANGED,
+} from "../../realtime/events";
+
+export const updateManagerOfferHandler = async (req: any) => {
+  const client = await pool.connect();
+
+  try {
+    const data = req.data ?? {};
+
+    const orgId = req.user?.orgId;
+    const managerId = req.user?.id;
+
+    if (!orgId || !managerId) {
+      return req.reject(401, "Unauthorized");
+    }
+
+    const { id } = data;
+
+    if (!id) {
+      return req.reject(400, "Offer id is required");
+    }
+
+    const {
+      title,
+      description = null,
+      discount_type,
+      valid_from,
+      valid_to,
+      discount_amount = null,
+      discount_percentage = null,
+      max_discount_amount = null,
+      combo_description = null,
+      buy_quantity = null,
+      get_quantity = null,
+      min_purchase_amount = null,
+      discount_value = null,
+      flag_discount_amount = null,
+    } = data;
+
+    await client.query("BEGIN");
+
+    const existing = await client.query(
+      `
+      SELECT id
+      FROM crm_offer
+      WHERE id = $1
+        AND organization_id = $2
+        AND createdby = $3
+        AND is_global = false
+      `,
+      [id, orgId, managerId]
+    );
+
+    if (!existing.rows.length) {
+      await client.query("ROLLBACK");
+      return req.reject(404, "Offer not found");
+    }
+
+    await client.query(
+      `
+      UPDATE crm_offer
+      SET
+        title = $1,
+        description = $2,
+        discount_type = $3,
+        discount_amount = $4,
+        discount_percentage = $5,
+        max_discount_amount = $6,
+        combo_description = $7,
+        buy_quantity = $8,
+        get_quantity = $9,
+        min_purchase_amount = $10,
+        discount_value = $11,
+        flag_discount_amount = $12,
+        valid_from = $13,
+        valid_to = $14
+      WHERE id = $15
+      `,
+      [
+        title?.trim(),
+        description,
+        discount_type,
+        discount_amount,
+        discount_percentage,
+        max_discount_amount,
+        combo_description,
+        buy_quantity,
+        get_quantity,
+        min_purchase_amount,
+        discount_value,
+        flag_discount_amount,
+        valid_from,
+        valid_to,
+        id,
+      ]
+    );
+
+    await client.query("COMMIT");
+
+    emitToOrg(orgId, OFFER_LIST_CHANGED, {
+      reason: "offer-updated",
+      offerId: id,
+    });
+
+    emitToOrg(orgId, OFFER_DETAIL_CHANGED, {
+      reason: "offer-updated",
+      offerId: id,
+    });
+
+    return {
+      id,
+      message: "Offer updated successfully",
+    };
+
+  } catch (error: any) {
+    await client.query("ROLLBACK");
+
+    if (typeof error?.code === "number") {
+      return req.reject(error.code, error.message);
+    }
+
+    return req.reject(
+      500,
+      error?.message || "Failed to update offer"
+    );
+
+  } finally {
+    client.release();
+  }
+};
