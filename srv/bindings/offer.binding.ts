@@ -3,6 +3,7 @@ import { withAuth } from "../lib/withAuth";
 import { createOfferHandler } from "../handlers/offer/create-offer";
 import { getOffersHandler } from "../handlers/offer/getalloffers";
 import { toggleOfferStatusHandler } from "../handlers/offer/toggle-status";
+import { editOfferHandler } from "../handlers/offer/edit-offer";
 import { getManagersHandler } from "../handlers/offer/get-managers";
 import { getsummarycards } from "../handlers/offer/offer-cards";
 import { getExecutivesByOfferHandler } from "../handlers/offer/get-executives-by-offer";
@@ -38,6 +39,16 @@ export const bindOffer = () => {
   service.on(
     "toggleOfferStatus",
     withAuth(toggleOfferStatusHandler, {
+      roles: ["admin"],
+      modules: {
+        offers: ["update"],
+      },
+    })
+  );
+
+  service.on(
+    "updateOffer",
+    withAuth(editOfferHandler, {
       roles: ["admin"],
       modules: {
         offers: ["update"],
