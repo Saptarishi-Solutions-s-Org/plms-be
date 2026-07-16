@@ -19,7 +19,7 @@ const bindLead = () => {
     if (!service)
         return;
     service.on("getLeadsWithStats", (0, withAuth_1.withAuth)(getLeadsWithStats_1.getLeadsWithStatsHandler, {
-        roles: ["manager", "executive"],
+        roles: ["admin", "manager", "executive"],
         modules: { lead: ["view"] },
     }));
     service.on("getExecutiveUsers", (0, withAuth_1.withAuth)(getExecutiveUsers_1.getExecutiveUsersHandler, {
@@ -27,7 +27,7 @@ const bindLead = () => {
         modules: { lead: ["view"] },
     }));
     service.on("createLead", (0, withAuth_1.withAuth)(createLead_1.createLeadHandler, {
-        roles: ["manager", "executive"],
+        roles: ["admin", "manager", "executive"],
         modules: { lead: ["create"] },
     }));
     service.on("updateLead", (0, withAuth_1.withAuth)(updateLead_1.updateLeadHandler, {
@@ -43,11 +43,11 @@ const bindLead = () => {
         modules: { lead: ["export"] },
     }));
     service.on("importLeads", (0, withAuth_1.withAuth)(importLeads_1.importLeadsHandler, {
-        roles: ["manager"],
+        roles: ["manager", "executive"],
         modules: { lead: ["import"] },
     }));
     service.on("getLeadDetail", (0, withAuth_1.withAuth)(getLeadDetails_1.getLeadDetailHandler, {
-        roles: ["manager", "executive"],
+        roles: ["admin", "manager", "executive"],
         modules: { lead: ["view"] },
     }));
     service.on("addLeadActivity", (0, withAuth_1.withAuth)(addLeadActivity_1.addLeadActivityHandler, {

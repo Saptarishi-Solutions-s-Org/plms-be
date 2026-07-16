@@ -34,7 +34,33 @@ export const createLeadHandler = async (req: any) => {
     } = req.data;
 
     if (!name || !email || !phone || !status || !priority || !leadSource) {
+      await client.query("ROLLBACK");
       return req.error(400, "Missing required fields");
+    }
+
+    if (assignedTo) {
+      const assignee = await client.query(
+        `SELECT u.id
+           FROM crm_user u
+           JOIN crm_organizationroles organization_role
+             ON organization_role.id = u.role_id
+           JOIN crm_roles role
+             ON role.id = organization_role.role_id
+          WHERE u.id = $1
+            AND u.organization_id = $2
+            AND u.is_active = true
+            AND LOWER(role.name) IN ('manager', 'executive')
+          LIMIT 1`,
+        [assignedTo, orgId],
+      );
+
+      if (!assignee.rowCount) {
+        await client.query("ROLLBACK");
+        return req.error(
+          400,
+          "Assignee must be an active manager or executive in your organization",
+        );
+      }
     }
 
     const duplicate = await client.query(

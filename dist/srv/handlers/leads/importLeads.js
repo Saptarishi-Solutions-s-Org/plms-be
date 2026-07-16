@@ -12,6 +12,7 @@ const importLeadsHandler = async (req) => {
         await client.query("BEGIN");
         const orgId = req.user?.orgId;
         const createdBy = req.user?.id;
+        const isExecutive = (req.user?.roles ?? []).some((role) => role.toLowerCase() === "executive");
         if (!orgId || !createdBy)
             return req.error(401, "Unauthorized");
         const rows = req.data?.rows ?? [];
@@ -27,14 +28,12 @@ const importLeadsHandler = async (req) => {
                 continue;
             }
             try {
-                // Skip if a lead with same email or phone already exists for the org
-                const dup = await client.query(`SELECT id FROM crm_leads WHERE organization_id=$1 AND (email=$2 OR phone=$3) LIMIT 1`, [orgId, email, phone]);
-                if (dup.rowCount) {
-                    failed++;
-                    continue;
-                }
                 // Do not insert duplicates: skip if a lead with same email or phone exists for this org
-                const dupCheck = await client.query(`SELECT id FROM crm_leads WHERE organization_id = $1 AND (email = $2 OR phone = $3) LIMIT 1`, [orgId, email, phone]);
+                const dupCheck = await client.query(`SELECT id
+             FROM crm_leads
+            WHERE organization_id = $1
+              AND (LOWER(email) = LOWER($2) OR phone = $3)
+            LIMIT 1`, [orgId, email, phone]);
                 if (dupCheck.rowCount) {
                     failed++;
                     continue;
@@ -60,7 +59,7 @@ const importLeadsHandler = async (req) => {
                     status ?? 'New', priority ?? null, leadSource,
                     city ?? "", postalCode ?? "",
                     stateId || null, countryId || null,
-                    orgId, assignedTo || null,
+                    orgId, isExecutive ? createdBy : (assignedTo || null),
                     createdBy,
                 ]);
                 if (notes?.trim()) {

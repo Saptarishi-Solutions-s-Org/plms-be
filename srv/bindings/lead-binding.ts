@@ -17,7 +17,7 @@ export const bindLead = () => {
   service.on(
     "getLeadsWithStats",
     withAuth(getLeadsWithStatsHandler, {
-      roles: ["manager", "executive"],
+      roles: ["admin", "manager", "executive"],
       modules: { lead: ["view"] },
     }),
   );
@@ -33,7 +33,7 @@ export const bindLead = () => {
   service.on(
     "createLead",
     withAuth(createLeadHandler, {
-      roles: ["manager", "executive"],
+      roles: ["admin", "manager", "executive"],
       modules: { lead: ["create"] },
     }),
   );
@@ -65,7 +65,7 @@ export const bindLead = () => {
   service.on(
     "importLeads",
     withAuth(importLeadsHandler, {
-      roles: ["manager"],
+      roles: ["manager", "executive"],
       modules: { lead: ["import"] },
     }),
   );
@@ -73,7 +73,7 @@ export const bindLead = () => {
   service.on(
     "getLeadDetail",
     withAuth(getLeadDetailHandler, {
-      roles: ["manager", "executive"],
+      roles: ["admin", "manager", "executive"],
       modules: { lead: ["view"] },
     }),
   );
