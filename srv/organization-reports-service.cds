@@ -5,6 +5,8 @@ service ReportDashboardService {
         convertedLeads : Integer;
         conversionRate : Decimal(5, 2);
         activeOffers   : Integer;
+        totalUsers     : Integer;
+        activeUsers    : Integer;
     };
 
     function getLeadSourceAnalytics()                 returns array of {
@@ -23,12 +25,42 @@ service ReportDashboardService {
             phone : String;
         };
         pagination : {
-            page     : Integer;
-            limit    : Integer;
-            total    : Integer;
-            pages    : Integer;
-            hasNext  : Boolean;
-            hasPrev  : Boolean;
+            page       : Integer;
+            limit      : Integer;
+            total      : Integer;
+            totalPages : Integer;
+        };
+    };
+
+    function getReportManagers(search: String, page: Integer, limit: Integer)
+                            returns {
+        managers : array of {
+            id    : UUID;
+            name  : String;
+            email : String;
+            phone : String;
+        };
+        pagination : {
+            page       : Integer;
+            limit      : Integer;
+            total      : Integer;
+            totalPages : Integer;
+        };
+    };
+
+    function getReportExecutivesForManager(managerId: UUID, search: String, page: Integer, limit: Integer)
+                            returns {
+        executives : array of {
+            id    : UUID;
+            name  : String;
+            email : String;
+            phone : String;
+        };
+        pagination : {
+            page       : Integer;
+            limit      : Integer;
+            total      : Integer;
+            totalPages : Integer;
         };
     };
 
@@ -44,6 +76,30 @@ service ReportDashboardService {
             assignedLeads   : Integer;
             total           : Integer;
             qualifiedLeads  : Integer;
+            qualified       : Integer;
+            conversionRate  : Decimal(5, 2);
+            assignedOffers  : Integer;
+        };
+        pagination : {
+            page       : Integer;
+            limit      : Integer;
+            total      : Integer;
+            totalPages : Integer;
+        };
+    };
+
+    function getReportManagerPerformance(search: String, status: String, startDate: String, endDate: String, page: Integer, limit: Integer)
+                            returns {
+        managers : array of {
+            id              : UUID;
+            name            : String;
+            managerName     : String;
+            email           : String;
+            phone           : String;
+            status          : String;
+            assignedLeads   : Integer;
+            total           : Integer;
+            convertedLeads  : Integer;
             qualified       : Integer;
             conversionRate  : Decimal(5, 2);
             assignedOffers  : Integer;

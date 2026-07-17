@@ -6,6 +6,9 @@ import { exportExecutivesHandler } from "../handlers/organization-reports/export
 import { getReportLeadsHandler } from "../handlers/organization-reports/getReportLeads";
 import { getReportExecutivesHandler } from "../handlers/organization-reports/getReportExecutives";
 import { getReportExecutivePerformanceHandler } from "../handlers/organization-reports/getReportExecutivePerformance";
+import { getReportManagerPerformanceHandler } from "../handlers/organization-reports/getReportManagerPerformance";
+import { getReportManagersHandler } from "../handlers/organization-reports/getReportManagers";
+import { getReportExecutivesForManagerHandler } from "../handlers/organization-reports/getReportExecutivesForManager";
 
 export const bindOrganizationReports = () => {
   const service = cds.services["ReportDashboardService"];
@@ -14,14 +17,14 @@ export const bindOrganizationReports = () => {
   service.on(
     "getReportStats",
     withAuth(ReportDashboardHandler, {
-      roles: ["manager", "executive"],
+      roles: ["admin", "manager", "executive"],
       modules: { reports: ["view"] },
     }),
   );
   service.on(
     "getLeadSourceAnalytics",
     withAuth(leadSourceAnalyticsHandler, {
-      roles: ["manager", "executive"],
+      roles: ["admin", "manager", "executive"],
       modules: { reports: ["view"] },
     }),
   );
@@ -40,9 +43,30 @@ export const bindOrganizationReports = () => {
     }),
   );
   service.on(
+    "getReportManagerPerformance",
+    withAuth(getReportManagerPerformanceHandler, {
+      roles: ["admin"],
+      modules: { reports: ["view"] },
+    }),
+  );
+  service.on(
+    "getReportManagers",
+    withAuth(getReportManagersHandler, {
+      roles: ["admin"],
+      modules: { reports: ["view"] },
+    }),
+  );
+  service.on(
+    "getReportExecutivesForManager",
+    withAuth(getReportExecutivesForManagerHandler, {
+      roles: ["admin"],
+      modules: { reports: ["view"] },
+    }),
+  );
+  service.on(
     "getReportLeads",
     withAuth(getReportLeadsHandler, {
-      roles: ["manager", "executive"],
+      roles: ["admin", "manager", "executive"],
       modules: { reports: ["view"] },
     }),
   );
