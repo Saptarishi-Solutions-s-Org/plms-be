@@ -51,7 +51,7 @@ const getManagerOfferOverviewHandler = async (req) => {
           WHEN EXISTS (
             SELECT 1
             FROM crm_executiveofferassignment ea
-            WHERE ea."offer_ID" = o.id
+            WHERE ea.offer_id = o.id
           ) THEN 'Assigned'
           ELSE 'Unassigned'
         END AS "assignStatus",
@@ -70,9 +70,9 @@ const getManagerOfferOverviewHandler = async (req) => {
         o.createdat
       FROM crm_offer o
       LEFT JOIN crm_managerofferassignment oa
-        ON oa."offer_ID" = o.id
+        ON oa.offer_id = o.id
       WHERE (o.organization_id = $1 OR o.is_global = true)
-        AND (o.is_global = true OR oa."user_ID" = $2)
+        AND (o.is_global = true OR oa.user_id = $2)
         AND ($3::text[] IS NULL OR LOWER(o.status) = ANY($3::text[]))
         AND (
           $4::text IS NULL
@@ -100,9 +100,9 @@ const getManagerOfferOverviewHandler = async (req) => {
           o.is_global
         FROM crm_offer o
         LEFT JOIN crm_managerofferassignment oa
-          ON oa."offer_ID" = o.id
+          ON oa.offer_id = o.id
         WHERE (o.organization_id = $1 OR o.is_global = true)
-          AND (o.is_global = true OR oa."user_ID" = $2)
+          AND (o.is_global = true OR oa.user_id = $2)
           AND ($3::text[] IS NULL OR LOWER(o.status) = ANY($3::text[]))
           AND (
             $4::text IS NULL

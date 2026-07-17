@@ -99,6 +99,19 @@ export const createOrganizationHandler = async (req: any) => {
       );
     }
 
+    const defaultFilters = await client.query(
+      `SELECT id FROM crm_segmentfiltertypes WHERE "default" = true`
+    );
+
+    for (const f of defaultFilters.rows) {
+      await client.query(
+        `INSERT INTO crm_organizationsegmentfiltertypes 
+        (id, organization_id, filter_type_id, "default", createdat, createdby, modifiedat, modifiedby)
+        VALUES ($1, $2, $3, true, NOW(), $4, NOW(), $4)`,
+        [randomUUID(), orgId, f.id, userId]
+      );
+    }
+
     await client.query("COMMIT");
 
     emitToSystemAdmins(SYSTEM_ADMIN_DASHBOARD_CHANGED, {

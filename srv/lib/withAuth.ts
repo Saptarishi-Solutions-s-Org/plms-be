@@ -143,7 +143,7 @@ export const withAuth = (handler: any, requirements?: WithAuthRequirements) => {
               (action) => !finalPerms.has(action),
             );
             console.warn(
-              `[RBAC] DENIED (module) | user=${req.user.id} | roles=${jwtRoles.join(",")} | ` +
+              `[RBAC] DENIED (module) | service=${req.service?.name || "unknown"} | event=${req.event} | user=${req.user.id} | roles=${jwtRoles.join(",")} | ` +
                 `module=${normalizedModule} | required=${normalizedActions.join(",")} | ` +
                 `missing=${missingActions.join(",")} | orgId=${req.user.orgId}`,
             );
@@ -164,7 +164,7 @@ export const withAuth = (handler: any, requirements?: WithAuthRequirements) => {
 
         if (!hasRole) {
           console.warn(
-            `[RBAC] DENIED (role) | user=${req.user.id} | ` +
+            `[RBAC] DENIED (role) | service=${req.service?.name || "unknown"} | event=${req.event} | user=${req.user.id} | ` +
               `userRoles=${jwtRoles.join(",")} | ` +
               `requiredRoles=${normalizedRequired.join(",")} | ` +
               `orgId=${req.user.orgId}`,

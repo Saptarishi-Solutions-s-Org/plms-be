@@ -3,7 +3,7 @@ import { formatLabel } from "../../lib/formatlabel";
 
 export const getDefaultTemplatesHandler = async (req: any) => {
   try {
-    const [modulesRes, rolesRes, rmpRes] = await Promise.all([
+    const [modulesRes, rolesRes, rmpRes, segmentFiltersRes] = await Promise.all([
       pool.query(`SELECT id, name, "default" FROM crm_modules ORDER BY name ASC`),
       pool.query(`
         SELECT id, name, "default" 
@@ -21,6 +21,11 @@ export const getDefaultTemplatesHandler = async (req: any) => {
         WHERE LOWER(REGEXP_REPLACE(TRIM(r.name), '\\s+', ' ', 'g')) != 'system admin'
         ORDER BY r.name ASC, m.name ASC, p.name ASC
       `),
+      pool.query(`
+        SELECT id, name, label, category, operator_type, "default"
+        FROM crm_segmentfiltertypes
+        ORDER BY category ASC, label ASC
+      `)
     ]);
 
     const formattedModules = modulesRes.rows.map((m) => ({
@@ -42,10 +47,20 @@ export const getDefaultTemplatesHandler = async (req: any) => {
       access: row.access,
     }));
 
+    const formattedSegmentFilters = segmentFiltersRes.rows.map((f) => ({
+      id: f.id,
+      name: f.name,
+      label: f.label,
+      category: formatLabel(f.category),
+      operator_type: f.operator_type,
+      default: f.default
+    }));
+
     return {
       modules: formattedModules,
       roles: formattedRoles,
       rmp: formattedRmp,
+      segmentFilters: formattedSegmentFilters
     };
   } catch (err: any) {
     console.error("Error fetching default templates:", err);

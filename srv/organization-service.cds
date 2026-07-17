@@ -59,6 +59,14 @@ service OrganizationService {
         allModules   : many OrgModule;
         allRoles     : many OrgRole;
         permissions  : many OrgPermission;
+        segmentFilters : many {
+            id            : UUID;
+            name          : String;
+            label         : String;
+            category      : String;
+            operator_type : String;
+            is_enabled    : Boolean;
+        };
     };
 
     action   updateOrganization(id: UUID,

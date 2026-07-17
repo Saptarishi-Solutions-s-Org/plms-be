@@ -73,7 +73,7 @@ const editOfferHandler = async (req) => {
         ]);
         await client.query(`
       DELETE FROM crm_managerofferassignment
-      WHERE "offer_ID" = $1
+      WHERE offer_id = $1
       `, [id]);
         if (!is_global && managerIds.length > 0) {
             const validCheck = await client.query(`
@@ -83,29 +83,26 @@ const editOfferHandler = async (req) => {
         JOIN crm_roles r ON r.id = or_.role_id
         WHERE u.id = ANY($1)
           AND u.organization_id = $2
-          AND u.is_active = true
           AND LOWER(r.name) = 'manager'
+          AND u.is_active = true
         `, [managerIds, orgId]);
-            const validManagerIds = validCheck.rows.map((row) => row.id);
-            if (validManagerIds.length === 0) {
-                throw new Error("No valid managers found");
+            if (validCheck.rows.length !== managerIds.length) {
+                await client.query("ROLLBACK");
+                return req.error(400, "One or more manager IDs are invalid or inactive");
             }
-            const assignmentValues = validManagerIds
-                .map((_, i) => {
-                const base = i * 3;
-                return `($${base + 1}, $${base + 2}, $${base + 3})`;
-            })
+            const assignmentValues = managerIds
+                .map((_, index) => `($${index * 3 + 1}, $${index * 3 + 2}, $${index * 3 + 3})`)
                 .join(", ");
-            const assignmentParams = validManagerIds.flatMap((managerId) => [
+            const assignmentParams = managerIds.flatMap((managerId) => [
                 (0, crypto_1.randomUUID)(),
                 id,
                 managerId,
             ]);
             await client.query(`
         INSERT INTO crm_managerofferassignment (
-          "ID",
-          "offer_ID",
-          "user_ID"
+          id,
+          offer_id,
+          user_id
         )
         VALUES ${assignmentValues}
         `, assignmentParams);

@@ -9,6 +9,7 @@ import { getReportExecutivePerformanceHandler } from "../handlers/organization-r
 import { getReportManagerPerformanceHandler } from "../handlers/organization-reports/getReportManagerPerformance";
 import { getReportManagersHandler } from "../handlers/organization-reports/getReportManagers";
 import { getReportExecutivesForManagerHandler } from "../handlers/organization-reports/getReportExecutivesForManager";
+import { getReportOffersHandler } from "../handlers/organization-reports/getReportOffers";
 
 export const bindOrganizationReports = () => {
   const service = cds.services["ReportDashboardService"];
@@ -18,6 +19,13 @@ export const bindOrganizationReports = () => {
     "getReportStats",
     withAuth(ReportDashboardHandler, {
       roles: ["admin", "manager", "executive"],
+      modules: { reports: ["view"] },
+    }),
+  );
+  service.on(
+    "getReportOffers",
+    withAuth(getReportOffersHandler, {
+      roles: ["manager"],
       modules: { reports: ["view"] },
     }),
   );

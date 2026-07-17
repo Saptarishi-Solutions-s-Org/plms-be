@@ -23,18 +23,18 @@ const getAvailableExecutivesForOfferHandler = async (req) => {
       JOIN crm_roles rl ON rl.id = r.role_id
       JOIN crm_offer o ON o.id = $3
       LEFT JOIN crm_managerofferassignment oa
-        ON oa."offer_ID" = o.id
+        ON oa.offer_id = o.id
       WHERE u.reporting_manager_id = $1
         AND u.organization_id = $2
         AND u.is_active = true
         AND LOWER(rl.name) = 'executive'
         AND (o.organization_id = $2 OR o.is_global = true)
-        AND (o.is_global = true OR oa."user_ID" = $1)
+        AND (o.is_global = true OR oa.user_id = $1)
         AND NOT EXISTS (
           SELECT 1
           FROM crm_executiveofferassignment eoa
-          WHERE eoa."offer_ID" = $3
-            AND eoa."executive_ID" = u.id
+          WHERE eoa.offer_id = $3
+            AND eoa.executive_id = u.id
         )
       ORDER BY u.name ASC
       `, [managerId, orgId, offerId]);

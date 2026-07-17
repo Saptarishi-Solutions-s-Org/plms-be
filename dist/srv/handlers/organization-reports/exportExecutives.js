@@ -41,7 +41,7 @@ const exportExecutivesHandler = async (req) => {
           ELSE 0
         END AS "conversionRate",
 
-        COUNT(DISTINCT ea."offer_ID")::int AS "assignedOffers"
+        COUNT(DISTINCT ea.offer_id)::int AS "assignedOffers"
 
       FROM crm_user u
 
@@ -56,7 +56,7 @@ const exportExecutivesHandler = async (req) => {
        AND l.organization_id = u.organization_id
 
       LEFT JOIN crm_executiveofferassignment ea
-        ON ea."executive_ID" = u.id
+        ON ea.executive_id = u.id
 
       WHERE u.organization_id = $1
         AND LOWER(role.name) = 'executive'

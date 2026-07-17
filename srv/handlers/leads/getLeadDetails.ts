@@ -33,8 +33,8 @@ export const getLeadDetailHandler = async (req: any) => {
       ),
       pool.query(
         `SELECT
-           loa."ID"               AS "assignmentId",
-           loa."createdAt"        AS "assignedAt",
+           loa.id                 AS "assignmentId",
+           loa.createdat          AS "assignedAt",
            COALESCE(u.name, '')   AS "assignedByName",
            o.id                   AS "offerId",
            o.title                AS "title",
@@ -44,13 +44,13 @@ export const getLeadDetailHandler = async (req: any) => {
            o.valid_from           AS "validFrom",
            o.valid_to             AS "validTo"
          FROM crm_leadofferassignment loa
-         JOIN crm_offer o   ON o.id = loa."offer_ID"
-         LEFT JOIN crm_user u ON u.id::text = loa."assigned_by_ID"::text
-         JOIN crm_leads l   ON l.id = loa."lead_ID"
+         JOIN crm_offer o   ON o.id = loa.offer_id
+         LEFT JOIN crm_user u ON u.id::text = loa.assigned_by_id::text
+         JOIN crm_leads l   ON l.id = loa.lead_id
          WHERE ($1::text IS NULL OR l.id::text = $1)
            AND ($2::text IS NULL OR l.code = $2 OR l.id::text = $2)
            AND l.organization_id = $3
-         ORDER BY loa."createdAt" DESC`,
+         ORDER BY loa.createdat DESC`,
         [id || null, leadCode || null, orgId],
       ),
     ]);

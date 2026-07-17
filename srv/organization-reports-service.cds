@@ -113,6 +113,12 @@ service ReportDashboardService {
     };
 
 
+    function getReportOffers()                        returns {
+        stats : {
+            activeOffers : Integer;
+        };
+    };
+
     function getReportLeads(search: String, status: String, priority: String, leadSource: String, assignedTo: String, startDate: String, endDate: String, page: Integer, limit: Integer)
                             returns {
         leads      : array of {

@@ -70,10 +70,10 @@ const getExecutiveOverviewHandler = async (req) => {
       ),
       offer_counts AS (
         SELECT
-          "executive_ID" AS executive_id,
-          COUNT(DISTINCT "offer_ID") AS offer_count
+          executive_id,
+          COUNT(DISTINCT offer_id) AS offer_count
         FROM crm_executiveofferassignment
-        GROUP BY "executive_ID"
+        GROUP BY executive_id
       )
       SELECT
         eb.id,

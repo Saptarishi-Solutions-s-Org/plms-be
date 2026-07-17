@@ -75,9 +75,9 @@ const createManagerOfferHandler = async (req) => {
         ]);
         await client.query(`
       INSERT INTO crm_managerofferassignment (
-        "ID",
-        "offer_ID",
-        "user_ID"
+        id,
+        offer_id,
+        user_id
       )
       VALUES ($1, $2, $3)
       `, [(0, crypto_1.randomUUID)(), id, managerId]);

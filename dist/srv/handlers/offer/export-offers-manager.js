@@ -33,21 +33,21 @@ const exportOffersManagerHandler = async (req) => {
          )                         AS "assignedExecutives"
 
        FROM crm_offer o
-       LEFT JOIN crm_managerofferassignment oa
-         ON oa."offer_ID" = o.id
-       LEFT JOIN crm_executiveofferassignment ea
-         ON ea."offer_ID" = o.id
-         AND ea."assigned_by_ID" = $2
-       LEFT JOIN crm_user eu
-         ON eu.id = ea."executive_ID"
-         AND eu.reporting_manager_id = $2
-         AND eu.is_active = true
+        LEFT JOIN crm_managerofferassignment oa
+          ON oa.offer_id = o.id
+        LEFT JOIN crm_executiveofferassignment ea
+          ON ea.offer_id = o.id
+          AND ea.assigned_by_id = $2
+        LEFT JOIN crm_user eu
+          ON eu.id = ea.executive_id
+          AND eu.reporting_manager_id = $2
+          AND eu.is_active = true
 
-       WHERE (o.organization_id = $1 OR o.is_global = true)
-         AND (o.is_global = true OR oa."user_ID" = $2)
+        WHERE (o.organization_id = $1 OR o.is_global = true)
+          AND (o.is_global = true OR oa.user_id = $2)
 
-       GROUP BY o.id
-       ORDER BY o.createdat DESC`, [orgId, managerId]);
+        GROUP BY o.id
+        ORDER BY o.createdat DESC`, [orgId, managerId]);
         return res.rows;
     }
     catch (error) {

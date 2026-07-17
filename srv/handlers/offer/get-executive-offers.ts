@@ -50,13 +50,13 @@ export const getExecutiveOffersHandler = async (req: any) => {
     const offerFilterSql = `
       FROM crm_executiveofferassignment ea
       JOIN crm_offer o
-        ON o.id = ea."offer_ID"
+        ON o.id = ea.offer_id
       JOIN crm_user executive
-        ON executive.id = ea."executive_ID"
+        ON executive.id = ea.executive_id
       JOIN crm_user manager
-        ON manager.id = ea."assigned_by_ID"
-      WHERE ea."executive_ID" = $1
-        AND ea."assigned_by_ID" = executive.reporting_manager_id
+        ON manager.id = ea.assigned_by_id
+      WHERE ea.executive_id = $1
+        AND ea.assigned_by_id = executive.reporting_manager_id
         AND executive.organization_id = $2
         AND manager.organization_id = $2
         AND (o.organization_id = $2 OR o.is_global = true)
@@ -95,7 +95,7 @@ export const getExecutiveOffersHandler = async (req: any) => {
         o.valid_to               AS "validTo",
         o.status                 AS "status"
       ${offerFilterSql}
-      ORDER BY ea."createdAt" DESC
+      ORDER BY ea.createdat DESC
       LIMIT $6 OFFSET $7
       `,
       [...baseParams, limit, offset],

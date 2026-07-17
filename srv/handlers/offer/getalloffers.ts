@@ -48,12 +48,28 @@ export const getOffersHandler = async (req: any) => {
     AND LOWER(status) != 'expired'
 `);
 
+    const userRole = req.user.role?.toLowerCase() || req.user.roles?.[0]?.toLowerCase() || "";
+    const userId = req.user.id;
+
     const filterParams = [
       orgId,
       statusParams,
       searchParam,
       discountTypeParams,
     ];
+
+    let scopingFilter = "";
+    if (userRole === "executive") {
+      filterParams.push(userId);
+      scopingFilter = ` AND EXISTS (SELECT 1 FROM crm_executiveofferassignment eoa WHERE eoa.offer_id = o.id AND eoa.executive_id = $${filterParams.length})`;
+    } else if (userRole === "manager") {
+      filterParams.push(userId);
+      scopingFilter = ` AND (
+        EXISTS (SELECT 1 FROM crm_managerofferassignment moa WHERE moa.offer_id = o.id AND moa.user_id = $${filterParams.length})
+        OR EXISTS (SELECT 1 FROM crm_executiveofferassignment eoa JOIN crm_user u ON u.id = eoa.executive_id WHERE eoa.offer_id = o.id AND u.reporting_manager_id = $${filterParams.length})
+      )`;
+    }
+
     const offersFilterSql = `
       WHERE (o.is_global = true OR o.organization_id = $1)
         AND ($2::text[] IS NULL OR LOWER(o.status) = ANY($2::text[]))
@@ -64,6 +80,7 @@ export const getOffersHandler = async (req: any) => {
           OR o.description ILIKE $3
         )
         AND ($4::text[] IS NULL OR LOWER(o.discount_type) = ANY($4::text[]))
+        ${scopingFilter}
     `;
 
     const countResult = await pool.query(
@@ -113,17 +130,17 @@ export const getOffersHandler = async (req: any) => {
        FROM crm_offer o
 
       LEFT JOIN crm_managerofferassignment a
-        ON a."offer_ID" = o.id
+        ON a.offer_id = o.id
 
        LEFT JOIN crm_user u
-        ON u.id = a."user_ID"
+        ON u.id = a.user_id
 
        ${offersFilterSql}
 
        GROUP BY o.id
 
        ORDER BY o.createdat DESC
-       ${shouldReturnAll ? "" : "LIMIT $5 OFFSET $6"}
+       ${shouldReturnAll ? "" : `LIMIT $${filterParams.length + 1} OFFSET $${filterParams.length + 2}`}
       `,
       shouldReturnAll ? filterParams : [...filterParams, limit, offset]
     );

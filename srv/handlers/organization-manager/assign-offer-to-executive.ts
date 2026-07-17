@@ -25,11 +25,11 @@ export const assignOfferToExecutiveHandler = async (req: any) => {
       SELECT o.id
       FROM crm_offer o
       LEFT JOIN crm_managerofferassignment moa
-        ON moa."offer_ID" = o.id
-       AND moa."user_ID" = $2
+        ON moa.offer_id = o.id
+       AND moa.user_id = $2
       WHERE o.id = $1
         AND (o.organization_id = $3 OR o.is_global = true)
-        AND (o.is_global = true OR moa."user_ID" IS NOT NULL)
+        AND (o.is_global = true OR moa.user_id IS NOT NULL)
       LIMIT 1
       `,
       [offerId, managerId, orgId],
@@ -79,10 +79,10 @@ export const assignOfferToExecutiveHandler = async (req: any) => {
 
     const duplicateCheck = await pool.query(
       `
-      SELECT "ID"
+      SELECT id
       FROM crm_executiveofferassignment
-      WHERE "offer_ID" = $1
-        AND "executive_ID" = $2
+      WHERE offer_id = $1
+        AND executive_id = $2
       LIMIT 1
       `,
       [offerId, executiveId],
@@ -100,12 +100,12 @@ export const assignOfferToExecutiveHandler = async (req: any) => {
     await pool.query(
       `
       INSERT INTO crm_executiveofferassignment (
-        "ID",
-        "offer_ID",
-        "assigned_by_ID",
-        "executive_ID",
-        "createdAt",
-        "createdBy"
+        id,
+        offer_id,
+        assigned_by_id,
+        executive_id,
+        createdat,
+        createdby
       )
       VALUES ($1, $2, $3, $4, NOW(), $5)
       `,

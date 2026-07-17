@@ -70,6 +70,14 @@ service OrganizationAdminService {
             permission : String;
             access     : Boolean;
         };
+        segmentFilters : array of {
+            id            : UUID;
+            name          : String;
+            label         : String;
+            category      : String;
+            operator_type : String;
+            is_enabled    : Boolean;
+        };
     };
 
     action updateRolePermissions(

@@ -89,6 +89,14 @@ service SystemAdminService {
             permission : String;
             access  : Boolean;
         };
+        segmentFilters : many {
+            id            : UUID;
+            name          : String;
+            label         : String;
+            category      : String;
+            operator_type : String;
+            default       : Boolean;
+        };
     };
 
     action updateOrganizationAdminPermissions(organizationId : UUID,

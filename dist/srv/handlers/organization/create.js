@@ -55,6 +55,12 @@ const createOrganizationHandler = async (req) => {
         (id, organization_id, organizationrole_id, rmp_id, access, createdat, createdby, modifiedat, modifiedby)
         VALUES ($1,$2,$3,$4,$5,NOW(),$6,NOW(),$6)`, [(0, crypto_1.randomUUID)(), orgId, orgRoleId, rmp.id, rmp.access, userId]);
         }
+        const defaultFilters = await client.query(`SELECT id FROM crm_segmentfiltertypes WHERE "default" = true`);
+        for (const f of defaultFilters.rows) {
+            await client.query(`INSERT INTO crm_organizationsegmentfiltertypes 
+        (id, organization_id, filter_type_id, "default", createdat, createdby, modifiedat, modifiedby)
+        VALUES ($1, $2, $3, true, NOW(), $4, NOW(), $4)`, [(0, crypto_1.randomUUID)(), orgId, f.id, userId]);
+        }
         await client.query("COMMIT");
         (0, socket_1.emitToSystemAdmins)(events_1.SYSTEM_ADMIN_DASHBOARD_CHANGED, {
             reason: "organization-created",

@@ -37,27 +37,27 @@ const UNIQUE_CONSTRAINTS = [
   {
     table: "crm_modulepermissions",
     name: "uq_module_permissions",
-    cols: "module_ID, permission_ID",
+    cols: "module_id, permission_id",
   },
   {
     table: "crm_rolemodulepermissions",
     name: "uq_role_module_perms",
-    cols: "role_ID, module_permission_ID",
+    cols: "role_id, module_permission_id",
   },
   {
     table: "crm_organizationroles",
     name: "uq_org_roles",
-    cols: "organization_ID, role_ID",
+    cols: "organization_id, role_id",
   },
   {
     table: "crm_organizationmodules",
     name: "uq_org_modules",
-    cols: "organization_ID, module_ID",
+    cols: "organization_id, module_id",
   },
   {
     table: "crm_organizationrolemodulepermissions",
     name: "uq_org_role_rmp",
-    cols: "organizationRole_ID, rmp_ID",
+    cols: "organizationrole_id, rmp_id",
   },
   {
     table: "crm_refreshtoken",

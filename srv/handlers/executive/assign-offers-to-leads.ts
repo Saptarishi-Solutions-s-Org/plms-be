@@ -13,10 +13,10 @@ const ensureOfferCanBeAssigned = async (
 ) => {
   const offerCheck = await pool.query(
     `
-    SELECT "offer_ID"
+    SELECT offer_id
     FROM crm_executiveofferassignment
-    WHERE "offer_ID" = $1
-      AND "executive_ID" = $2
+    WHERE offer_id = $1
+      AND executive_id = $2
     LIMIT 1
     `,
     [offerId, executiveId],
@@ -77,10 +77,10 @@ export const assignOfferToLeadHandler = async (req: any) => {
 
     const duplicateCheck = await pool.query(
       `
-      SELECT "ID"
+      SELECT id
       FROM crm_leadofferassignment
-      WHERE "lead_ID" = $1
-        AND "offer_ID" = $2
+      WHERE lead_id = $1
+        AND offer_id = $2
       LIMIT 1
       `,
       [leadId, offerId],
@@ -98,12 +98,12 @@ export const assignOfferToLeadHandler = async (req: any) => {
     await pool.query(
       `
       INSERT INTO crm_leadofferassignment (
-        "ID",
-        "lead_ID",
-        "offer_ID",
-        "assigned_by_ID",
-        "createdAt",
-        "createdBy"
+        id,
+        lead_id,
+        offer_id,
+        assigned_by_id,
+        createdat,
+        createdby
       )
       VALUES ($1, $2, $3, $4, NOW(), $5)
       `,
@@ -178,15 +178,15 @@ export const assignOffersToLeadsHandler = async (req: any) => {
 
     const duplicateResult = await pool.query(
       `
-      SELECT "lead_ID"
+      SELECT lead_id
       FROM crm_leadofferassignment
-      WHERE "lead_ID" = ANY($1::text[])
-        AND "offer_ID" = $2
+      WHERE lead_id = ANY($1::text[])
+        AND offer_id = $2
       `,
       [validLeadIds, offerId],
     );
     const duplicateLeadIds = new Set(
-      duplicateResult.rows.map((assignment) => assignment.lead_ID),
+      duplicateResult.rows.map((assignment) => assignment.lead_id),
     );
     const leadIdsToAssign = validLeadIds.filter(
       (id) => !duplicateLeadIds.has(id),
@@ -223,12 +223,12 @@ export const assignOffersToLeadsHandler = async (req: any) => {
     await pool.query(
       `
       INSERT INTO crm_leadofferassignment (
-        "ID",
-        "lead_ID",
-        "offer_ID",
-        "assigned_by_ID",
-        "createdAt",
-        "createdBy"
+        id,
+        lead_id,
+        offer_id,
+        assigned_by_id,
+        createdat,
+        createdby
       )
       VALUES ${valuesSql}
       `,

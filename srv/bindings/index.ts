@@ -9,6 +9,7 @@ import { bindExecutiveDashboard } from "./organization-executive.binding";
 import { bindManagerDashboard } from "./organization-manager.binding";
 import { bindOrganizationReports } from "./organization-reports";
 import { bindProfile } from "./profile.binding";
+import { bindSegment } from "./segment-binding";
 
 export const bindAllServices = () => {
   bindAuth();
@@ -22,4 +23,5 @@ export const bindAllServices = () => {
   bindLead();
   bindOffer();
   bindProfile();
+  bindSegment();
 };

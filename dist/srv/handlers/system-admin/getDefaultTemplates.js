@@ -5,7 +5,7 @@ const db_1 = require("../../lib/db");
 const formatlabel_1 = require("../../lib/formatlabel");
 const getDefaultTemplatesHandler = async (req) => {
     try {
-        const [modulesRes, rolesRes, rmpRes] = await Promise.all([
+        const [modulesRes, rolesRes, rmpRes, segmentFiltersRes] = await Promise.all([
             db_1.pool.query(`SELECT id, name, "default" FROM crm_modules ORDER BY name ASC`),
             db_1.pool.query(`
         SELECT id, name, "default" 
@@ -23,6 +23,11 @@ const getDefaultTemplatesHandler = async (req) => {
         WHERE LOWER(REGEXP_REPLACE(TRIM(r.name), '\\s+', ' ', 'g')) != 'system admin'
         ORDER BY r.name ASC, m.name ASC, p.name ASC
       `),
+            db_1.pool.query(`
+        SELECT id, name, label, category, operator_type, "default"
+        FROM crm_segmentfiltertypes
+        ORDER BY category ASC, label ASC
+      `)
         ]);
         const formattedModules = modulesRes.rows.map((m) => ({
             id: m.id,
@@ -40,10 +45,19 @@ const getDefaultTemplatesHandler = async (req) => {
             permission: row.permission.toLowerCase(),
             access: row.access,
         }));
+        const formattedSegmentFilters = segmentFiltersRes.rows.map((f) => ({
+            id: f.id,
+            name: f.name,
+            label: f.label,
+            category: (0, formatlabel_1.formatLabel)(f.category),
+            operator_type: f.operator_type,
+            default: f.default
+        }));
         return {
             modules: formattedModules,
             roles: formattedRoles,
             rmp: formattedRmp,
+            segmentFilters: formattedSegmentFilters
         };
     }
     catch (err) {

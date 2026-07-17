@@ -12,6 +12,7 @@ const organization_executive_binding_1 = require("./organization-executive.bindi
 const organization_manager_binding_1 = require("./organization-manager.binding");
 const organization_reports_1 = require("./organization-reports");
 const profile_binding_1 = require("./profile.binding");
+const segment_binding_1 = require("./segment-binding");
 const bindAllServices = () => {
     (0, auth_binding_1.bindAuth)();
     (0, system_admin_binding_1.bindSystemAdmin)();
@@ -24,5 +25,6 @@ const bindAllServices = () => {
     (0, lead_binding_1.bindLead)();
     (0, offer_binding_1.bindOffer)();
     (0, profile_binding_1.bindProfile)();
+    (0, segment_binding_1.bindSegment)();
 };
 exports.bindAllServices = bindAllServices;

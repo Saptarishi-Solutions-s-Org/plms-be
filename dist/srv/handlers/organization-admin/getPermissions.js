@@ -8,7 +8,7 @@ const getPermissionsHandler = async (req) => {
     if (!orgId) {
         return req.error(401, "Unauthorized");
     }
-    const [roles, permissions] = await Promise.all([
+    const [roles, permissions, segmentFilters] = await Promise.all([
         db_1.pool.query(`SELECT orr.id, r.name
        FROM crm_organizationroles orr
        JOIN crm_roles r ON r.id = orr.role_id
@@ -25,6 +25,11 @@ const getPermissionsHandler = async (req) => {
        JOIN crm_organizationmodules om ON om.module_id = m.id AND om.organization_id = ormp.organization_id
        WHERE ormp.organization_id=$1
        ORDER BY r.name ASC, m.name ASC, p.name ASC`, [orgId]),
+        db_1.pool.query(`SELECT oft.id, oft."default" AS is_enabled, ft.name, ft.label, ft.category, ft.operator_type 
+       FROM crm_organizationsegmentfiltertypes oft
+       JOIN crm_segmentfiltertypes ft ON ft.id = oft.filter_type_id
+       WHERE oft.organization_id = $1
+       ORDER BY ft.category ASC, ft.label ASC`, [orgId])
     ]);
     const formattedRoles = roles.rows.map((role) => ({
         ...role,
@@ -36,9 +41,18 @@ const getPermissionsHandler = async (req) => {
         module: (0, formatlabel_1.formatLabel)(permission.module),
         permission: permission.permission.toLowerCase(),
     }));
+    const formattedSegmentFilters = segmentFilters.rows.map((f) => ({
+        id: f.id,
+        name: f.name,
+        label: f.label,
+        category: (0, formatlabel_1.formatLabel)(f.category),
+        operator_type: f.operator_type,
+        is_enabled: f.is_enabled === true
+    }));
     return {
         roles: formattedRoles,
         permissions: formattedPermissions,
+        segmentFilters: formattedSegmentFilters
     };
 };
 exports.getPermissionsHandler = getPermissionsHandler;

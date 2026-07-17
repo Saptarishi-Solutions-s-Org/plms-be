@@ -15,12 +15,17 @@ const getReportExecutivePerformance_1 = require("../handlers/organization-report
 const getReportManagerPerformance_1 = require("../handlers/organization-reports/getReportManagerPerformance");
 const getReportManagers_1 = require("../handlers/organization-reports/getReportManagers");
 const getReportExecutivesForManager_1 = require("../handlers/organization-reports/getReportExecutivesForManager");
+const getReportOffers_1 = require("../handlers/organization-reports/getReportOffers");
 const bindOrganizationReports = () => {
     const service = cds_1.default.services["ReportDashboardService"];
     if (!service)
         return;
     service.on("getReportStats", (0, withAuth_1.withAuth)(stat_cards_1.ReportDashboardHandler, {
         roles: ["admin", "manager", "executive"],
+        modules: { reports: ["view"] },
+    }));
+    service.on("getReportOffers", (0, withAuth_1.withAuth)(getReportOffers_1.getReportOffersHandler, {
+        roles: ["manager"],
         modules: { reports: ["view"] },
     }));
     service.on("getLeadSourceAnalytics", (0, withAuth_1.withAuth)(reports_leadsource_sourceconversionrate_1.leadSourceAnalyticsHandler, {

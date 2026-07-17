@@ -92,7 +92,7 @@ export const getReportManagerPerformanceHandler = async (req: any) => {
             )::float
           ELSE 0
         END AS "conversionRate",
-        COUNT(DISTINCT assignment."offer_ID")::int AS "assignedOffers"
+        COUNT(DISTINCT assignment.offer_id)::int AS "assignedOffers"
       FROM crm_user manager
       JOIN crm_organizationroles org_role ON org_role.id = manager.role_id
       JOIN crm_roles role ON role.id = org_role.role_id
@@ -111,7 +111,7 @@ export const getReportManagerPerformanceHandler = async (req: any) => {
         AND ($${startDateParam}::date IS NULL OR lead.createdat::date >= $${startDateParam}::date)
         AND ($${endDateParam}::date IS NULL OR lead.createdat::date <= $${endDateParam}::date)
       LEFT JOIN crm_managerofferassignment assignment
-        ON assignment."user_ID" = manager.id
+        ON assignment.user_id = manager.id
       WHERE ${whereClause}
       GROUP BY manager.id, manager.name, manager.email, manager.phone, manager.is_active
       ORDER BY manager.name ASC

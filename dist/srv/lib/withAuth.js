@@ -97,7 +97,7 @@ const withAuth = (handler, requirements) => {
                     const hasAll = normalizedActions.every((action) => finalPerms.has(action));
                     if (!hasAll) {
                         const missingActions = normalizedActions.filter((action) => !finalPerms.has(action));
-                        console.warn(`[RBAC] DENIED (module) | user=${req.user.id} | roles=${jwtRoles.join(",")} | ` +
+                        console.warn(`[RBAC] DENIED (module) | service=${req.service?.name || "unknown"} | event=${req.event} | user=${req.user.id} | roles=${jwtRoles.join(",")} | ` +
                             `module=${normalizedModule} | required=${normalizedActions.join(",")} | ` +
                             `missing=${missingActions.join(",")} | orgId=${req.user.orgId}`);
                         return req.error(403, "Forbidden: insufficient permissions");
@@ -111,7 +111,7 @@ const withAuth = (handler, requirements) => {
                 const normalizedRequired = normalizeList(requiredRoles);
                 const hasRole = jwtRoles.some((role) => normalizedRequired.includes(role));
                 if (!hasRole) {
-                    console.warn(`[RBAC] DENIED (role) | user=${req.user.id} | ` +
+                    console.warn(`[RBAC] DENIED (role) | service=${req.service?.name || "unknown"} | event=${req.event} | user=${req.user.id} | ` +
                         `userRoles=${jwtRoles.join(",")} | ` +
                         `requiredRoles=${normalizedRequired.join(",")} | ` +
                         `orgId=${req.user.orgId}`);

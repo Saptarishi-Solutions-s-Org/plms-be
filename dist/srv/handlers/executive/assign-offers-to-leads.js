@@ -7,10 +7,10 @@ const socket_1 = require("../../realtime/socket");
 const events_1 = require("../../realtime/events");
 const ensureOfferCanBeAssigned = async (req, offerId, executiveId) => {
     const offerCheck = await db_1.pool.query(`
-    SELECT "offer_ID"
+    SELECT offer_id
     FROM crm_executiveofferassignment
-    WHERE "offer_ID" = $1
-      AND "executive_ID" = $2
+    WHERE offer_id = $1
+      AND executive_id = $2
     LIMIT 1
     `, [offerId, executiveId]);
     if (!offerCheck.rows.length) {
@@ -49,10 +49,10 @@ const assignOfferToLeadHandler = async (req) => {
             return req.reject(404, "Lead not found or not assigned to this executive");
         }
         const duplicateCheck = await db_1.pool.query(`
-      SELECT "ID"
+      SELECT id
       FROM crm_leadofferassignment
-      WHERE "lead_ID" = $1
-        AND "offer_ID" = $2
+      WHERE lead_id = $1
+        AND offer_id = $2
       LIMIT 1
       `, [leadId, offerId]);
         if (duplicateCheck.rows.length) {
@@ -64,12 +64,12 @@ const assignOfferToLeadHandler = async (req) => {
         const assignmentId = (0, crypto_1.randomUUID)();
         await db_1.pool.query(`
       INSERT INTO crm_leadofferassignment (
-        "ID",
-        "lead_ID",
-        "offer_ID",
-        "assigned_by_ID",
-        "createdAt",
-        "createdBy"
+        id,
+        lead_id,
+        offer_id,
+        assigned_by_id,
+        createdat,
+        createdby
       )
       VALUES ($1, $2, $3, $4, NOW(), $5)
       `, [assignmentId, leadId, offerId, executiveId, executiveId]);
@@ -123,12 +123,12 @@ const assignOffersToLeadsHandler = async (req) => {
             return req.reject(404, "No leads found or assigned to this executive");
         }
         const duplicateResult = await db_1.pool.query(`
-      SELECT "lead_ID"
+      SELECT lead_id
       FROM crm_leadofferassignment
-      WHERE "lead_ID" = ANY($1::text[])
-        AND "offer_ID" = $2
+      WHERE lead_id = ANY($1::text[])
+        AND offer_id = $2
       `, [validLeadIds, offerId]);
-        const duplicateLeadIds = new Set(duplicateResult.rows.map((assignment) => assignment.lead_ID));
+        const duplicateLeadIds = new Set(duplicateResult.rows.map((assignment) => assignment.lead_id));
         const leadIdsToAssign = validLeadIds.filter((id) => !duplicateLeadIds.has(id));
         if (!leadIdsToAssign.length) {
             return {
@@ -155,12 +155,12 @@ const assignOffersToLeadsHandler = async (req) => {
         ]);
         await db_1.pool.query(`
       INSERT INTO crm_leadofferassignment (
-        "ID",
-        "lead_ID",
-        "offer_ID",
-        "assigned_by_ID",
-        "createdAt",
-        "createdBy"
+        id,
+        lead_id,
+        offer_id,
+        assigned_by_id,
+        createdat,
+        createdby
       )
       VALUES ${valuesSql}
       `, [...insertParams, executiveId, executiveId]);

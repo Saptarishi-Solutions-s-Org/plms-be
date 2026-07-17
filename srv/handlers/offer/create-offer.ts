@@ -144,9 +144,9 @@ export const createOfferHandler = async (req: any) => {
       await client.query(
         `
         INSERT INTO crm_managerofferassignment (
-          "ID",
-          "offer_ID",
-          "user_ID"
+          id,
+          offer_id,
+          user_id
         )
         VALUES ${assignmentValues}
         `,

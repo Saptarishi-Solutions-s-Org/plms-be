@@ -30,14 +30,14 @@ export const exportOffersExecutiveHandler = async (req: any) => {
 
        FROM crm_executiveofferassignment ea
        JOIN crm_offer o
-         ON o.id = ea."offer_ID"
+         ON o.id = ea.offer_id
        JOIN crm_user executive
-         ON executive.id = ea."executive_ID"
+         ON executive.id = ea.executive_id
        JOIN crm_user manager
-         ON manager.id = ea."assigned_by_ID"
+         ON manager.id = ea.assigned_by_id
 
-       WHERE ea."executive_ID" = $1
-         AND ea."assigned_by_ID" = executive.reporting_manager_id
+       WHERE ea.executive_id = $1
+         AND ea.assigned_by_id = executive.reporting_manager_id
          AND executive.organization_id = $2
          AND manager.organization_id = $2
          AND (o.organization_id = $2 OR o.is_global = true)

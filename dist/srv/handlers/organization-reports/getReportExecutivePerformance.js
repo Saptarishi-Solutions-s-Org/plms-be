@@ -86,7 +86,7 @@ const getReportExecutivePerformanceHandler = async (req) => {
             )::float
           ELSE 0
         END AS "conversionRate",
-        COUNT(DISTINCT eoa."offer_ID")::int AS "assignedOffers"
+        COUNT(DISTINCT eoa.offer_id)::int AS "assignedOffers"
       FROM crm_user u
       JOIN crm_organizationroles org_role ON org_role.id = u.role_id
       JOIN crm_roles role ON role.id = org_role.role_id
@@ -96,8 +96,8 @@ const getReportExecutivePerformanceHandler = async (req) => {
         AND ($${startDateParam}::date IS NULL OR l.createdat::date >= $${startDateParam}::date)
         AND ($${endDateParam}::date IS NULL OR l.createdat::date <= $${endDateParam}::date)
       LEFT JOIN crm_executiveofferassignment eoa
-        ON eoa."executive_ID" = u.id
-        AND eoa."assigned_by_ID" = $2
+        ON eoa.executive_id = u.id
+        AND eoa.assigned_by_id = $2
       WHERE ${whereClause}
       GROUP BY u.id, u.name, u.email, u.phone, u.is_active
       ORDER BY u.name ASC

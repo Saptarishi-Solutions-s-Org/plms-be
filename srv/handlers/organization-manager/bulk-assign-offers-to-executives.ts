@@ -58,11 +58,11 @@ export const bulkAssignOffersToExecutivesHandler = async (req: any) => {
       SELECT o.id, LOWER(COALESCE(o.status, '')) AS status
       FROM crm_offer o
       LEFT JOIN crm_managerofferassignment moa
-        ON moa."offer_ID" = o.id
-       AND moa."user_ID" = $2
+        ON moa.offer_id = o.id
+       AND moa.user_id = $2
       WHERE o.id::text = ANY($1::text[])
         AND (o.organization_id = $3 OR o.is_global = true)
-        AND (o.is_global = true OR moa."user_ID" IS NOT NULL)
+        AND (o.is_global = true OR moa.user_id IS NOT NULL)
       `,
       [offerIds, managerId, orgId],
     );
@@ -134,10 +134,10 @@ export const bulkAssignOffersToExecutivesHandler = async (req: any) => {
 
     const existingAssignments = await pool.query(
       `
-      SELECT "offer_ID" AS "offerId", "executive_ID" AS "executiveId"
+      SELECT offer_id AS "offerId", executive_id AS "executiveId"
       FROM crm_executiveofferassignment
-      WHERE "offer_ID"::text = ANY($1::text[])
-        AND "executive_ID"::text = ANY($2::text[])
+      WHERE offer_id::text = ANY($1::text[])
+        AND executive_id::text = ANY($2::text[])
       `,
       [offerIds, executiveIds],
     );
@@ -181,12 +181,12 @@ export const bulkAssignOffersToExecutivesHandler = async (req: any) => {
       await pool.query(
         `
         INSERT INTO crm_executiveofferassignment (
-          "ID",
-          "offer_ID",
-          "assigned_by_ID",
-          "executive_ID",
-          "createdAt",
-          "createdBy"
+          id,
+          offer_id,
+          assigned_by_id,
+          executive_id,
+          createdat,
+          createdby
         )
         VALUES ${valuesSql}
         `,

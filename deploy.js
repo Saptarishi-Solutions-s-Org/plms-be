@@ -30,27 +30,27 @@ const UNIQUE_CONSTRAINTS = [
   {
     table: "crm_modulepermissions",
     name: "uq_module_permissions",
-    cols: "module_ID, permission_ID",
+    cols: "module_id, permission_id",
   },
   {
     table: "crm_rolemodulepermissions",
     name: "uq_role_module_perms",
-    cols: "role_ID, module_permission_ID",
+    cols: "role_id, module_permission_id",
   },
   {
     table: "crm_organizationroles",
     name: "uq_org_roles",
-    cols: "organization_ID, role_ID",
+    cols: "organization_id, role_id",
   },
   {
     table: "crm_organizationmodules",
     name: "uq_org_modules",
-    cols: "organization_ID, module_ID",
+    cols: "organization_id, module_id",
   },
   {
     table: "crm_organizationrolemodulepermissions",
     name: "uq_org_role_rmp",
-    cols: "organizationRole_ID, rmp_ID",
+    cols: "organizationrole_id, rmp_id",
   },
   {
     table: "crm_refreshtoken",
@@ -138,11 +138,11 @@ function getEntityColumns(entity) {
   const cols = [];
 
   // Managed aspect system columns
-  cols.push({ name: "ID", pgType: "VARCHAR(36)", isKey: true });
-  cols.push({ name: "createdAt", pgType: "TIMESTAMP" });
-  cols.push({ name: "createdBy", pgType: "VARCHAR(255)" });
-  cols.push({ name: "modifiedAt", pgType: "TIMESTAMP" });
-  cols.push({ name: "modifiedBy", pgType: "VARCHAR(255)" });
+  cols.push({ name: "id", pgType: "VARCHAR(36)", isKey: true });
+  cols.push({ name: "createdat", pgType: "TIMESTAMP" });
+  cols.push({ name: "createdby", pgType: "VARCHAR(255)" });
+  cols.push({ name: "modifiedat", pgType: "TIMESTAMP" });
+  cols.push({ name: "modifiedby", pgType: "VARCHAR(255)" });
 
   for (const [colName, element] of Object.entries(entity.elements || {})) {
     if (element.virtual) continue;
@@ -153,7 +153,7 @@ function getEntityColumns(entity) {
 
     if (element.type === "cds.Association") {
       if (!element.keys) continue;
-      const fkName = colName + "_ID";
+      const fkName = colName + "_id";
       cols.push({ name: fkName, pgType: "VARCHAR(36)" });
       continue;
     }

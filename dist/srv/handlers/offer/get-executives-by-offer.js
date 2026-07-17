@@ -21,11 +21,11 @@ const getExecutivesByOfferHandler = async (req) => {
         u.phone
       FROM crm_executiveofferassignment ea
       JOIN crm_user u
-        ON u.id = ea."executive_ID"
+        ON u.id = ea.executive_id
       JOIN crm_offer o
-        ON o.id = ea."offer_ID"
-      WHERE ea."offer_ID" = $1
-        AND ea."assigned_by_ID" = $2
+        ON o.id = ea.offer_id
+      WHERE ea.offer_id = $1
+        AND ea.assigned_by_id = $2
         AND u.reporting_manager_id = $2
         AND u.organization_id = $3
         AND u.is_active = true

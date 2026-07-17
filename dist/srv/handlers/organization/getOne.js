@@ -9,7 +9,7 @@ const getOrganizationByCodeHandler = async (req) => {
     if (!org.rows.length)
         return req.error(404, "Not found");
     const orgId = org.rows[0].id;
-    const [users, modules, roles, permissions, allModules, allRoles] = await Promise.all([
+    const [users, modules, roles, permissions, allModules, allRoles, segmentFilters] = await Promise.all([
         db_1.pool.query(`SELECT id,name,email FROM crm_user WHERE organization_id=$1`, [
             orgId,
         ]),
@@ -59,6 +59,11 @@ const getOrganizationByCodeHandler = async (req) => {
         db_1.pool.query(`SELECT id, name FROM crm_roles 
        WHERE LOWER(REGEXP_REPLACE(TRIM(name), '\\s+', ' ', 'g')) != 'system admin'
        ORDER BY name ASC`),
+        db_1.pool.query(`SELECT oft.id, oft."default" AS is_enabled, ft.name, ft.label, ft.category, ft.operator_type 
+       FROM crm_organizationsegmentfiltertypes oft
+       JOIN crm_segmentfiltertypes ft ON ft.id = oft.filter_type_id
+       WHERE oft.organization_id = $1
+       ORDER BY ft.category ASC, ft.label ASC`, [orgId])
     ]);
     const formattedModules = modules.rows.map((module) => ({
         ...module,
@@ -82,6 +87,14 @@ const getOrganizationByCodeHandler = async (req) => {
         module: (0, formatlabel_1.formatLabel)(permission.module),
         permission: permission.permission.toLowerCase(),
     }));
+    const formattedSegmentFilters = segmentFilters.rows.map((f) => ({
+        id: f.id,
+        name: f.name,
+        label: f.label,
+        category: (0, formatlabel_1.formatLabel)(f.category),
+        operator_type: f.operator_type,
+        is_enabled: f.is_enabled === true
+    }));
     return {
         organization: org.rows[0],
         users: users.rows,
@@ -102,6 +115,7 @@ const getOrganizationByCodeHandler = async (req) => {
             orgRoleModulePermissionId: row.orgRoleModulePermissionId,
             access: row.access === true,
         })),
+        segmentFilters: formattedSegmentFilters
     };
 };
 exports.getOrganizationByCodeHandler = getOrganizationByCodeHandler;

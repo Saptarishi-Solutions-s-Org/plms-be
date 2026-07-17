@@ -32,14 +32,14 @@ export const exportOffersAdminHandler = async (req: any) => {
          )                         AS "assignedManagers"
 
        FROM crm_offer o
-       LEFT JOIN crm_managerofferassignment a
-         ON a."offer_ID" = o.id
-       LEFT JOIN crm_user u
-         ON u.id = a."user_ID"
+        LEFT JOIN crm_managerofferassignment a
+          ON a.offer_id = o.id
+        LEFT JOIN crm_user u
+          ON u.id = a.user_id
 
-       WHERE (o.organization_id = $1 OR o.is_global = true)
-       GROUP BY o.id
-       ORDER BY o.createdat DESC`,
+        WHERE (o.organization_id = $1 OR o.is_global = true)
+        GROUP BY o.id
+        ORDER BY o.createdat DESC`,
       [orgId]
     );
 
