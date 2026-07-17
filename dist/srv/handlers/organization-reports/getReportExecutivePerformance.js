@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getReportExecutivePerformanceHandler = void 0;
 const db_1 = require("../../lib/db");
 const pagination_1 = require("../../lib/pagination");
+const reportUtils_1 = require("./reportUtils");
 const normalizeFilter = (value) => {
     if (typeof value !== "string")
         return "";
@@ -32,16 +33,22 @@ const getReportExecutivePerformanceHandler = async (req) => {
         const startDate = normalizeFilter(paramsSource.startDate) || null;
         const endDate = normalizeFilter(paramsSource.endDate) || null;
         const search = rawSearch ? `%${rawSearch.toLowerCase()}%` : null;
+        if (!(0, reportUtils_1.isValidReportDate)(startDate) || !(0, reportUtils_1.isValidReportDate)(endDate)) {
+            return req.error(400, "Dates must use a valid YYYY-MM-DD format");
+        }
+        if (startDate && endDate && startDate > endDate) {
+            return req.error(400, "startDate cannot be after endDate");
+        }
         const executiveWhere = [
             "u.organization_id = $1",
             "u.reporting_manager_id = $2",
-            "LOWER(role.name) LIKE '%executive%'",
+            "LOWER(role.name) = 'executive'",
         ];
         const params = [orgId, managerId];
-        if (status === "active") {
+        if (status === reportUtils_1.REPORT_STATUSES.active) {
             executiveWhere.push("u.is_active = true");
         }
-        else if (status === "inactive") {
+        else if (status === reportUtils_1.REPORT_STATUSES.inactive) {
             executiveWhere.push("u.is_active = false");
         }
         if (search) {
@@ -64,16 +71,16 @@ const getReportExecutivePerformanceHandler = async (req) => {
         COUNT(DISTINCT l.id)::int AS "assignedLeads",
         COUNT(DISTINCT l.id)::int AS total,
         COUNT(DISTINCT l.id) FILTER (
-          WHERE LOWER(l.status) = 'qualified'
+          WHERE LOWER(l.status) = '${reportUtils_1.REPORT_STATUSES.qualified}'
         )::int AS "qualifiedLeads",
         COUNT(DISTINCT l.id) FILTER (
-          WHERE LOWER(l.status) = 'qualified'
+          WHERE LOWER(l.status) = '${reportUtils_1.REPORT_STATUSES.qualified}'
         )::int AS qualified,
         CASE
           WHEN COUNT(DISTINCT l.id) > 0 THEN
             ROUND(
               COUNT(DISTINCT l.id) FILTER (
-                WHERE LOWER(l.status) = 'qualified'
+                WHERE LOWER(l.status) = '${reportUtils_1.REPORT_STATUSES.qualified}'
               )::numeric * 100 / COUNT(DISTINCT l.id),
               1
             )::float

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getReportLeadsHandler = void 0;
 const db_1 = require("../../lib/db");
 const pagination_1 = require("../../lib/pagination");
+const reportUtils_1 = require("./reportUtils");
 const normalizeFilter = (value) => {
     if (typeof value !== "string")
         return "";
@@ -13,6 +14,7 @@ const getReportLeadsHandler = async (req) => {
         const orgId = req.user?.orgId;
         const userId = req.user?.id;
         const isAdmin = (req.user?.roles ?? []).some((role) => role.toLowerCase() === "admin");
+        const isExecutive = (req.user?.roles ?? []).some((role) => role.toLowerCase() === "executive");
         if (!orgId || !userId) {
             return req.error(400, "User or Organization ID missing");
         }
@@ -42,10 +44,20 @@ const getReportLeadsHandler = async (req) => {
         const assignedTo = rawAssignedTo || null;
         const startDate = rawStartDate || null;
         const endDate = rawEndDate || null;
+        if (!(0, reportUtils_1.isValidReportDate)(startDate) || !(0, reportUtils_1.isValidReportDate)(endDate)) {
+            return req.error(400, "Dates must use a valid YYYY-MM-DD format");
+        }
+        if (startDate && endDate && startDate > endDate) {
+            return req.error(400, "startDate cannot be after endDate");
+        }
         const whereClauses = ["l.organization_id = $1"];
         const params = [orgId];
         // Visibility rules
-        if (!isAdmin) {
+        if (isExecutive) {
+            params.push(userId);
+            whereClauses.push(`l.assigned_to_id = $${params.length}`);
+        }
+        else if (!isAdmin) {
             whereClauses.push(`(l.assigned_to_id = $${params.length + 1} OR u.reporting_manager_id = $${params.length + 1} OR (l.assigned_to_id IS NULL AND l.createdby = $${params.length + 1}))`);
             params.push(userId);
         }

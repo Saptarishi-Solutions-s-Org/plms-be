@@ -66,7 +66,7 @@ export const bindOrganizationReports = () => {
   service.on(
     "getReportLeads",
     withAuth(getReportLeadsHandler, {
-      roles: ["admin", "manager"],
+      roles: ["admin", "manager", "executive"],
       modules: { reports: ["view"] },
     }),
   );

@@ -33,7 +33,7 @@ const getReportExecutivesHandler = async (req) => {
             "u.organization_id = $1",
             "u.reporting_manager_id = $2",
             "u.is_active = true",
-            "LOWER(r.name) LIKE '%executive%'",
+            "LOWER(r.name) = 'executive'",
         ];
         const params = [orgId, managerId];
         if (search) {

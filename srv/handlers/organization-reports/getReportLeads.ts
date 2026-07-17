@@ -1,5 +1,6 @@
 import { pool } from "../../lib/db";
 import { createPaginationMeta, parsePaginationParams } from "../../lib/pagination";
+import { isValidReportDate } from "./reportUtils";
 
 const normalizeFilter = (value: unknown) => {
   if (typeof value !== "string") return "";
@@ -12,6 +13,9 @@ export const getReportLeadsHandler = async (req: any) => {
     const userId = req.user?.id;
     const isAdmin = (req.user?.roles ?? []).some(
       (role: string) => role.toLowerCase() === "admin",
+    );
+    const isExecutive = (req.user?.roles ?? []).some(
+      (role: string) => role.toLowerCase() === "executive",
     );
 
     if (!orgId || !userId) {
@@ -48,11 +52,21 @@ export const getReportLeadsHandler = async (req: any) => {
     const startDate = rawStartDate || null;
     const endDate = rawEndDate || null;
 
+    if (!isValidReportDate(startDate) || !isValidReportDate(endDate)) {
+      return req.error(400, "Dates must use a valid YYYY-MM-DD format");
+    }
+    if (startDate && endDate && startDate > endDate) {
+      return req.error(400, "startDate cannot be after endDate");
+    }
+
     const whereClauses: string[] = ["l.organization_id = $1"];
     const params: any[] = [orgId];
 
     // Visibility rules
-    if (!isAdmin) {
+    if (isExecutive) {
+      params.push(userId);
+      whereClauses.push(`l.assigned_to_id = $${params.length}`);
+    } else if (!isAdmin) {
       whereClauses.push(
         `(l.assigned_to_id = $${params.length + 1} OR u.reporting_manager_id = $${params.length + 1} OR (l.assigned_to_id IS NULL AND l.createdby = $${params.length + 1}))`
       );

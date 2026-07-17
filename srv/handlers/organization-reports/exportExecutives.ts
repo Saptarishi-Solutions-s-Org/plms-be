@@ -1,10 +1,11 @@
 import { pool } from "../../lib/db";
+import { REPORT_STATUSES } from "./reportUtils";
 
 export const exportExecutivesHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
-
-    if (!orgId) {
+    const userId = req.user?.id;
+    if (!orgId || !userId) {
       return req.error(401, "Unauthorized");
     }
 
@@ -23,7 +24,7 @@ export const exportExecutivesHandler = async (req: any) => {
         COUNT(DISTINCT l.id)::int AS "assignedLeads",
 
         COUNT(DISTINCT l.id) FILTER (
-          WHERE l.status = 'Qualified'
+          WHERE LOWER(l.status) = '${REPORT_STATUSES.qualified}'
         )::int AS "qualifiedLeads",
 
         CASE
@@ -31,7 +32,7 @@ export const exportExecutivesHandler = async (req: any) => {
             ROUND(
               (
                 COUNT(DISTINCT l.id) FILTER (
-                  WHERE l.status = 'Qualified'
+                  WHERE LOWER(l.status) = '${REPORT_STATUSES.qualified}'
                 )::numeric
                 / COUNT(DISTINCT l.id)::numeric
               ) * 100,
@@ -58,7 +59,8 @@ export const exportExecutivesHandler = async (req: any) => {
         ON ea."executive_ID" = u.id
 
       WHERE u.organization_id = $1
-        AND LOWER(role.name) LIKE '%executive%'
+        AND LOWER(role.name) = 'executive'
+        AND u.reporting_manager_id = $2
 
       GROUP BY 
         u.id,
@@ -69,7 +71,7 @@ export const exportExecutivesHandler = async (req: any) => {
 
       ORDER BY u.name ASC
       `,
-      [orgId]
+      [orgId, userId]
     );
 
     return res.rows;

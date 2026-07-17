@@ -1,11 +1,37 @@
 import { pool } from "../../../lib/db";
+import { REPORT_STATUSES } from "../reportUtils";
 
 export const leadSourceAnalyticsHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
+    const userId = req.user?.id;
+    const roles = (req.user?.roles ?? []).map((role: string) =>
+      String(role).toLowerCase(),
+    );
 
-    if (!orgId) {
-      return req.error(400, "Organization ID missing");
+    if (!orgId || !userId) {
+      return req.error(400, "User or Organization ID missing");
+    }
+
+    let visibilityClause: string;
+    const params: string[] = [orgId];
+
+    if (roles.includes("admin")) {
+      visibilityClause = "TRUE";
+    } else if (roles.includes("manager")) {
+      params.push(userId);
+      visibilityClause = `
+        (
+          l.assigned_to_id = $2
+          OR assignee.reporting_manager_id = $2
+          OR (l.assigned_to_id IS NULL AND l.createdby = $2)
+        )
+      `;
+    } else if (roles.includes("executive")) {
+      params.push(userId);
+      visibilityClause = "l.assigned_to_id = $2";
+    } else {
+      return req.error(403, "Forbidden: unsupported reports role");
     }
 
     const res = await pool.query(
@@ -14,14 +40,18 @@ export const leadSourceAnalyticsHandler = async (req: any) => {
         l.source AS source,
         COUNT(*) AS leads,
         COUNT(*) FILTER (
-          WHERE LOWER(l.status) = 'qualified'
-        ) AS converted
+          WHERE LOWER(l.status) = '${REPORT_STATUSES.qualified}'
+      ) AS converted
       FROM crm_leads l
+      LEFT JOIN crm_user assignee
+        ON assignee.id = l.assigned_to_id
+       AND assignee.organization_id = l.organization_id
       WHERE l.organization_id = $1
+        AND ${visibilityClause}
       GROUP BY l.source
       ORDER BY leads DESC, source ASC
       `,
-      [orgId],
+      params,
     );
 
     return res.rows.map((row) => ({

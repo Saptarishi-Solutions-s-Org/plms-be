@@ -1,11 +1,12 @@
 import { pool } from "../../../lib/db";
+import { REPORT_STATUSES } from "../reportUtils";
 
 export const ReportDashboardHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
     const userId = req.user?.id;
     const roles = (req.user?.roles ?? []).map((role: string) =>
-      role.toLowerCase(),
+      String(role).toLowerCase(),
     );
 
     if (!orgId || !userId) {
@@ -16,11 +17,15 @@ export const ReportDashboardHandler = async (req: any) => {
     const params: string[] = [orgId];
 
     if (roles.includes("admin")) {
-      visibilityClause = "l.assigned_to_id IS NOT NULL";
+      visibilityClause = "TRUE";
     } else if (roles.includes("manager")) {
       params.push(userId);
       visibilityClause = `
-        (l.assigned_to_id = $2 OR assignee.reporting_manager_id = $2)
+        (
+          l.assigned_to_id = $2
+          OR assignee.reporting_manager_id = $2
+          OR (l.assigned_to_id IS NULL AND l.createdby = $2)
+        )
       `;
     } else if (roles.includes("executive")) {
       params.push(userId);
@@ -32,20 +37,29 @@ export const ReportDashboardHandler = async (req: any) => {
     const statsRes = await pool.query(
       `
         SELECT
-          COUNT(DISTINCT l.id)::int AS "leadsAssigned",
+          COUNT(DISTINCT l.id)::int AS "totalLeads",
           COUNT(DISTINCT l.id) FILTER (
-            WHERE LOWER(l.status) = 'qualified'
+            WHERE l.assigned_to_id IS NOT NULL
+          )::int AS "leadsAssigned",
+          COUNT(DISTINCT l.id) FILTER (
+            WHERE LOWER(l.status) = '${REPORT_STATUSES.qualified}'
           )::int AS "convertedLeads",
           COALESCE(
             ROUND(
               COUNT(DISTINCT l.id) FILTER (
-                WHERE LOWER(l.status) = 'qualified'
+                WHERE LOWER(l.status) = '${REPORT_STATUSES.qualified}'
               )::numeric * 100
               / NULLIF(COUNT(DISTINCT l.id), 0),
               1
             ),
             0
           )::float AS "conversionRate",
+          (
+            SELECT COUNT(*)::int
+            FROM crm_offer organization_offer
+            WHERE organization_offer.organization_id = $1
+              AND LOWER(organization_offer.status) = '${REPORT_STATUSES.active}'
+          ) AS "activeOffers",
           (
             SELECT COUNT(*)::int
             FROM crm_user organization_user
@@ -67,18 +81,16 @@ export const ReportDashboardHandler = async (req: any) => {
       params,
     );
 
-    const leadsAssigned = Number(statsRes.rows[0]?.leadsAssigned ?? 0);
-    const convertedLeads = Number(statsRes.rows[0]?.convertedLeads ?? 0);
-    const conversionRate = Number(statsRes.rows[0]?.conversionRate ?? 0);
-    const totalUsers = Number(statsRes.rows[0]?.totalUsers ?? 0);
-    const activeUsers = Number(statsRes.rows[0]?.activeUsers ?? 0);
+    const stats = statsRes.rows[0] ?? {};
 
     return {
-      leadsAssigned,
-      convertedLeads,
-      conversionRate,
-      totalUsers,
-      activeUsers,
+      totalLeads: Number(stats.totalLeads ?? 0),
+      leadsAssigned: Number(stats.leadsAssigned ?? 0),
+      convertedLeads: Number(stats.convertedLeads ?? 0),
+      conversionRate: Number(stats.conversionRate ?? 0),
+      activeOffers: Number(stats.activeOffers ?? 0),
+      totalUsers: Number(stats.totalUsers ?? 0),
+      activeUsers: Number(stats.activeUsers ?? 0),
     };
   } catch (error: any) {
     console.error("Error fetching report stats:", error?.message ?? error);
