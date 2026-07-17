@@ -68,6 +68,21 @@ service ManagerDashboardService {
   pagination : PaginationMeta;
  };
 
+ action createExecutive(
+  name    : String,
+  email   : String,
+  phone   : String,
+  gender  : String,
+  dob     : Date,
+  country : UUID,
+  state   : UUID,
+  city    : String
+ ) returns {
+  message      : String;
+  userId       : UUID;
+  tempPassword : String;
+ };
+
  function getManagerOfferOverview(page: Integer,
                                   limit: Integer,
                                   status: String,

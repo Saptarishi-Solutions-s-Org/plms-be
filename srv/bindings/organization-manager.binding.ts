@@ -10,6 +10,7 @@ import { bulkAssignOffersToExecutivesHandler } from "../handlers/organization-ma
 import { deactivateExecutiveForManagerHandler } from "../handlers/organization-manager/deactivateExecutiveForManager";
 import { getOtherExecutivesForReassignHandler } from "../handlers/organization-manager/getOtherExecutivesForReassign";
 import { getAvailableExecutivesForOfferHandler } from "../handlers/organization-manager/getAvailableExecutivesForOffer";
+import { createExecutiveHandler } from "../handlers/organization-manager/createExecutive";
 
 export const bindManagerDashboard = () => {
   const service = cds.services["ManagerDashboardService"];
@@ -41,7 +42,15 @@ export const bindManagerDashboard = () => {
     "getExecutiveOverview",
     withAuth(getExecutiveOverviewHandler, {
       roles: ["manager"],
-      modules: { lead: ["view"], offers: ["view"] },
+      modules: { user: ["view"] },
+    }),
+  );
+
+  service.on(
+    "createExecutive",
+    withAuth(createExecutiveHandler, {
+      roles: ["manager"],
+      modules: { user: ["create"] },
     }),
   );
 

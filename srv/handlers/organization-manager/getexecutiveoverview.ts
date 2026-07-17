@@ -10,6 +10,7 @@ export const getExecutiveOverviewHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
     const currentManagerId = req.user?.id;
+    const isManager = req.user?.roles?.includes("manager");
     const paramsSource = { ...(req.data ?? {}), ...(req.query ?? {}) };
     const { page, limit, offset } = parsePaginationParams(paramsSource);
     const rawManagerId = normalizeFilter(paramsSource.managerId);
