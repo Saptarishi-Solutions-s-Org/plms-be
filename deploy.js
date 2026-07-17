@@ -75,17 +75,17 @@ const UNIQUE_CONSTRAINTS = [
   {
     table: "crm_organizationsegmentfiltertypes",
     name: "uq_org_segment_filter_types",
-    cols: '"organization_ID", "filter_type_ID"',
+    cols: "organization_id, filter_type_id",
   },
   {
     table: "crm_segmentleads",
     name: "uq_segment_leads",
-    cols: '"segment_ID", "lead_ID"',
+    cols: "segment_id, lead_id",
   },
   {
     table: "crm_segmentoffers",
     name: "uq_segment_offers",
-    cols: '"segment_ID", "offer_ID"',
+    cols: "segment_id, offer_id",
   },
 ];
 
