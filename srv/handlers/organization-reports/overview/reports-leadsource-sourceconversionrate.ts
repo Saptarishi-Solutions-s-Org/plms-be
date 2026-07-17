@@ -1,4 +1,5 @@
 import { pool } from "../../../lib/db";
+import { REPORT_STATUSES } from "../reportUtils";
 
 export const leadSourceAnalyticsHandler = async (req: any) => {
   try {
@@ -39,7 +40,7 @@ export const leadSourceAnalyticsHandler = async (req: any) => {
         l.source AS source,
         COUNT(*) AS leads,
         COUNT(*) FILTER (
-          WHERE LOWER(l.status) = 'qualified'
+          WHERE LOWER(l.status) = '${REPORT_STATUSES.qualified}'
       ) AS converted
       FROM crm_leads l
       LEFT JOIN crm_user assignee

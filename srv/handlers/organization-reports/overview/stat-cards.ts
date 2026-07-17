@@ -1,4 +1,5 @@
 import { pool } from "../../../lib/db";
+import { REPORT_STATUSES } from "../reportUtils";
 
 export const ReportDashboardHandler = async (req: any) => {
   try {
@@ -41,12 +42,12 @@ export const ReportDashboardHandler = async (req: any) => {
             WHERE l.assigned_to_id IS NOT NULL
           )::int AS "leadsAssigned",
           COUNT(DISTINCT l.id) FILTER (
-            WHERE LOWER(l.status) = 'qualified'
+            WHERE LOWER(l.status) = '${REPORT_STATUSES.qualified}'
           )::int AS "convertedLeads",
           COALESCE(
             ROUND(
               COUNT(DISTINCT l.id) FILTER (
-                WHERE LOWER(l.status) = 'qualified'
+                WHERE LOWER(l.status) = '${REPORT_STATUSES.qualified}'
               )::numeric * 100
               / NULLIF(COUNT(DISTINCT l.id), 0),
               1
@@ -57,7 +58,7 @@ export const ReportDashboardHandler = async (req: any) => {
             SELECT COUNT(*)::int
             FROM crm_offer organization_offer
             WHERE organization_offer.organization_id = $1
-              AND LOWER(organization_offer.status) = 'active'
+              AND LOWER(organization_offer.status) = '${REPORT_STATUSES.active}'
           ) AS "activeOffers",
           (
             SELECT COUNT(*)::int

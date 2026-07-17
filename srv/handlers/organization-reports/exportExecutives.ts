@@ -1,15 +1,10 @@
 import { pool } from "../../lib/db";
+import { REPORT_STATUSES } from "./reportUtils";
 
 export const exportExecutivesHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
     const userId = req.user?.id;
-    const roles = (req.user?.roles ?? []).map((role: string) =>
-      role.toLowerCase(),
-    );
-    const isExecutive =
-      roles.includes("executive") && !roles.includes("manager");
-
     if (!orgId || !userId) {
       return req.error(401, "Unauthorized");
     }
@@ -29,7 +24,7 @@ export const exportExecutivesHandler = async (req: any) => {
         COUNT(DISTINCT l.id)::int AS "assignedLeads",
 
         COUNT(DISTINCT l.id) FILTER (
-          WHERE l.status = 'Qualified'
+          WHERE LOWER(l.status) = '${REPORT_STATUSES.qualified}'
         )::int AS "qualifiedLeads",
 
         CASE
@@ -37,7 +32,7 @@ export const exportExecutivesHandler = async (req: any) => {
             ROUND(
               (
                 COUNT(DISTINCT l.id) FILTER (
-                  WHERE l.status = 'Qualified'
+                  WHERE LOWER(l.status) = '${REPORT_STATUSES.qualified}'
                 )::numeric
                 / COUNT(DISTINCT l.id)::numeric
               ) * 100,
@@ -64,8 +59,8 @@ export const exportExecutivesHandler = async (req: any) => {
         ON ea."executive_ID" = u.id
 
       WHERE u.organization_id = $1
-        AND LOWER(role.name) LIKE '%executive%'
-        AND ($2::boolean = FALSE OR u.id = $3)
+        AND LOWER(role.name) = 'executive'
+        AND u.reporting_manager_id = $2
 
       GROUP BY 
         u.id,
@@ -76,7 +71,7 @@ export const exportExecutivesHandler = async (req: any) => {
 
       ORDER BY u.name ASC
       `,
-      [orgId, isExecutive, userId]
+      [orgId, userId]
     );
 
     return res.rows;

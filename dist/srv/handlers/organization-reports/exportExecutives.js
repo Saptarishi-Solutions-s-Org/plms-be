@@ -2,12 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.exportExecutivesHandler = void 0;
 const db_1 = require("../../lib/db");
+const reportUtils_1 = require("./reportUtils");
 const exportExecutivesHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
         const userId = req.user?.id;
-        const roles = (req.user?.roles ?? []).map((role) => role.toLowerCase());
-        const isExecutive = roles.includes("executive") && !roles.includes("manager");
         if (!orgId || !userId) {
             return req.error(401, "Unauthorized");
         }
@@ -25,7 +24,7 @@ const exportExecutivesHandler = async (req) => {
         COUNT(DISTINCT l.id)::int AS "assignedLeads",
 
         COUNT(DISTINCT l.id) FILTER (
-          WHERE l.status = 'Qualified'
+          WHERE LOWER(l.status) = '${reportUtils_1.REPORT_STATUSES.qualified}'
         )::int AS "qualifiedLeads",
 
         CASE
@@ -33,7 +32,7 @@ const exportExecutivesHandler = async (req) => {
             ROUND(
               (
                 COUNT(DISTINCT l.id) FILTER (
-                  WHERE l.status = 'Qualified'
+                  WHERE LOWER(l.status) = '${reportUtils_1.REPORT_STATUSES.qualified}'
                 )::numeric
                 / COUNT(DISTINCT l.id)::numeric
               ) * 100,
@@ -60,8 +59,8 @@ const exportExecutivesHandler = async (req) => {
         ON ea."executive_ID" = u.id
 
       WHERE u.organization_id = $1
-        AND LOWER(role.name) LIKE '%executive%'
-        AND ($2::boolean = FALSE OR u.id = $3)
+        AND LOWER(role.name) = 'executive'
+        AND u.reporting_manager_id = $2
 
       GROUP BY 
         u.id,
@@ -71,7 +70,7 @@ const exportExecutivesHandler = async (req) => {
         u.is_active
 
       ORDER BY u.name ASC
-      `, [orgId, isExecutive, userId]);
+      `, [orgId, userId]);
         return res.rows;
     }
     catch (error) {

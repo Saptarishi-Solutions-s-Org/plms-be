@@ -27,7 +27,7 @@ const getReportManagersHandler = async (req) => {
         const whereClauses = [
             "manager.organization_id = $1",
             "manager.is_active = true",
-            "LOWER(role.name) LIKE '%manager%'",
+            "LOWER(role.name) = 'manager'",
         ];
         const params = [orgId];
         if (search) {

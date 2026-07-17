@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReportDashboardHandler = void 0;
 const db_1 = require("../../../lib/db");
+const reportUtils_1 = require("../reportUtils");
 const ReportDashboardHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
@@ -39,12 +40,12 @@ const ReportDashboardHandler = async (req) => {
             WHERE l.assigned_to_id IS NOT NULL
           )::int AS "leadsAssigned",
           COUNT(DISTINCT l.id) FILTER (
-            WHERE LOWER(l.status) = 'qualified'
+            WHERE LOWER(l.status) = '${reportUtils_1.REPORT_STATUSES.qualified}'
           )::int AS "convertedLeads",
           COALESCE(
             ROUND(
               COUNT(DISTINCT l.id) FILTER (
-                WHERE LOWER(l.status) = 'qualified'
+                WHERE LOWER(l.status) = '${reportUtils_1.REPORT_STATUSES.qualified}'
               )::numeric * 100
               / NULLIF(COUNT(DISTINCT l.id), 0),
               1
@@ -55,7 +56,7 @@ const ReportDashboardHandler = async (req) => {
             SELECT COUNT(*)::int
             FROM crm_offer organization_offer
             WHERE organization_offer.organization_id = $1
-              AND LOWER(organization_offer.status) = 'active'
+              AND LOWER(organization_offer.status) = '${reportUtils_1.REPORT_STATUSES.active}'
           ) AS "activeOffers",
           (
             SELECT COUNT(*)::int

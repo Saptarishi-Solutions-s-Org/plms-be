@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.leadSourceAnalyticsHandler = void 0;
 const db_1 = require("../../../lib/db");
+const reportUtils_1 = require("../reportUtils");
 const leadSourceAnalyticsHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
@@ -37,7 +38,7 @@ const leadSourceAnalyticsHandler = async (req) => {
         l.source AS source,
         COUNT(*) AS leads,
         COUNT(*) FILTER (
-          WHERE LOWER(l.status) = 'qualified'
+          WHERE LOWER(l.status) = '${reportUtils_1.REPORT_STATUSES.qualified}'
       ) AS converted
       FROM crm_leads l
       LEFT JOIN crm_user assignee

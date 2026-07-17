@@ -1,5 +1,9 @@
 import { pool } from "../../lib/db";
 import { createPaginationMeta, parsePaginationParams } from "../../lib/pagination";
+import {
+  isValidReportDate,
+  REPORT_STATUSES,
+} from "./reportUtils";
 
 const normalizeFilter = (value: unknown) =>
   typeof value === "string" ? value.trim() : "";
@@ -31,15 +35,22 @@ export const getReportManagerPerformanceHandler = async (req: any) => {
     const endDate = normalizeFilter(paramsSource.endDate) || null;
     const search = rawSearch ? `%${rawSearch.toLowerCase()}%` : null;
 
+    if (!isValidReportDate(startDate) || !isValidReportDate(endDate)) {
+      return req.error(400, "Dates must use a valid YYYY-MM-DD format");
+    }
+    if (startDate && endDate && startDate > endDate) {
+      return req.error(400, "startDate cannot be after endDate");
+    }
+
     const managerWhere = [
       "manager.organization_id = $1",
-      "LOWER(role.name) LIKE '%manager%'",
+      "LOWER(role.name) = 'manager'",
     ];
     const filterParams: any[] = [orgId];
 
-    if (status === "active") {
+    if (status === REPORT_STATUSES.active) {
       managerWhere.push("manager.is_active = true");
-    } else if (status === "inactive") {
+    } else if (status === REPORT_STATUSES.inactive) {
       managerWhere.push("manager.is_active = false");
     }
 
@@ -66,16 +77,16 @@ export const getReportManagerPerformanceHandler = async (req: any) => {
         COUNT(DISTINCT lead.id)::int AS "assignedLeads",
         COUNT(DISTINCT lead.id)::int AS total,
         COUNT(DISTINCT lead.id) FILTER (
-          WHERE LOWER(lead.status) = 'qualified'
+          WHERE LOWER(lead.status) = '${REPORT_STATUSES.qualified}'
         )::int AS "convertedLeads",
         COUNT(DISTINCT lead.id) FILTER (
-          WHERE LOWER(lead.status) = 'qualified'
+          WHERE LOWER(lead.status) = '${REPORT_STATUSES.qualified}'
         )::int AS qualified,
         CASE
           WHEN COUNT(DISTINCT lead.id) > 0 THEN
             ROUND(
               COUNT(DISTINCT lead.id) FILTER (
-                WHERE LOWER(lead.status) = 'qualified'
+                WHERE LOWER(lead.status) = '${REPORT_STATUSES.qualified}'
               )::numeric * 100 / COUNT(DISTINCT lead.id),
               1
             )::float

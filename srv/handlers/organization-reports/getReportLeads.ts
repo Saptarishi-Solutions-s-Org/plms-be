@@ -1,5 +1,6 @@
 import { pool } from "../../lib/db";
 import { createPaginationMeta, parsePaginationParams } from "../../lib/pagination";
+import { isValidReportDate } from "./reportUtils";
 
 const normalizeFilter = (value: unknown) => {
   if (typeof value !== "string") return "";
@@ -50,6 +51,13 @@ export const getReportLeadsHandler = async (req: any) => {
     const assignedTo = rawAssignedTo || null;
     const startDate = rawStartDate || null;
     const endDate = rawEndDate || null;
+
+    if (!isValidReportDate(startDate) || !isValidReportDate(endDate)) {
+      return req.error(400, "Dates must use a valid YYYY-MM-DD format");
+    }
+    if (startDate && endDate && startDate > endDate) {
+      return req.error(400, "startDate cannot be after endDate");
+    }
 
     const whereClauses: string[] = ["l.organization_id = $1"];
     const params: any[] = [orgId];
