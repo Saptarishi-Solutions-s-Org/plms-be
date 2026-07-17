@@ -265,3 +265,62 @@ entity LeadOfferAssignment : cuid, managed {
     offer       : Association to Offer not null;
     assigned_by : Association to User not null;
 }
+
+entity SegmentFilterTypes : cuid, managed {
+    name          : String not null;
+    label         : String not null;
+    category      : String not null;
+    operator_type : String not null;
+    default       : Boolean not null;
+}
+
+entity OrganizationSegmentFilterTypes : cuid, managed {
+    organization : Association to Organization not null;
+    filter_type  : Association to SegmentFilterTypes not null;
+    default      : Boolean default true not null;
+}
+
+entity Segment : cuid, managed {
+    organization : Association to Organization not null;
+    name         : String not null;
+    code         : String not null;
+    description  : String(1000);
+    type         : String not null;    // 'Static' or 'Dynamic'
+    is_active    : Boolean default true not null;
+    color        : String;
+    notes        : String(2000);
+    
+    filters      : Composition of many SegmentFilters on filters.segment = $self;
+    staticLeads  : Composition of many SegmentLeads on staticLeads.segment = $self;
+    offers       : Composition of many SegmentOffers on offers.segment = $self;
+}
+
+entity SegmentFilters : cuid, managed {
+    segment      : Association to Segment not null;
+    filter_type  : Association to SegmentFilterTypes not null;
+    operator     : String not null;
+    value        : String(1000);
+    group_id     : String;
+    logical_op   : String;
+}
+
+entity SegmentLeads : cuid, managed {
+    segment      : Association to Segment not null;
+    lead         : Association to Leads not null;
+}
+
+entity SegmentOffers : cuid, managed {
+    segment      : Association to Segment not null;
+    offer        : Association to Offer not null;
+    assigned_by  : Association to User not null;
+    assigned_at  : Timestamp not null;
+}
+
+entity SegmentAuditHistory : cuid, managed {
+    organization : Association to Organization not null;
+    segment      : Association to Segment;
+    action_type  : String not null;
+    user         : Association to User not null;
+    timestamp    : Timestamp not null;
+    details      : String(4000);
+}

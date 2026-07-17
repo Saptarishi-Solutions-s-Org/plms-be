@@ -62,6 +62,31 @@ const UNIQUE_CONSTRAINTS = [
     name: "uq_refresh_token_hash_mixed",
     cols: "token_hash",
   },
+  {
+    table: "crm_segment",
+    name: "uq_segment_code",
+    cols: "code",
+  },
+  {
+    table: "crm_segmentfiltertypes",
+    name: "uq_segment_filter_types_name",
+    cols: "name",
+  },
+  {
+    table: "crm_organizationsegmentfiltertypes",
+    name: "uq_org_segment_filter_types",
+    cols: '"organization_ID", "filter_type_ID"',
+  },
+  {
+    table: "crm_segmentleads",
+    name: "uq_segment_leads",
+    cols: '"segment_ID", "lead_ID"',
+  },
+  {
+    table: "crm_segmentoffers",
+    name: "uq_segment_offers",
+    cols: '"segment_ID", "offer_ID"',
+  },
 ];
 
 const SYSTEM_COLUMNS = new Set([
