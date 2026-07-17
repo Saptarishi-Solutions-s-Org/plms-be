@@ -17,11 +17,11 @@ const bindOrganizationReports = () => {
     if (!service)
         return;
     service.on("getReportStats", (0, withAuth_1.withAuth)(stat_cards_1.ReportDashboardHandler, {
-        roles: ["manager"],
+        roles: ["manager", "executive"],
         modules: { reports: ["view"] },
     }));
     service.on("getLeadSourceAnalytics", (0, withAuth_1.withAuth)(reports_leadsource_sourceconversionrate_1.leadSourceAnalyticsHandler, {
-        roles: ["manager"],
+        roles: ["manager", "executive"],
         modules: { reports: ["view"] },
     }));
     service.on("getReportExecutives", (0, withAuth_1.withAuth)(getReportExecutives_1.getReportExecutivesHandler, {
@@ -33,7 +33,7 @@ const bindOrganizationReports = () => {
         modules: { reports: ["view"] },
     }));
     service.on("getReportLeads", (0, withAuth_1.withAuth)(getReportLeads_1.getReportLeadsHandler, {
-        roles: ["manager"],
+        roles: ["manager", "executive"],
         modules: { reports: ["view"] },
     }));
     service.on("exportExecutives", (0, withAuth_1.withAuth)(exportExecutives_1.exportExecutivesHandler, {

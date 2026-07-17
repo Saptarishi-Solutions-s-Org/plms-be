@@ -3,8 +3,14 @@ import { pool } from "../../lib/db";
 export const exportExecutivesHandler = async (req: any) => {
   try {
     const orgId = req.user?.orgId;
+    const userId = req.user?.id;
+    const roles = (req.user?.roles ?? []).map((role: string) =>
+      role.toLowerCase(),
+    );
+    const isExecutive =
+      roles.includes("executive") && !roles.includes("manager");
 
-    if (!orgId) {
+    if (!orgId || !userId) {
       return req.error(401, "Unauthorized");
     }
 
@@ -59,6 +65,7 @@ export const exportExecutivesHandler = async (req: any) => {
 
       WHERE u.organization_id = $1
         AND LOWER(role.name) LIKE '%executive%'
+        AND ($2::boolean = FALSE OR u.id = $3)
 
       GROUP BY 
         u.id,
@@ -69,7 +76,7 @@ export const exportExecutivesHandler = async (req: any) => {
 
       ORDER BY u.name ASC
       `,
-      [orgId]
+      [orgId, isExecutive, userId]
     );
 
     return res.rows;

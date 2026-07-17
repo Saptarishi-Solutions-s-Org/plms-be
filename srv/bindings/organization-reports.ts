@@ -14,14 +14,14 @@ export const bindOrganizationReports = () => {
   service.on(
     "getReportStats",
     withAuth(ReportDashboardHandler, {
-      roles: ["manager"],
+      roles: ["manager", "executive"],
       modules: { reports: ["view"] },
     }),
   );
   service.on(
     "getLeadSourceAnalytics",
     withAuth(leadSourceAnalyticsHandler, {
-      roles: ["manager"],
+      roles: ["manager", "executive"],
       modules: { reports: ["view"] },
     }),
   );
@@ -42,7 +42,7 @@ export const bindOrganizationReports = () => {
   service.on(
     "getReportLeads",
     withAuth(getReportLeadsHandler, {
-      roles: ["manager"],
+      roles: ["manager", "executive"],
       modules: { reports: ["view"] },
     }),
   );

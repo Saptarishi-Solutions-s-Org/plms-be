@@ -5,7 +5,10 @@ const db_1 = require("../../lib/db");
 const exportExecutivesHandler = async (req) => {
     try {
         const orgId = req.user?.orgId;
-        if (!orgId) {
+        const userId = req.user?.id;
+        const roles = (req.user?.roles ?? []).map((role) => role.toLowerCase());
+        const isExecutive = roles.includes("executive") && !roles.includes("manager");
+        if (!orgId || !userId) {
             return req.error(401, "Unauthorized");
         }
         const res = await db_1.pool.query(`
@@ -58,6 +61,7 @@ const exportExecutivesHandler = async (req) => {
 
       WHERE u.organization_id = $1
         AND LOWER(role.name) LIKE '%executive%'
+        AND ($2::boolean = FALSE OR u.id = $3)
 
       GROUP BY 
         u.id,
@@ -67,7 +71,7 @@ const exportExecutivesHandler = async (req) => {
         u.is_active
 
       ORDER BY u.name ASC
-      `, [orgId]);
+      `, [orgId, isExecutive, userId]);
         return res.rows;
     }
     catch (error) {

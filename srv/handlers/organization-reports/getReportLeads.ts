@@ -13,6 +13,9 @@ export const getReportLeadsHandler = async (req: any) => {
     const isAdmin = (req.user?.roles ?? []).some(
       (role: string) => role.toLowerCase() === "admin",
     );
+    const isExecutive = (req.user?.roles ?? []).some(
+      (role: string) => role.toLowerCase() === "executive",
+    );
 
     if (!orgId || !userId) {
       return req.error(400, "User or Organization ID missing");
@@ -52,7 +55,10 @@ export const getReportLeadsHandler = async (req: any) => {
     const params: any[] = [orgId];
 
     // Visibility rules
-    if (!isAdmin) {
+    if (isExecutive) {
+      params.push(userId);
+      whereClauses.push(`l.assigned_to_id = $${params.length}`);
+    } else if (!isAdmin) {
       whereClauses.push(
         `(l.assigned_to_id = $${params.length + 1} OR u.reporting_manager_id = $${params.length + 1} OR (l.assigned_to_id IS NULL AND l.createdby = $${params.length + 1}))`
       );
