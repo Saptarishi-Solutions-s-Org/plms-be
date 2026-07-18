@@ -38,7 +38,24 @@ const exportSegmentHandler = async (req) => {
         }
         // 3. Gather Leads
         const params = [];
-        const scopingSql = (0, queryHelper_1.buildScopingSql)(req.user, params);
+        // Resolve owner's perspective scoping details
+        let targetUser = req.user;
+        const creatorRes = await db_1.pool.query(`SELECT s.createdby, r.name as role_name
+       FROM crm_segment s
+       JOIN crm_user u ON u.id = s.createdby
+       JOIN crm_organizationroles orr ON orr.id = u.role_id
+       JOIN crm_roles r ON r.id = orr.role_id
+       WHERE s.id = $1`, [segment.id]);
+        if (creatorRes.rows.length > 0) {
+            const creator = creatorRes.rows[0];
+            targetUser = {
+                id: creator.createdby,
+                orgId: req.user.orgId,
+                role: creator.role_name?.toLowerCase(),
+                roles: [creator.role_name?.toLowerCase()]
+            };
+        }
+        const scopingSql = (0, queryHelper_1.buildScopingSql)(targetUser, params);
         let conditionSql = "1=1";
         if (segment.type === "Static") {
             const leadsRes = await db_1.pool.query(`SELECT lead_id FROM crm_segmentleads WHERE segment_id = $1`, [segment.id]);
@@ -67,7 +84,7 @@ const exportSegmentHandler = async (req) => {
         }
         const leadsQuery = `
       SELECT 
-        l.code, l.name, l.email, l.phone, l.gender, l.dob, l.city, l.status, l.priority, l.source, l.createdat
+        l.code, l.name, l.email, l.phone, l.gender, l.dob, l.address as city, l.status, l.priority, l.source, l.createdat
       FROM crm_leads l
       LEFT JOIN crm_user ae ON ae.id = l.assigned_to_id
       LEFT JOIN crm_state s ON s.id = l.state_id

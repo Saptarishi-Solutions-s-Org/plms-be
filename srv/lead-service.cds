@@ -169,6 +169,29 @@ service LeadService {
 
     function getLeadDetail(id: String,
                            leadCode: String)         returns {
+        lead       : {
+            uuid             : String;
+            leadCode         : String;
+            name             : String;
+            gender           : String;
+            email            : String;
+            phone            : String;
+            city             : String;
+            stateName        : String;
+            countryName      : String;
+            postalCode       : String;
+            leadSource       : String;
+            status           : String;
+            priority         : String;
+            notes            : String;
+            assignedTo       : String;
+            assignedToName   : String;
+            importType       : String;
+            createdAt        : String;
+            createdById      : String;
+            createdByName    : String;
+            createdByRole    : String;
+        };
         activities : many {
             id               : String;
             type             : String;
