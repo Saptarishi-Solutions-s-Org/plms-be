@@ -65,5 +65,9 @@ const bindManagerDashboard = () => {
         roles: ["manager"],
         modules: { lead: ["view"] },
     }));
+    service.on("getAssignedOffersForExecutive", (0, withAuth_1.withAuth)(require("../handlers/organization-manager/getAssignedOffersForExecutive").getAssignedOffersForExecutiveHandler, {
+        roles: ["manager"],
+        modules: { offers: ["view"] },
+    }));
 };
 exports.bindManagerDashboard = bindManagerDashboard;

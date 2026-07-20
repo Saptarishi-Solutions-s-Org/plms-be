@@ -134,6 +134,7 @@ service OrganizationAdminService {
         managerName         : String;
         targetManagerName   : String;
         executivesReassigned : Integer;
+        segmentsReassigned  : Integer;
     };
 
     // Generic activate action for any user (manager/executive)
