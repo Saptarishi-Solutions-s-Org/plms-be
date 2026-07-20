@@ -1,0 +1,45 @@
+<mvc:View
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:grid="sap.ui.layout.cssgrid">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false">
+        
+        <VBox class="heroSection sapUiLargePadding">
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <VBox class="greenLine sapUiSmallMarginEnd" />
+                <Text text="WHY PLMS/LMA" class="bold text-xs color-emerald-700" />
+            </HBox>
+            <Title text="Built for sales clarity." level="H1" class="heroTitle sapUiMediumMarginBottom" />
+            <Text text="We solve the fragmentation issues that typically slow down leads, activity follow-ups, and offer redemptions." class="heroSubtitle" />
+        </VBox>
+
+        <VBox class="sectionWhite sapUiLargePadding">
+            <grid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))" gridGap="1.5rem">
+                <!-- Point 1 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://line-chart" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="No Scattered History" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Every call, text message, and email logs directly to the lead. Any manager or reporting officer can view the history in one place." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Point 2 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://approvals" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Strict Offer Rules" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Discounts are tied to validity rules. Executives cannot apply expired, unassigned, or unauthorized codes, preserving your profit margin." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Point 3 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://feed" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Websocket Refresh" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Actions taken on one screen are immediately synchronized to all other connected screens in real-time, preventing outdated decisions." class="text-sm color-slate-600" />
+                </VBox>
+            </grid:CSSGrid>
+        </VBox>
+
+        <!-- Footer Fragment -->
+        <core:Fragment xmlns:core="sap.ui.core" fragmentName="lma.fiori.view.fragments.Footer" type="XML" />
+    </ScrollContainer>
+</mvc:View>

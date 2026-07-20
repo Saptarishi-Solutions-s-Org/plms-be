@@ -1,0 +1,48 @@
+<mvc:View
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false">
+        
+        <VBox class="heroSection sapUiLargePadding">
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <VBox class="greenLine sapUiSmallMarginEnd" />
+                <Text text="FAQS" class="bold text-xs color-emerald-700" />
+            </HBox>
+            <Title text="Frequently Asked Questions" level="H1" class="heroTitle sapUiMediumMarginBottom" />
+            <Text text="Clear answers to how LMA structures roles, permissions, leads, and offers." class="heroSubtitle" />
+        </VBox>
+
+        <VBox class="sectionWhite sapUiLargePadding" width="100%" alignItems="Center">
+            <VBox width="100%" class="max-w-800">
+                <!-- Q1 -->
+                <Panel expandable="true" expanded="true" headerText="How does lead scoping work?" class="sapUiSmallMarginBottom">
+                    <Text text="LMA scopes leads strictly to the organization they belong to. An executive or manager in one organization can never view, search, or update leads belonging to another organization. This structure is enforced at the database and service levels." class="color-slate-600 leading-7 text-sm" />
+                </Panel>
+
+                <!-- Q2 -->
+                <Panel expandable="true" expanded="false" headerText="Can we customize role permissions?" class="sapUiSmallMarginBottom">
+                    <Text text="Yes. While roles have default module permissions (e.g. Executives view leads but cannot delete them), System Administrators can override these defaults for specific organizations. This allows you to restrict or grant access on a feature-by-feature basis." class="color-slate-600 leading-7 text-sm" />
+                </Panel>
+
+                <!-- Q3 -->
+                <Panel expandable="true" expanded="false" headerText="What follow-up activities are supported?" class="sapUiSmallMarginBottom">
+                    <Text text="LMA supports tracking Calls, SMS, Emails, In-Person visits, and custom activities. Each record includes free-form notes, outcome status, and next follow-up dates to keep pipeline velocity visible." class="color-slate-600 leading-7 text-sm" />
+                </Panel>
+
+                <!-- Q4 -->
+                <Panel expandable="true" expanded="false" headerText="Can offers be bound to specific executives?" class="sapUiSmallMarginBottom">
+                    <Text text="Yes. Offers created globally or locally by Admins are assigned to Managers, who then distribute assignments to specific Executives. Executives can only use or pitch offers currently assigned to them." class="color-slate-600 leading-7 text-sm" />
+                </Panel>
+
+                <!-- Q5 -->
+                <Panel expandable="true" expanded="false" headerText="Is there location validation?" class="sapUiSmallMarginBottom">
+                    <Text text="Yes. The database schema stores canonical Country and State entries. Users and Leads are validated against these entries to ensure clean address profiles and regional reporting accuracy." class="color-slate-600 leading-7 text-sm" />
+                </Panel>
+            </VBox>
+        </VBox>
+
+        <!-- Footer Fragment -->
+        <core:Fragment xmlns:core="sap.ui.core" fragmentName="lma.fiori.view.fragments.Footer" type="XML" />
+    </ScrollContainer>
+</mvc:View>

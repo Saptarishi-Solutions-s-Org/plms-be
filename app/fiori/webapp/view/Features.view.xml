@@ -1,0 +1,66 @@
+<mvc:View
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:grid="sap.ui.layout.cssgrid">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false">
+        
+        <VBox class="heroSection sapUiLargePadding">
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <VBox class="greenLine sapUiSmallMarginEnd" />
+                <Text text="PLATFORM FEATURES" class="bold text-xs color-emerald-700" />
+            </HBox>
+            <Title text="Governance and execution, hand in hand." level="H1" class="heroTitle sapUiMediumMarginBottom" />
+            <Text text="Explore the core capabilities that keep your sales organization structured and compliant." class="heroSubtitle" />
+        </VBox>
+
+        <VBox class="sectionWhite sapUiLargePadding">
+            <grid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))" gridGap="1.5rem">
+                <!-- Feature 1 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://target-group" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Multi-Tenant Scoping" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Strict separation of leads, activities, offers, and user records between organizations. No cross-contamination of company database tables." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Feature 2 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://role" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Role-Based Controls" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Pre-configured roles (System Admin, Admin, Manager, Executive) with strict limits on lead management, imports, exports, and updates." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Feature 3 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://key" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Fine-Grained Permissions" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Need to disable lead exports for Managers? Override module-level permissions for any organization role with a single click." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Feature 4 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://activities" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Follow-up Tracking" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Capture history for calls, SMS, emails, and in-person visits. Schedule and trigger alerts for upcoming follow-up dates." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Feature 5 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://gift" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Offer Control Pipeline" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Create discounts, combo offers, and BOGO deals. Enforce validity windows, regional parameters, and direct manager approvals." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Feature 6 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://map-2" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Regional Alignment" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Store custom lists of operating states and countries. Validate addresses of users and lead entries to ensure compliance." class="text-sm color-slate-600" />
+                </VBox>
+            </grid:CSSGrid>
+        </VBox>
+
+        <!-- Footer Fragment -->
+        <core:Fragment xmlns:core="sap.ui.core" fragmentName="lma.fiori.view.fragments.Footer" type="XML" />
+    </ScrollContainer>
+</mvc:View>

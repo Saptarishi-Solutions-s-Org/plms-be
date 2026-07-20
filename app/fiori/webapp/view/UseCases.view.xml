@@ -1,0 +1,45 @@
+<mvc:View
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:grid="sap.ui.layout.cssgrid">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false">
+        
+        <VBox class="heroSection sapUiLargePadding">
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <VBox class="greenLine sapUiSmallMarginEnd" />
+                <Text text="USE CASES" class="bold text-xs color-emerald-700" />
+            </HBox>
+            <Title text="Tailored for every sales scenario." level="H1" class="heroTitle sapUiMediumMarginBottom" />
+            <Text text="See how different organizations utilize LMA to streamline lead management, activities, and discount approvals." class="heroSubtitle" />
+        </VBox>
+
+        <VBox class="sectionWhite sapUiLargePadding">
+            <grid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))" gridGap="1.5rem">
+                <!-- UseCase 1 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://retail-store" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Retail Operations" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Admins distribute targeted combo discounts. Managers assign them to store executives, who offer them to qualified walk-in customers." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- UseCase 2 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://customer" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Field Sales Governance" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Executives perform in-person visits and record outcomes on the spot. Managers review travel-related activity logs and check pipeline velocity." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- UseCase 3 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://enterprise-resource-planning" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Franchise Management" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="System Administrators manage independent franchise entities under isolated database schema tags, keeping operational metrics safe." class="text-sm color-slate-600" />
+                </VBox>
+            </grid:CSSGrid>
+        </VBox>
+
+        <!-- Footer Fragment -->
+        <core:Fragment xmlns:core="sap.ui.core" fragmentName="lma.fiori.view.fragments.Footer" type="XML" />
+    </ScrollContainer>
+</mvc:View>

@@ -1,0 +1,69 @@
+<mvc:View controllerName="lma.fiori.controller.Contact"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false">
+        
+        <VBox class="heroSection sapUiLargePadding">
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <VBox class="greenLine sapUiSmallMarginEnd" />
+                <Text text="CONTACT US" class="bold text-xs color-emerald-700" />
+            </HBox>
+            <Title text="Get in touch with the LMA team." level="H1" class="heroTitle sapUiMediumMarginBottom" />
+            <Text text="Have questions about organization onboarding, custom features, or scale requirements? Write to us." class="heroSubtitle" />
+        </VBox>
+
+        <HBox class="sectionWhite sapUiLargePadding" wrap="Wrap" justifyContent="SpaceBetween" alignItems="Start">
+            <!-- Contact details -->
+            <VBox class="sapUiLargeMarginEnd sapUiMediumMarginBottom max-w-380" width="100%">
+                <Title text="Office coordinates" level="H2" class="bold text-xl sapUiMediumMarginBottom" />
+                
+                <VBox class="sapUiMediumMarginBottom">
+                    <Text text="EMAIL" class="bold text-xs color-slate-500 sapUiTinyMarginBottom" />
+                    <Text text="support@saptarishi.tech" class="medium text-base color-slate-600" />
+                </VBox>
+
+                <VBox class="sapUiMediumMarginBottom">
+                    <Text text="PHONE" class="bold text-xs color-slate-500 sapUiTinyMarginBottom" />
+                    <Text text="+1 (555) 234-5678" class="medium text-base color-slate-600" />
+                </VBox>
+
+                <VBox>
+                    <Text text="ADDRESS" class="bold text-xs color-slate-500 sapUiTinyMarginBottom" />
+                    <Text text="100 Innovation Way, Suite 400" class="medium text-base color-slate-600" />
+                    <Text text="Tech District, CA 94016" class="medium text-base color-slate-600" />
+                </VBox>
+            </VBox>
+
+            <!-- Form -->
+            <VBox class="roleCard sapUiLargePadding max-w-600" width="100%">
+                <Title text="Send us a message" level="H2" class="bold text-xl sapUiMediumMarginBottom" />
+                
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Name" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <Input id="contactName" placeholder="Your name" class="w-full" />
+                </VBox>
+
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Email" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <Input id="contactEmail" type="Email" placeholder="yourname@company.com" class="w-full" />
+                </VBox>
+
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Organization" class="bold text-sm sapUiTinyMarginBottom" />
+                    <Input id="contactOrg" placeholder="Organization Name" class="w-full" />
+                </VBox>
+
+                <VBox class="sapUiMediumMarginBottom">
+                    <Label text="Message" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <TextArea id="contactMessage" rows="5" placeholder="How can we help?" class="w-full" />
+                </VBox>
+
+                <Button text="Submit Inquiry" press=".onSubmitInquiry" type="Emphasized" class="btnPrimary w-full" />
+            </VBox>
+        </HBox>
+
+        <!-- Footer Fragment -->
+        <core:Fragment xmlns:core="sap.ui.core" fragmentName="lma.fiori.view.fragments.Footer" type="XML" />
+    </ScrollContainer>
+</mvc:View>

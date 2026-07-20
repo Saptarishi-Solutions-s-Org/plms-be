@@ -1,0 +1,29 @@
+<mvc:View controllerName="lma.fiori.controller.PublicLayout"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f">
+    <Page showHeader="true" enableScrolling="false" class="publicPage">
+        <customHeader>
+            <OverflowToolbar class="publicHeader sapUiMediumPadding">
+                <core:Icon xmlns:core="sap.ui.core" src="sap-icon://lead-outbound" size="24px" class="color-emerald-700 sapUiTinyMarginEnd" />
+                <Title text="SRS-LMA" level="H2" class="bold text-lg color-emerald-800" />
+                <Text text="Lead Management Portal" class="text-xs color-slate-500 sapUiSmallMarginBegin" />
+                <ToolbarSpacer />
+                <Button text="Home" type="Transparent" press=".onNavTo('public')" class="publicHeaderNavLink" />
+                <Button text="About" type="Transparent" press=".onNavTo('about')" class="publicHeaderNavLink" />
+                <Button text="Features" type="Transparent" press=".onNavTo('features')" class="publicHeaderNavLink" />
+                <Button text="Services" type="Transparent" press=".onNavTo('services')" class="publicHeaderNavLink" />
+                <Button text="Why LMA" type="Transparent" press=".onNavTo('whyPlms')" class="publicHeaderNavLink" />
+                <Button text="FAQs" type="Transparent" press=".onNavTo('faqs')" class="publicHeaderNavLink" />
+                <Button text="Contact" type="Transparent" press=".onNavTo('contact')" class="publicHeaderNavLink" />
+                <Button text="{= ${auth>/isLoggedIn} ? 'Dashboard' : 'Sign In'}" 
+                        type="Emphasized" 
+                        press=".onNavToAuth" 
+                        class="btnPrimary" />
+            </OverflowToolbar>
+        </customHeader>
+        <content>
+            <App id="publicApp" />
+        </content>
+    </Page>
+</mvc:View>

@@ -1,0 +1,403 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Apply Inter font and layout overrides globally */
+.sapUiBody, .sapMText, .sapMTitle, .sapMLabel, .sapMBtn, .sapMInputBaseInner {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+/* Custom Design Variables */
+:root {
+    --emerald-50: #ecfdf5;
+    --emerald-100: #d1fae5;
+    --emerald-200: #a7f3d0;
+    --emerald-300: #6ee7b7;
+    --emerald-600: #059669;
+    --emerald-700: #047857;
+    --emerald-800: #065f46;
+    --emerald-900: #064e3b;
+    --dark-green-950: #0b1713;
+    
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-premium: 0 28px 90px rgba(6, 78, 59, 0.16);
+}
+
+/* Page Section Wrappers */
+.publicPage {
+    background-color: #fafdfb;
+}
+
+/* Public Header Navigation */
+.publicHeader {
+    background: rgba(255, 255, 255, 0.85) !important;
+    border-bottom: 1px solid rgba(6, 78, 89, 0.08) !important;
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow-sm);
+}
+
+.publicHeaderLogoText {
+    font-weight: 700 !important;
+    letter-spacing: 0.05em;
+    color: var(--dark-green-950) !important;
+}
+
+.publicHeaderNavLink {
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: #4b5563 !important;
+    transition: all 0.2s ease-in-out;
+}
+.publicHeaderNavLink:hover {
+    color: var(--emerald-700) !important;
+}
+
+/* Footer styling */
+.publicFooter {
+    background-color: var(--dark-green-950) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.publicFooterText {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+.publicFooterLink {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+.publicFooterLink:hover {
+    color: var(--emerald-300) !important;
+}
+
+/* Hero Section */
+.heroSection {
+    position: relative;
+    padding: 7rem 2rem 4rem 2rem;
+    overflow: hidden;
+    background: radial-gradient(circle at 80% 20%, #f0fdf4 0%, #fafdfb 100%);
+}
+
+.heroLeftGridPattern {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+    width: 60px;
+}
+
+.heroDot {
+    width: 6px;
+    height: 6px;
+    background-color: rgba(4, 120, 87, 0.15);
+    border-radius: 9999px;
+}
+
+.heroTitle {
+    font-size: clamp(2.5rem, 5vw, 4.5rem) !important;
+    font-weight: 800 !important;
+    line-height: 1.1 !important;
+    color: var(--dark-green-950) !important;
+}
+
+.heroSubtitle {
+    font-size: 1.125rem !important;
+    line-height: 1.75 !important;
+    color: #4b5563 !important;
+    max-width: 42rem;
+}
+
+/* Premium Buttons */
+.btnPrimary .sapMBtnInner {
+    background-color: var(--dark-green-950) !important;
+    background-image: none !important;
+    border-radius: 9999px !important;
+    border: none !important;
+    box-shadow: 0 10px 20px rgba(11, 23, 19, 0.15) !important;
+}
+.btnPrimary.sapMBtnHoverable:hover .sapMBtnInner {
+    background-color: var(--emerald-900) !important;
+}
+.btnPrimary .sapMBtnContent {
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+.btnSecondary .sapMBtnInner {
+    background-color: white !important;
+    background-image: none !important;
+    border: 1px solid rgba(11, 23, 19, 0.15) !important;
+    border-radius: 9999px !important;
+}
+.btnSecondary.sapMBtnHoverable:hover .sapMBtnInner {
+    border-color: var(--emerald-600) !important;
+}
+.btnSecondary .sapMBtnContent {
+    color: var(--dark-green-950) !important;
+    font-weight: 600 !important;
+}
+.btnSecondary.sapMBtnHoverable:hover .sapMBtnContent {
+    color: var(--emerald-700) !important;
+}
+
+/* Public App Content Scroller height override */
+.publicAppContent {
+    height: 100% !important;
+}
+
+/* Hero Badge Card Container */
+.heroPipelineCard {
+    background: rgba(255, 255, 255, 0.88) !important;
+    border: 1px solid rgba(6, 78, 59, 0.1) !important;
+    border-radius: 2rem !important;
+    box-shadow: var(--shadow-premium) !important;
+    backdrop-filter: blur(12px);
+}
+
+.pipelineStepBox {
+    background: #fbfefb;
+    border: 1px solid rgba(6, 78, 59, 0.08);
+    border-radius: 1rem;
+    transition: transform 0.2s;
+}
+.pipelineStepBox:hover {
+    transform: translateX(4px);
+}
+
+.pipelineNumber {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--emerald-700);
+    color: white;
+    font-weight: 700;
+    width: 38px;
+    height: 38px;
+    border-radius: 9999px;
+}
+
+/* Floating Badges */
+.floatingBadge {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 1rem;
+    box-shadow: 0 16px 45px rgba(6, 78, 59, 0.14);
+    backdrop-filter: blur(8px);
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Sections */
+.sectionWhite {
+    background-color: white !important;
+    border-top: 1px solid rgba(11, 23, 19, 0.08);
+    border-bottom: 1px solid rgba(11, 23, 19, 0.08);
+    padding: 5rem 2rem;
+}
+
+.sectionLightGreen {
+    background-color: #eef8f0 !important;
+    padding: 5rem 2rem;
+}
+
+.sectionDarkGreen {
+    background-color: var(--dark-green-950) !important;
+    color: white !important;
+    padding: 5rem 2rem;
+    text-align: center;
+}
+
+/* Feature Modules Cards */
+.moduleCard {
+    background-color: #fbfefb !important;
+    border: 1px solid rgba(11, 23, 19, 0.08) !important;
+    border-radius: 1rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.moduleCard:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 55px rgba(6, 78, 59, 0.12) !important;
+    border-color: rgba(6, 78, 59, 0.2) !important;
+}
+
+.moduleIconBox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 0.75rem;
+}
+
+/* Role Card highlights */
+.roleCard {
+    background-color: rgba(255, 255, 255, 0.85) !important;
+    border: 1px solid rgba(11, 23, 19, 0.08) !important;
+    border-radius: 1rem !important;
+    transition: all 0.2s !important;
+}
+.roleCard:hover {
+    border-color: var(--emerald-600) !important;
+}
+
+/* Check principles grid */
+.principleBox {
+    background-color: #f7fbf7;
+    border: 1px solid rgba(6, 78, 59, 0.1);
+    border-radius: 1rem;
+}
+
+/* standalone login card */
+.loginCard {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(11, 23, 19, 0.08) !important;
+    border-radius: 1.75rem !important;
+    box-shadow: var(--shadow-premium) !important;
+    backdrop-filter: blur(16px);
+}
+
+.loginBackground {
+    background: radial-gradient(circle at 10% 10%, #ecfdf5 0%, #ffffff 50%, #f0fdf4 100%) !important;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+}
+
+/* System Admin Dashboard styling */
+.adminToolPageHeader {
+    background-color: white !important;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.adminMainContent {
+    background-color: #f8fafc;
+    padding: 1.5rem;
+}
+
+.adminDashboardMetricCard {
+    background-color: white !important;
+    border-radius: 1rem !important;
+    border: 1px solid #f1f5f9 !important;
+    box-shadow: var(--shadow-sm) !important;
+    transition: all 0.2s;
+}
+.adminDashboardMetricCard:hover {
+    box-shadow: var(--shadow-md) !important;
+}
+
+.adminCardHeaderIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Table Header Styles */
+.customTableHeader {
+    background-color: rgba(118, 119, 244, 0.1) !important;
+}
+
+/* Dialog styling overrides */
+.customDialog {
+    border-radius: 1rem !important;
+}
+
+/* Utility layout helpers */
+.grid-cols-1 { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+@media (min-width: 600px) {
+    .grid-cols-sm-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .grid-cols-sm-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+}
+@media (min-width: 1024px) {
+    .grid-cols-lg-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .grid-cols-lg-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+    .grid-cols-lg-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+}
+.w-full { width: 100%; }
+.m-auto { margin: auto; }
+.text-center { text-align: center; }
+.bold { font-weight: 700; }
+.semibold { font-weight: 600; }
+.medium { font-weight: 500; }
+
+.text-xs { font-size: 0.75rem !important; }
+.text-sm { font-size: 0.875rem !important; }
+.text-base { font-size: 1rem !important; }
+.text-lg { font-size: 1.125rem !important; }
+.text-xl { font-size: 1.25rem !important; }
+.text-2xl { font-size: 1.5rem !important; }
+.text-3xl { font-size: 1.875rem !important; }
+
+.color-slate-600 { color: #475569 !important; }
+.color-slate-500 { color: #64748b !important; }
+.color-slate-400 { color: #94a3b8 !important; }
+.color-emerald-700 { color: var(--emerald-700) !important; }
+
+/* Custom list items for principles */
+.checkListItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+}
+
+/* Width Helpers */
+.max-w-650 { max-width: 650px !important; }
+.max-w-500 { max-width: 500px !important; }
+.max-w-450 { max-width: 450px !important; }
+.max-w-420 { max-width: 420px !important; }
+.max-w-400 { max-width: 400px !important; }
+.max-w-380 { max-width: 380px !important; }
+.max-w-700 { max-width: 700px !important; }
+.max-w-600 { max-width: 600px !important; }
+
+/* Background Utilities */
+.bg-emerald-50 { background-color: #ecfdf5 !important; }
+.bg-teal-50 { background-color: #f0fdfa !important; }
+.bg-yellow-50 { background-color: #fefce8 !important; }
+.bg-slate-100 { background-color: #f1f5f9 !important; }
+.bg-cyan-50 { background-color: #ecfeff !important; }
+.bg-red-50 { background-color: #fef2f2 !important; }
+
+/* Icon Color Utilities */
+.color-teal-700 { color: #0f766e !important; }
+.color-yellow-700 { color: #a16207 !important; }
+.color-slate-700 { color: #334155 !important; }
+.color-cyan-700 { color: #155e75 !important; }
+.color-red-700 { color: #7f1d1d !important; }
+.color-emerald-700 { color: var(--emerald-700) !important; }
+
+/* Custom Line Separator */
+.greenLine {
+    height: 2px;
+    width: 32px;
+    background-color: var(--emerald-600);
+    display: inline-block;
+}
+
+/* CTA Button styling */
+.btnCTA .sapMBtnInner {
+    background-color: #6ee7b7 !important;
+    background-image: none !important;
+    border-radius: 9999px !important;
+    border: none !important;
+}
+.btnCTA.sapMBtnHoverable:hover .sapMBtnInner {
+    background-color: #a7f3d0 !important;
+}
+.btnCTA .sapMBtnContent {
+    color: #0b1713 !important;
+    font-weight: 700 !important;
+}
+
+/* Admin Dashboard Icon Colors */
+.adminHeaderIconBlue { background-color: #dbeafe !important; color: #2563eb !important; }
+.adminHeaderIconGreen { background-color: #f0fdf4 !important; color: #15803d !important; }
+.adminHeaderIconIndigo { background-color: #e0e7ff !important; color: #4338ca !important; }
+.adminHeaderIconPurple { background-color: #faf5ff !important; color: #7e22ce !important; }
+.adminHeaderIconRed { background-color: #fef2f2 !important; color: #b91c1c !important; }
+
+/* Width Helpers */
+.max-w-800 { max-width: 800px !important; }
+
+
+
+
+

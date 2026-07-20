@@ -1,0 +1,77 @@
+<mvc:View controllerName="lma.fiori.controller.Login"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false" class="loginBackground">
+        
+        <HBox wrap="Wrap" justifyContent="Center" alignItems="Center" class="sapUiLargePadding">
+            <!-- Left Info Panel (visible on wider screens) -->
+            <VBox class="sapUiLargeMarginEnd sapUiMediumMarginBottom max-w-500" width="100%" visible="{device>/isDesktop}">
+                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                    <VBox class="greenLine sapUiSmallMarginEnd" />
+                    <Text text="SECURE LMA ACCESS" class="bold text-xs color-emerald-700" />
+                </HBox>
+                <Title text="Sign in and move the pipeline forward." level="H1" class="heroTitle sapUiMediumMarginBottom" />
+                <Text text="Access your organization dashboard to manage leads, record follow-ups, review offers, and keep every role aligned." class="text-base color-slate-600 sapUiLargeMarginBottom" />
+                
+                <VBox class="grid-cols-sm-2 w-full">
+                    <HBox class="floatingBadge sapUiSmallPadding" alignItems="Center">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://shield" class="color-emerald-700 sapUiSmallMarginEnd" />
+                        <Text text="Organization-scoped access" class="text-sm font-medium" />
+                    </HBox>
+                    <HBox class="floatingBadge sapUiSmallPadding" alignItems="Center">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://user-settings" class="color-emerald-700 sapUiSmallMarginEnd" />
+                        <Text text="Role and module permissions" class="text-sm font-medium" />
+                    </HBox>
+                    <HBox class="floatingBadge sapUiSmallPadding" alignItems="Center">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://activities" class="color-emerald-700 sapUiSmallMarginEnd" />
+                        <Text text="Lead activity visibility" class="text-sm font-medium" />
+                    </HBox>
+                    <HBox class="floatingBadge sapUiSmallPadding" alignItems="Center">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://gift" class="color-emerald-700 sapUiSmallMarginEnd" />
+                        <Text text="Offer assignment context" class="text-sm font-medium" />
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <!-- Login Form Card -->
+            <VBox class="loginCard sapUiLargePadding max-w-420" width="100%">
+                <VBox alignItems="Center" class="sapUiMediumMarginBottom">
+                    <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://lead-outbound" size="24px" class="color-emerald-700 sapUiTinyMarginEnd" />
+                        <Title text="SRS-LMA" level="H2" class="bold text-lg" />
+                    </HBox>
+                    <Title text="Welcome back" level="H2" class="bold text-xl sapUiTinyMarginBottom" />
+                    <Text text="Continue to your project lead workspace." class="text-sm color-slate-500" />
+                </VBox>
+
+                <!-- Error Message Stripe -->
+                <MessageStrip id="errorStrip" type="Error" showIcon="true" showCloseButton="true" visible="false" class="sapUiSmallMarginBottom" />
+
+                <!-- Form Inputs -->
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Email" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <Input id="emailInput" type="Email" placeholder="Enter email" class="w-full" submit=".onLoginPress" />
+                </VBox>
+
+                <VBox class="sapUiMediumMarginBottom">
+                    <Label text="Password" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <HBox width="100%" alignItems="Center">
+                        <Input id="passwordInput" type="Password" placeholder="Enter Password" class="w-full" submit=".onLoginPress" />
+                        <Button id="passwordToggleBtn" icon="sap-icon://show" press=".onTogglePassword" class="sapUiTinyMarginBegin" />
+                    </HBox>
+                </VBox>
+
+                <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiMediumMarginBottom">
+                    <CheckBox id="rememberCheck" text="Remember me" />
+                    <Link text="Forgot Password?" press=".onForgotPassword" class="color-emerald-700" />
+                </HBox>
+
+                <Button id="loginBtn" text="Sign In" press=".onLoginPress" type="Emphasized" class="btnPrimary w-full sapUiSmallMarginBottom" />
+                
+                <Button text="Back to Homepage" press=".onNavHome" type="Transparent" class="w-full" />
+            </VBox>
+        </HBox>
+
+    </ScrollContainer>
+</mvc:View>

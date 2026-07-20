@@ -1,0 +1,105 @@
+<mvc:View controllerName="lma.fiori.controller.DefaultTemplates"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false">
+        
+        <!-- Header -->
+        <VBox class="sapUiMediumMarginBottom">
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <VBox class="adminCardHeaderIcon adminHeaderIconBlue">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://business-objects-experience" size="18px" />
+                </VBox>
+                <Title text="Default System Templates" level="H1" class="bold text-2xl sapUiTinyMarginBegin" />
+            </HBox>
+            <Text text="Inspect global templates used as the baseline for new tenant organizations." class="text-sm color-slate-500" />
+        </VBox>
+
+        <IconTabBar id="templatesTabBar" expandable="false" class="adminDashboardMetricCard">
+            <items>
+                <!-- Default Modules -->
+                <IconTabFilter text="Default Modules" icon="sap-icon://grid" key="modules">
+                    <Table items="{/modules}">
+                        <columns>
+                            <Column><Text text="Module Name" class="bold text-sm" /></Column>
+                            <Column width="200px" hAlign="Center"><Text text="Default Enabled" class="bold text-sm" /></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <cells>
+                                    <Text text="{name}" class="medium capitalize" />
+                                    <CheckBox checked="{default}" editable="false" />
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </IconTabFilter>
+
+                <!-- Default Roles -->
+                <IconTabFilter text="Default Roles" icon="sap-icon://role" key="roles">
+                    <Table items="{/roles}">
+                        <columns>
+                            <Column><Text text="Role Name" class="bold text-sm" /></Column>
+                            <Column width="200px" hAlign="Center"><Text text="Default Assigned" class="bold text-sm" /></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <cells>
+                                    <Text text="{name}" class="medium capitalize" />
+                                    <CheckBox checked="{default}" editable="false" />
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </IconTabFilter>
+
+                <!-- Default Permissions Matrix (RMP) -->
+                <IconTabFilter text="Default Role-Module Permissions (RMP)" icon="sap-icon://shield" key="rmp">
+                    <Table items="{/rmp}">
+                        <columns>
+                            <Column><Text text="Role" class="bold text-sm" /></Column>
+                            <Column><Text text="Module" class="bold text-sm" /></Column>
+                            <Column><Text text="Permission" class="bold text-sm" /></Column>
+                            <Column width="100px" hAlign="Center"><Text text="Access" class="bold text-sm" /></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <cells>
+                                    <Text text="{role}" class="medium capitalize" />
+                                    <Text text="{module}" class="capitalize" />
+                                    <Text text="{permission}" class="capitalize" />
+                                    <CheckBox checked="{access}" editable="false" />
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </IconTabFilter>
+
+                <!-- Default Segment Filters -->
+                <IconTabFilter text="Default Segment Filters" icon="sap-icon://filter" key="segmentFilters">
+                    <Table items="{/segmentFilters}">
+                        <columns>
+                            <Column><Text text="Filter Name" class="bold text-sm" /></Column>
+                            <Column><Text text="Label" class="bold text-sm" /></Column>
+                            <Column width="120px"><Text text="Category" class="bold text-sm" /></Column>
+                            <Column width="150px"><Text text="Operator Type" class="bold text-sm" /></Column>
+                            <Column width="100px" hAlign="Center"><Text text="Default" class="bold text-sm" /></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem>
+                                <cells>
+                                    <Text text="{name}" class="medium" />
+                                    <Text text="{label}" />
+                                    <Text text="{category}" class="capitalize" />
+                                    <Text text="{operator_type}" />
+                                    <CheckBox checked="{default}" editable="false" />
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </IconTabFilter>
+            </items>
+        </IconTabBar>
+
+    </ScrollContainer>
+</mvc:View>

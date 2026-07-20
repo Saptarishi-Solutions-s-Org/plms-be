@@ -1,0 +1,31 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <!-- Footer -->
+    <VBox class="publicFooter sapUiLargePadding" width="100%" alignContent="Center" alignItems="Center">
+        <HBox wrap="Wrap" justifyContent="SpaceBetween" width="80%" class="sapUiMediumMarginBottom">
+            <VBox class="sapUiMediumMarginBottom" width="250px">
+                <Title text="SRS-LMA" level="H3" titleStyle="H3" class="sapUiTinyMarginBottom" color="white" />
+                <Text text="A project lead management system built for governed and accountable growth." class="publicFooterText" />
+            </VBox>
+            <VBox class="sapUiMediumMarginBottom">
+                <Title text="Platform" level="H4" titleStyle="H4" class="sapUiTinyMarginBottom" color="white" />
+                <Link text="Features" press=".onNavTo('features')" class="publicFooterLink sapUiTinyMarginBottom" />
+                <Link text="Services" press=".onNavTo('services')" class="publicFooterLink sapUiTinyMarginBottom" />
+                <Link text="Security" press=".onNavTo('security')" class="publicFooterLink sapUiTinyMarginBottom" />
+            </VBox>
+            <VBox class="sapUiMediumMarginBottom">
+                <Title text="Company" level="H4" titleStyle="H4" class="sapUiTinyMarginBottom" color="white" />
+                <Link text="About" press=".onNavTo('about')" class="publicFooterLink sapUiTinyMarginBottom" />
+                <Link text="Use Cases" press=".onNavTo('useCases')" class="publicFooterLink sapUiTinyMarginBottom" />
+                <Link text="Contact" press=".onNavTo('contact')" class="publicFooterLink sapUiTinyMarginBottom" />
+            </VBox>
+            <VBox class="sapUiMediumMarginBottom">
+                <Title text="Legal" level="H4" titleStyle="H4" class="sapUiTinyMarginBottom" color="white" />
+                <Link text="Privacy Policy" press=".onNavTo('privacyPolicy')" class="publicFooterLink sapUiTinyMarginBottom" />
+                <Link text="Terms &amp; Conditions" press=".onNavTo('termsAndConditions')" class="publicFooterLink sapUiTinyMarginBottom" />
+            </VBox>
+        </HBox>
+        <Text text="© 2026 Saptarishi Solutions. All rights reserved." class="publicFooterText" />
+    </VBox>
+</core:FragmentDefinition>

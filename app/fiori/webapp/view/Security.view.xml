@@ -1,0 +1,45 @@
+<mvc:View
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:grid="sap.ui.layout.cssgrid">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false">
+        
+        <VBox class="heroSection sapUiLargePadding">
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <VBox class="greenLine sapUiSmallMarginEnd" />
+                <Text text="PLATFORM SECURITY" class="bold text-xs color-emerald-700" />
+            </HBox>
+            <Title text="Enterprise-grade data isolation." level="H1" class="heroTitle sapUiMediumMarginBottom" />
+            <Text text="Learn how we keep your customer records, sales activities, and user details protected." class="heroSubtitle" />
+        </VBox>
+
+        <VBox class="sectionWhite sapUiLargePadding">
+            <grid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))" gridGap="1.5rem">
+                <!-- Point 1 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://shield" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Tenant Isolation" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Every database record holds an association to a specific Organization ID. Query filters automatically append tenant parameters to prevent data leaks." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Point 2 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://key" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Token Revocation" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="We store JWT tokens in memory and use HTTP-only cookies for refresh tokens. Compromised logins can be revoked system-wide immediately." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Point 3 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://history" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Audit History Logs" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Changes to role definitions, module permissions, and segments are recorded in the SegmentAuditHistory table, storing timestamps, users, and detailed descriptions." class="text-sm color-slate-600" />
+                </VBox>
+            </grid:CSSGrid>
+        </VBox>
+
+        <!-- Footer Fragment -->
+        <core:Fragment xmlns:core="sap.ui.core" fragmentName="lma.fiori.view.fragments.Footer" type="XML" />
+    </ScrollContainer>
+</mvc:View>

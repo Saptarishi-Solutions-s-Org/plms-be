@@ -1,0 +1,80 @@
+<mvc:View controllerName="lma.fiori.controller.RequestDemo"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false">
+        
+        <VBox class="heroSection sapUiLargePadding">
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <VBox class="greenLine sapUiSmallMarginEnd" />
+                <Text text="REQUEST A DEMO" class="bold text-xs color-emerald-700" />
+            </HBox>
+            <Title text="See LMA in action." level="H1" class="heroTitle sapUiMediumMarginBottom" />
+            <Text text="Learn how LMA can structure your organization's lead pipeline, control offer assignments, and enforce operational governance." class="heroSubtitle" />
+        </VBox>
+
+        <HBox class="sectionWhite sapUiLargePadding" wrap="Wrap" justifyContent="SpaceBetween" alignItems="Start">
+            <VBox class="sapUiLargeMarginEnd sapUiMediumMarginBottom max-w-400" width="100%">
+                <Title text="What to expect in the demo" level="H2" class="bold text-xl sapUiMediumMarginBottom" />
+                
+                <HBox class="sapUiSmallMarginBottom" alignItems="Start">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://accept" size="16px" class="color-emerald-700 sapUiTinyMarginEnd sapUiTinyMarginTop" />
+                    <VBox>
+                        <Text text="Role-Focused Walkthrough" class="bold text-sm" />
+                        <Text text="See the exact interfaces for admins, managers, and executives." class="text-xs color-slate-500" />
+                    </VBox>
+                </HBox>
+
+                <HBox class="sapUiSmallMarginBottom" alignItems="Start">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://accept" size="16px" class="color-emerald-700 sapUiTinyMarginEnd sapUiTinyMarginTop" />
+                    <VBox>
+                        <Text text="Real-time Synchronization" class="bold text-sm" />
+                        <Text text="Watch how metrics and lead states update live across screens." class="text-xs color-slate-500" />
+                    </VBox>
+                </HBox>
+
+                <HBox alignItems="Start">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://accept" size="16px" class="color-emerald-700 sapUiTinyMarginEnd sapUiTinyMarginTop" />
+                    <VBox>
+                        <Text text="Schema &amp; Integrity Check" class="bold text-sm" />
+                        <Text text="Review the database structures keeping your client data isolated." class="text-xs color-slate-500" />
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Form Card -->
+            <VBox class="roleCard sapUiLargePadding max-w-600" width="100%">
+                <Title text="Request a personalized demo" level="H2" class="bold text-xl sapUiMediumMarginBottom" />
+                
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Name" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <Input id="demoName" placeholder="Your full name" class="w-full" />
+                </VBox>
+
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Business Email" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <Input id="demoEmail" type="Email" placeholder="name@company.com" class="w-full" />
+                </VBox>
+
+                <VBox class="sapUiSmallMarginBottom">
+                    <Label text="Company Name" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <Input id="demoCompany" placeholder="e.g. Saptarishi Solutions" class="w-full" />
+                </VBox>
+
+                <VBox class="sapUiMediumMarginBottom">
+                    <Label text="Expected Monthly Lead Volume" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <Select id="demoVolume" class="w-full">
+                        <core:Item xmlns:core="sap.ui.core" key="small" text="Under 500 leads / month" />
+                        <core:Item xmlns:core="sap.ui.core" key="medium" text="500 - 5,000 leads / month" />
+                        <core:Item xmlns:core="sap.ui.core" key="large" text="Over 5,000 leads / month" />
+                    </Select>
+                </VBox>
+
+                <Button text="Submit Request" press=".onSubmitRequest" type="Emphasized" class="btnPrimary w-full" />
+            </VBox>
+        </HBox>
+
+        <!-- Footer Fragment -->
+        <core:Fragment xmlns:core="sap.ui.core" fragmentName="lma.fiori.view.fragments.Footer" type="XML" />
+    </ScrollContainer>
+</mvc:View>

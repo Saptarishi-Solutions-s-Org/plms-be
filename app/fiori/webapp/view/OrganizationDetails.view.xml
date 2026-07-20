@@ -1,0 +1,286 @@
+<mvc:View controllerName="lma.fiori.controller.OrganizationDetails"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:layout="sap.ui.layout"
+    xmlns:grid="sap.ui.layout.cssgrid">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false">
+        
+        <!-- Header details -->
+        <HBox justifyContent="SpaceBetween" alignItems="Center" wrap="Wrap" class="sapUiMediumMarginBottom">
+            <HBox alignItems="Center">
+                <Button icon="sap-icon://navigation-left-arrow" press=".onNavBack" type="Transparent" class="sapUiTinyMarginEnd" />
+                <VBox class="adminCardHeaderIcon adminHeaderIconBlue">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://building" size="18px" />
+                </VBox>
+                <VBox class="sapUiTinyMarginBegin">
+                    <HBox alignItems="Center">
+                        <Title text="{/organization/name}" level="H1" class="bold text-2xl" />
+                        <ObjectStatus text="{= ${/organization/is_active} ? 'Active' : 'Inactive'}" 
+                                      state="{= ${/organization/is_active} ? 'Success' : 'Error'}" 
+                                      class="sapUiSmallMarginBegin" />
+                    </HBox>
+                    <Text text="Code: {/organization/code}" class="text-sm color-slate-500" />
+                </VBox>
+            </HBox>
+            
+            <HBox class="sapUiTinyMarginTop">
+                <Button text="Add Admin User" press=".onOpenAddUserDialog" icon="sap-icon://add-employee" type="Emphasized" class="btnPrimary" />
+            </HBox>
+        </HBox>
+
+        <!-- Org General Info Card -->
+        <VBox class="adminDashboardMetricCard sapUiMediumPadding sapUiMediumMarginBottom">
+            <Title text="Organization Information" level="H3" class="bold text-lg sapUiMediumMarginBottom" />
+            <layout:SimpleForm editable="false" layout="ResponsiveGridLayout" columnsM="2" columnsL="3" labelSpanL="4" labelSpanM="4">
+                <Label text="Email" class="bold" />
+                <Text text="{= ${/organization/email} ? ${/organization/email} : 'No Data' }" />
+                <Label text="Phone" class="bold" />
+                <Text text="{= ${/organization/phone} ? ${/organization/phone} : 'No Data' }" />
+                <Label text="Address" class="bold" />
+                <Text text="{= ${/organization/address} ? ${/organization/address} : 'No Data' }" />
+                <Label text="Trial Mode" class="bold" />
+                <Text text="{= ${/organization/trial} ? ${/organization/trial} : 'No Data' }" />
+                <Label text="Start Date" class="bold" />
+                <Text text="{path: '/organization/start_date', formatter: '.formatter.formatDate'}" />
+                <Label text="End Date" class="bold" />
+                <Text text="{path: '/organization/end_date', formatter: '.formatter.formatDate'}" />
+            </layout:SimpleForm>
+        </VBox>
+
+        <!-- Roles and Modules Row -->
+        <grid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(340px, 1fr))" gridGap="1.5rem" class="sapUiMediumMarginBottom">
+            <!-- Organization Roles -->
+            <VBox class="adminDashboardMetricCard sapUiMediumPadding">
+                <Title text="Organization Roles" level="H3" class="bold text-lg sapUiMediumMarginBottom" />
+                <Table items="{/allRoles}">
+                    <columns>
+                        <Column><Text text="Role Name" class="bold text-sm" /></Column>
+                        <Column hAlign="Center" width="80px"><Text text="Active" class="bold text-sm" /></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <cells>
+                                <Text text="{name}" class="medium capitalize" />
+                                <CheckBox checked="{isActive}" editable="false" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
+
+            <!-- Organization Modules -->
+            <VBox class="adminDashboardMetricCard sapUiMediumPadding">
+                <Title text="Organization Modules" level="H3" class="bold text-lg sapUiMediumMarginBottom" />
+                <Table items="{/allModules}">
+                    <columns>
+                        <Column><Text text="Module Name" class="bold text-sm" /></Column>
+                        <Column hAlign="Center" width="80px"><Text text="Enabled" class="bold text-sm" /></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <cells>
+                                <Text text="{name}" class="medium capitalize" />
+                                <CheckBox checked="{isEnabled}" editable="false" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
+        </grid:CSSGrid>
+
+        <!-- Permissions Matrix Card -->
+        <VBox class="adminDashboardMetricCard sapUiMediumPadding sapUiMediumMarginBottom">
+            <HBox justifyContent="SpaceBetween" alignItems="Center" wrap="Wrap" class="sapUiSmallMarginBottom">
+                <Title text="Organization Permissions" level="H3" class="bold text-lg" />
+                <HBox alignItems="Center">
+                    <Select id="roleSelect" items="{/rolesList}" change=".onRoleChange" width="180px" class="sapUiSmallMarginEnd">
+                        <core:Item xmlns:core="sap.ui.core" key="{}" text="{}" />
+                    </Select>
+                    <Button text="Edit Permissions" icon="sap-icon://edit" press=".onOpenPermissionsDialog" 
+                            visible="{/canEditAdminPermissions}" type="Transparent" />
+                </HBox>
+            </HBox>
+            
+            <Table items="{/activePermissions}" noDataText="No permissions configured">
+                <columns>
+                    <Column><Text text="Feature" class="bold text-sm" /></Column>
+                    <Column hAlign="Center" width="80px"><Text text="Create" class="bold text-sm" /></Column>
+                    <Column hAlign="Center" width="80px"><Text text="View" class="bold text-sm" /></Column>
+                    <Column hAlign="Center" width="80px"><Text text="Update" class="bold text-sm" /></Column>
+                    <Column hAlign="Center" width="80px"><Text text="Delete" class="bold text-sm" /></Column>
+                    <Column hAlign="Center" width="80px"><Text text="Import" class="bold text-sm" /></Column>
+                    <Column hAlign="Center" width="80px"><Text text="Export" class="bold text-sm" /></Column>
+                </columns>
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <Text text="{moduleName}" class="medium capitalize" />
+                            <!-- If blocked by system restrict icon, else checkbox -->
+                            <HBox justifyContent="Center" alignItems="Center">
+                                <core:Icon xmlns:core="sap.ui.core" src="sap-icon://block-service" class="color-slate-400" visible="{createBlocked}" />
+                                <CheckBox checked="{create}" editable="false" visible="{= !${createBlocked} }" />
+                            </HBox>
+                            <HBox justifyContent="Center" alignItems="Center">
+                                <core:Icon xmlns:core="sap.ui.core" src="sap-icon://block-service" class="color-slate-400" visible="{viewBlocked}" />
+                                <CheckBox checked="{view}" editable="false" visible="{= !${viewBlocked} }" />
+                            </HBox>
+                            <HBox justifyContent="Center" alignItems="Center">
+                                <core:Icon xmlns:core="sap.ui.core" src="sap-icon://block-service" class="color-slate-400" visible="{updateBlocked}" />
+                                <CheckBox checked="{update}" editable="false" visible="{= !${updateBlocked} }" />
+                            </HBox>
+                            <HBox justifyContent="Center" alignItems="Center">
+                                <core:Icon xmlns:core="sap.ui.core" src="sap-icon://block-service" class="color-slate-400" visible="{deleteBlocked}" />
+                                <CheckBox checked="{delete}" editable="false" visible="{= !${deleteBlocked} }" />
+                            </HBox>
+                            <HBox justifyContent="Center" alignItems="Center">
+                                <core:Icon xmlns:core="sap.ui.core" src="sap-icon://block-service" class="color-slate-400" visible="{importBlocked}" />
+                                <CheckBox checked="{import}" editable="false" visible="{= !${importBlocked} }" />
+                            </HBox>
+                            <HBox justifyContent="Center" alignItems="Center">
+                                <core:Icon xmlns:core="sap.ui.core" src="sap-icon://block-service" class="color-slate-400" visible="{exportBlocked}" />
+                                <CheckBox checked="{export}" editable="false" visible="{= !${exportBlocked} }" />
+                            </HBox>
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </VBox>
+
+        <!-- Admin Users Table Card -->
+        <VBox class="adminDashboardMetricCard sapUiMediumPadding">
+            <Title text="Admin Users" level="H3" class="bold text-lg sapUiMediumMarginBottom" />
+            <Table items="{/users}" noDataText="No users assigned to this organization">
+                <columns>
+                    <Column><Text text="Name" class="bold text-sm" /></Column>
+                    <Column><Text text="Email" class="bold text-sm" /></Column>
+                    <Column><Text text="Phone" class="bold text-sm" /></Column>
+                    <Column width="100px"><Text text="Gender" class="bold text-sm" /></Column>
+                    <Column width="120px"><Text text="DOB" class="bold text-sm" /></Column>
+                    <Column hAlign="Center" width="100px"><Text text="Status" class="bold text-sm" /></Column>
+                </columns>
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <Text text="{name}" class="medium" />
+                            <Text text="{email}" />
+                            <Text text="{phone}" />
+                            <Text text="{gender}" class="capitalize" />
+                            <Text text="{path: 'dob', formatter: '.formatter.formatDate'}" />
+                            <ObjectStatus text="{= ${is_active} ? 'Active' : 'Inactive'}" 
+                                          state="{= ${is_active} ? 'Success' : 'Error'}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </VBox>
+
+        <!-- EDIT PERMISSIONS DIALOG -->
+        <Dialog id="permissionsDialog" title="Update Admin Permissions" class="customDialog sapUiContentPadding" contentWidth="800px">
+            <VBox class="sapUiSmallMargin">
+                <HBox class="sapUiSmallMarginBottom" alignItems="Center" style="background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 0.5rem; padding: 0.75rem;">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://message-warning" class="sapUiTinyMarginEnd" style="color: #d97706;" />
+                    <Text text="Note: Options marked with a block icon represent system-critical restrictions and cannot be modified." class="text-xs" style="color: #b45309;" />
+                </HBox>
+                
+                <Table items="{/draftPermissions}">
+                    <columns>
+                        <Column><Text text="Feature" class="bold text-sm" /></Column>
+                        <Column hAlign="Center" width="80px"><Text text="Create" class="bold text-sm" /></Column>
+                        <Column hAlign="Center" width="80px"><Text text="View" class="bold text-sm" /></Column>
+                        <Column hAlign="Center" width="80px"><Text text="Update" class="bold text-sm" /></Column>
+                        <Column hAlign="Center" width="80px"><Text text="Delete" class="bold text-sm" /></Column>
+                        <Column hAlign="Center" width="80px"><Text text="Import" class="bold text-sm" /></Column>
+                        <Column hAlign="Center" width="80px"><Text text="Export" class="bold text-sm" /></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem>
+                            <cells>
+                                <Text text="{moduleName}" class="medium capitalize" />
+                                <HBox justifyContent="Center" alignItems="Center">
+                                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://block-service" class="color-slate-400" visible="{createBlocked}" />
+                                    <CheckBox checked="{create}" visible="{= !${createBlocked} }" />
+                                </HBox>
+                                <HBox justifyContent="Center" alignItems="Center">
+                                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://block-service" class="color-slate-400" visible="{viewBlocked}" />
+                                    <CheckBox checked="{view}" visible="{= !${viewBlocked} }" />
+                                </HBox>
+                                <HBox justifyContent="Center" alignItems="Center">
+                                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://block-service" class="color-slate-400" visible="{updateBlocked}" />
+                                    <CheckBox checked="{update}" visible="{= !${updateBlocked} }" />
+                                </HBox>
+                                <HBox justifyContent="Center" alignItems="Center">
+                                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://block-service" class="color-slate-400" visible="{deleteBlocked}" />
+                                    <CheckBox checked="{delete}" visible="{= !${deleteBlocked} }" />
+                                </HBox>
+                                <HBox justifyContent="Center" alignItems="Center">
+                                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://block-service" class="color-slate-400" visible="{importBlocked}" />
+                                    <CheckBox checked="{import}" visible="{= !${importBlocked} }" />
+                                </HBox>
+                                <HBox justifyContent="Center" alignItems="Center">
+                                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://block-service" class="color-slate-400" visible="{exportBlocked}" />
+                                    <CheckBox checked="{export}" visible="{= !${exportBlocked} }" />
+                                </HBox>
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
+            <beginButton>
+                <Button text="Save Changes" type="Emphasized" press=".onSavePermissions" />
+            </beginButton>
+            <endButton>
+                <Button text="Cancel" press=".onClosePermissionsDialog" />
+            </endButton>
+        </Dialog>
+
+        <!-- ADD USER DIALOG -->
+        <Dialog id="userDialog" title="Add Admin User" class="customDialog sapUiContentPadding" contentWidth="450px">
+            <VBox class="sapUiSmallMargin">
+                <VBox class="sapUiTinyMarginBottom">
+                    <Label text="Full Name" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <Input id="userName" value="{/userData/name}" placeholder="John Doe" />
+                </VBox>
+                <VBox class="sapUiTinyMarginBottom">
+                    <Label text="Email" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <Input id="userEmail" type="Email" value="{/userData/email}" placeholder="johndoe@company.com" />
+                </VBox>
+                <VBox class="sapUiTinyMarginBottom">
+                    <Label text="Phone Number" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <Input id="userPhone" type="Tel" value="{/userData/phone}" placeholder="+1 (555) 012-3456" />
+                </VBox>
+                <VBox class="sapUiTinyMarginBottom">
+                    <Label text="Gender" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <Select id="userGender" selectedKey="{/userData/gender}" width="100%">
+                        <core:Item xmlns:core="sap.ui.core" key="Male" text="Male" />
+                        <core:Item xmlns:core="sap.ui.core" key="Female" text="Female" />
+                        <core:Item xmlns:core="sap.ui.core" key="Other" text="Other" />
+                    </Select>
+                </VBox>
+                <VBox class="sapUiTinyMarginBottom">
+                    <Label text="Date of Birth" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <DatePicker id="userDob" valueFormat="yyyy-MM-dd" displayFormat="short" class="w-full" />
+                </VBox>
+                <VBox class="sapUiTinyMarginBottom">
+                    <Label text="Country" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <Select id="userCountry" items="{/userCountries}" change=".onUserCountryChange" width="100%">
+                        <core:Item xmlns:core="sap.ui.core" key="{id}" text="{name}" />
+                    </Select>
+                </VBox>
+                <VBox class="sapUiTinyMarginBottom">
+                    <Label text="State" required="true" class="bold text-sm sapUiTinyMarginBottom" />
+                    <Select id="userState" items="{/userStates}" width="100%">
+                        <core:Item xmlns:core="sap.ui.core" key="{id}" text="{name}" />
+                    </Select>
+                </VBox>
+            </VBox>
+            <beginButton>
+                <Button text="Add User" type="Emphasized" press=".onAddUser" />
+            </beginButton>
+            <endButton>
+                <Button text="Cancel" press=".onCloseUserDialog" />
+            </endButton>
+        </Dialog>
+
+    </ScrollContainer>
+</mvc:View>

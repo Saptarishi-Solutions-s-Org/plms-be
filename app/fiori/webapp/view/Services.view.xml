@@ -1,0 +1,45 @@
+<mvc:View
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:grid="sap.ui.layout.cssgrid">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false">
+        
+        <VBox class="heroSection sapUiLargePadding">
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <VBox class="greenLine sapUiSmallMarginEnd" />
+                <Text text="OUR SERVICES" class="bold text-xs color-emerald-700" />
+            </HBox>
+            <Title text="Professional services for sales teams." level="H1" class="heroTitle sapUiMediumMarginBottom" />
+            <Text text="Beyond software, we provide configuration, training, and database migration support to get your pipeline running quickly." class="heroSubtitle" />
+        </VBox>
+
+        <VBox class="sectionWhite sapUiLargePadding">
+            <grid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))" gridGap="1.5rem">
+                <!-- Service 1 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://settings" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Onboarding &amp; Setup" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="We help set up your organizations, import initial locations data, configure custom roles and modules, and set baseline permissions." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Service 2 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://database" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Database Migration" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Migrate legacy lead lists, activity history, executive tables, and regional databases into LMA's structured schema." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Service 3 -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://education" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Team Training" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Dedicated onboarding sessions for Managers on tracking activity metrics, and training for Executives on working the pipeline." class="text-sm color-slate-600" />
+                </VBox>
+            </grid:CSSGrid>
+        </VBox>
+
+        <!-- Footer Fragment -->
+        <core:Fragment xmlns:core="sap.ui.core" fragmentName="lma.fiori.view.fragments.Footer" type="XML" />
+    </ScrollContainer>
+</mvc:View>

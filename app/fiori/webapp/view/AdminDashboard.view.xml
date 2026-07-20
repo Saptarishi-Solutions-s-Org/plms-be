@@ -1,0 +1,112 @@
+<mvc:View controllerName="lma.fiori.controller.AdminDashboard"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:grid="sap.ui.layout.cssgrid">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false">
+        
+        <!-- Header -->
+        <VBox class="sapUiMediumMarginBottom">
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <VBox class="adminCardHeaderIcon adminHeaderIconBlue">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://grid" size="18px" />
+                </VBox>
+                <Title text="System Admin Dashboard" level="H1" class="bold text-2xl sapUiTinyMarginBegin" />
+            </HBox>
+            <Text text="Monitor organizations, user metrics, and default permission rules." class="text-sm color-slate-500" />
+        </VBox>
+
+        <!-- Metric Cards -->
+        <grid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(280px, 1fr))" gridGap="1rem" class="sapUiMediumMarginBottom">
+            <HBox class="adminDashboardMetricCard sapUiMediumPadding" alignItems="Center">
+                <VBox class="adminCardHeaderIcon sapUiMediumMarginEnd adminHeaderIconBlue">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://building" size="20px" />
+                </VBox>
+                <VBox>
+                    <Text text="Organizations" class="bold text-xs color-slate-500 sapUiTinyMarginBottom" />
+                    <Title text="{/totalOrganizations}" level="H3" class="bold text-xl" />
+                </VBox>
+            </HBox>
+
+            <HBox class="adminDashboardMetricCard sapUiMediumPadding" alignItems="Center">
+                <VBox class="adminCardHeaderIcon sapUiMediumMarginEnd adminHeaderIconGreen">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://group" size="20px" />
+                </VBox>
+                <VBox>
+                    <Text text="Users" class="bold text-xs color-slate-500 sapUiTinyMarginBottom" />
+                    <Title text="{/totalUsers}" level="H3" class="bold text-xl" />
+                </VBox>
+            </HBox>
+        </grid:CSSGrid>
+
+        <!-- Users per Organization Table Card -->
+        <VBox class="adminDashboardMetricCard sapUiMediumPadding sapUiMediumMarginBottom">
+            <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                <VBox class="adminCardHeaderIcon sapUiTinyMarginEnd adminHeaderIconIndigo">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://building" size="18px" />
+                </VBox>
+                <Title text="Users per Organization" level="H3" class="bold text-lg" />
+            </HBox>
+            
+            <Table items="{/usersPerOrg}" noDataText="No organizations available">
+                <columns>
+                    <Column><Text text="Organization Name" class="bold text-sm"/></Column>
+                    <Column hAlign="Right" width="120px"><Text text="User Count" class="bold text-sm"/></Column>
+                </columns>
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <Text text="{name}" class="medium"/>
+                            <Text text="{count}" class="bold"/>
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </VBox>
+
+        <!-- Permissions Matrix Card -->
+        <VBox class="adminDashboardMetricCard sapUiMediumPadding">
+            <HBox justifyContent="SpaceBetween" alignItems="Center" wrap="Wrap" class="sapUiSmallMarginBottom">
+                <HBox alignItems="Center">
+                    <VBox class="adminCardHeaderIcon sapUiTinyMarginEnd adminHeaderIconPurple">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://shield" size="18px" />
+                    </VBox>
+                    <Title text="Permissions Matrix" level="H3" class="bold text-lg" />
+                </HBox>
+                
+                <HBox alignItems="Center" class="sapUiTinyMarginTop">
+                    <Label text="Select Role:" class="sapUiTinyMarginEnd bold text-sm"/>
+                    <Select id="roleSelect" items="{/roles}" change=".onRoleChange" width="220px">
+                        <core:Item xmlns:core="sap.ui.core" key="{orgRoleId}" text="{name}" />
+                    </Select>
+                </HBox>
+            </HBox>
+
+            <Table items="{/activePermissions}" noDataText="No permissions configured">
+                <columns>
+                    <Column><Text text="Feature" class="bold text-sm"/></Column>
+                    <Column hAlign="Center" width="80px"><Text text="Create" class="bold text-sm"/></Column>
+                    <Column hAlign="Center" width="80px"><Text text="View" class="bold text-sm"/></Column>
+                    <Column hAlign="Center" width="80px"><Text text="Update" class="bold text-sm"/></Column>
+                    <Column hAlign="Center" width="80px"><Text text="Delete" class="bold text-sm"/></Column>
+                    <Column hAlign="Center" width="80px"><Text text="Import" class="bold text-sm"/></Column>
+                    <Column hAlign="Center" width="80px"><Text text="Export" class="bold text-sm"/></Column>
+                </columns>
+                <items>
+                    <ColumnListItem>
+                        <cells>
+                            <Text text="{moduleName}" class="medium"/>
+                            <CheckBox checked="{create}" editable="false" />
+                            <CheckBox checked="{view}" editable="false" />
+                            <CheckBox checked="{update}" editable="false" />
+                            <CheckBox checked="{delete}" editable="false" />
+                            <CheckBox checked="{import}" editable="false" />
+                            <CheckBox checked="{export}" editable="false" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </VBox>
+
+    </ScrollContainer>
+</mvc:View>

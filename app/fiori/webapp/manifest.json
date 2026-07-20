@@ -1,0 +1,282 @@
+{
+  "_version": "1.58.0",
+  "sap.app": {
+    "id": "lma.fiori",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "title": "SRS-LMA Portal",
+    "description": "LMA Fiori Application",
+    "applicationVersion": {
+      "version": "1.0.0"
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "rootView": {
+      "viewName": "lma.fiori.view.App",
+      "type": "XML",
+      "async": true,
+      "id": "appRoot"
+    },
+    "dependencies": {
+      "minUI5Version": "1.100.0",
+      "libs": {
+        "sap.ui.core": {},
+        "sap.m": {},
+        "sap.f": {},
+        "sap.uxap": {},
+        "sap.tnt": {}
+      }
+    },
+    "contentDensities": {
+      "cozy": true,
+      "compact": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "lma.fiori.i18n.i18n"
+        }
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "viewPath": "lma.fiori.view",
+        "controlId": "app",
+        "controlAggregation": "pages",
+        "async": true
+      },
+      "routes": [
+        {
+          "name": "public",
+          "pattern": "",
+          "target": ["publicLayout", "landing"]
+        },
+        {
+          "name": "about",
+          "pattern": "about",
+          "target": ["publicLayout", "about"]
+        },
+        {
+          "name": "contact",
+          "pattern": "contact",
+          "target": ["publicLayout", "contact"]
+        },
+        {
+          "name": "faqs",
+          "pattern": "faqs",
+          "target": ["publicLayout", "faqs"]
+        },
+        {
+          "name": "features",
+          "pattern": "features",
+          "target": ["publicLayout", "features"]
+        },
+        {
+          "name": "privacyPolicy",
+          "pattern": "privacy-policy",
+          "target": ["publicLayout", "privacyPolicy"]
+        },
+        {
+          "name": "termsAndConditions",
+          "pattern": "terms-and-conditions",
+          "target": ["publicLayout", "termsAndConditions"]
+        },
+        {
+          "name": "requestDemo",
+          "pattern": "request-demo",
+          "target": ["publicLayout", "requestDemo"]
+        },
+        {
+          "name": "security",
+          "pattern": "security",
+          "target": ["publicLayout", "security"]
+        },
+        {
+          "name": "services",
+          "pattern": "services",
+          "target": ["publicLayout", "services"]
+        },
+        {
+          "name": "useCases",
+          "pattern": "use-cases",
+          "target": ["publicLayout", "useCases"]
+        },
+        {
+          "name": "whyPlms",
+          "pattern": "why-plms",
+          "target": ["publicLayout", "whyPlms"]
+        },
+        {
+          "name": "login",
+          "pattern": "login",
+          "target": ["login"]
+        },
+        {
+          "name": "adminDashboard",
+          "pattern": "admin/dashboard",
+          "target": ["adminLayout", "adminDashboard"]
+        },
+        {
+          "name": "organizations",
+          "pattern": "admin/organizations",
+          "target": ["adminLayout", "organizations"]
+        },
+        {
+          "name": "organizationDetails",
+          "pattern": "admin/organization/{code}",
+          "target": ["adminLayout", "organizationDetails"]
+        },
+        {
+          "name": "defaultTemplates",
+          "pattern": "admin/templates",
+          "target": ["adminLayout", "defaultTemplates"]
+        }
+      ],
+      "targets": {
+        "publicLayout": {
+          "viewName": "PublicLayout",
+          "viewLevel": 1
+        },
+        "landing": {
+          "viewName": "Landing",
+          "parent": "publicLayout",
+          "controlId": "publicApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "about": {
+          "viewName": "About",
+          "parent": "publicLayout",
+          "controlId": "publicApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "contact": {
+          "viewName": "Contact",
+          "parent": "publicLayout",
+          "controlId": "publicApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "faqs": {
+          "viewName": "FAQs",
+          "parent": "publicLayout",
+          "controlId": "publicApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "features": {
+          "viewName": "Features",
+          "parent": "publicLayout",
+          "controlId": "publicApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "privacyPolicy": {
+          "viewName": "PrivacyPolicy",
+          "parent": "publicLayout",
+          "controlId": "publicApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "termsAndConditions": {
+          "viewName": "TermsAndConditions",
+          "parent": "publicLayout",
+          "controlId": "publicApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "requestDemo": {
+          "viewName": "RequestDemo",
+          "parent": "publicLayout",
+          "controlId": "publicApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "security": {
+          "viewName": "Security",
+          "parent": "publicLayout",
+          "controlId": "publicApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "services": {
+          "viewName": "Services",
+          "parent": "publicLayout",
+          "controlId": "publicApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "useCases": {
+          "viewName": "UseCases",
+          "parent": "publicLayout",
+          "controlId": "publicApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "whyPlms": {
+          "viewName": "WhyPLMS",
+          "parent": "publicLayout",
+          "controlId": "publicApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "login": {
+          "viewName": "Login",
+          "viewLevel": 1
+        },
+        "adminLayout": {
+          "viewName": "AdminLayout",
+          "viewLevel": 1
+        },
+        "adminDashboard": {
+          "viewName": "AdminDashboard",
+          "parent": "adminLayout",
+          "controlId": "adminApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "organizations": {
+          "viewName": "Organizations",
+          "parent": "adminLayout",
+          "controlId": "adminApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "organizationDetails": {
+          "viewName": "OrganizationDetails",
+          "parent": "adminLayout",
+          "controlId": "adminApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        },
+        "defaultTemplates": {
+          "viewName": "DefaultTemplates",
+          "parent": "adminLayout",
+          "controlId": "adminApp",
+          "controlAggregation": "pages",
+          "viewLevel": 2
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+<mvc:View controllerName="lma.fiori.controller.AdminLayout"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:tnt="sap.tnt">
+    <tnt:ToolPage id="toolPage">
+        <!-- Tool Header -->
+        <header>
+            <tnt:ToolHeader>
+                <Button icon="sap-icon://menu" type="Transparent" press=".onSideNavButtonPress" />
+                <Title text="SRS-LMA" level="H2" class="sapUiTinyMarginBegin" />
+                <ToolbarSpacer />
+                <!-- User details -->
+                <HBox alignItems="Center" class="sapUiMediumMarginEnd" visible="{auth>/isLoggedIn}">
+                    <Text text="Welcome back, {auth>/user/name} | Org Code: {auth>/user/orgCode} ({auth>/user/orgName})" class="medium color-slate-600 sapUiSmallMarginEnd" />
+                    <Button icon="sap-icon://log" text="Logout" type="Transparent" press=".onLogout" class="sapUiTinyMarginBegin" />
+                </HBox>
+            </tnt:ToolHeader>
+        </header>
+
+        <!-- Side Navigation Sidebar -->
+        <sideContent>
+            <tnt:SideNavigation selectedKey="{/selectedKey}" itemSelect=".onSideNavItemSelect">
+                <tnt:NavigationList>
+                    <tnt:NavigationListItem text="Dashboard" icon="sap-icon://grid" key="adminDashboard" />
+                    <tnt:NavigationListItem text="Organizations" icon="sap-icon://building" key="organizations" />
+                    <tnt:NavigationListItem text="Default Templates" icon="sap-icon://business-objects-experience" key="defaultTemplates" />
+                </tnt:NavigationList>
+            </tnt:SideNavigation>
+        </sideContent>
+
+        <!-- Main nested views container -->
+        <mainContents>
+            <App id="adminApp" class="adminMainContent" />
+        </mainContents>
+    </tnt:ToolPage>
+</mvc:View>

@@ -1,0 +1,30 @@
+<mvc:View
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false">
+        
+        <VBox class="heroSection sapUiLargePadding">
+            <Title text="Terms and Conditions" level="H1" class="heroTitle sapUiMediumMarginBottom" />
+            <Text text="Last Updated: July 20, 2026" class="color-slate-500" />
+        </VBox>
+
+        <VBox class="sectionWhite sapUiLargePadding" alignItems="Center">
+            <VBox width="100%" class="max-w-800">
+                <Title text="1. Agreement to Terms" level="H2" class="bold text-xl sapUiSmallMarginBottom" />
+                <Text text="By accessing or using the SRS-LMA portal, you agree to comply with and be bound by these Terms and Conditions. If you do not agree to these terms, you may not access or use the application." class="color-slate-600 leading-7 text-sm sapUiMediumMarginBottom" />
+
+                <Title text="2. License and Usage Boundaries" level="H2" class="bold text-xl sapUiSmallMarginBottom" />
+                <Text text="We grant you a limited, non-exclusive, non-transferable, revocable license to access LMA services. You agree not to copy, reverse-engineer, exploit database endpoints, distribute metadata fields, or bypass role access matrices." class="color-slate-600 leading-7 text-sm sapUiMediumMarginBottom" />
+
+                <Title text="3. Account Security and Maintenance" level="H2" class="bold text-xl sapUiSmallMarginBottom" />
+                <Text text="You are responsible for safeguarding your email and password credentials. System administrators have full authority to revoke refresh tokens, toggle organization status, reset session versions, and put organizations into maintenance mode." class="color-slate-600 leading-7 text-sm sapUiMediumMarginBottom" />
+
+                <Title text="4. Limitation of Liability" level="H2" class="bold text-xl sapUiSmallMarginBottom" />
+                <Text text="In no event shall Saptarishi Solutions or its partners be liable for any indirect, incidental, special, consequential, or punitive damages arising out of your access or inability to access the lead pipeline." class="color-slate-600 leading-7 text-sm" />
+            </VBox>
+        </VBox>
+
+        <!-- Footer Fragment -->
+        <core:Fragment xmlns:core="sap.ui.core" fragmentName="lma.fiori.view.fragments.Footer" type="XML" />
+    </ScrollContainer>
+</mvc:View>

@@ -1,0 +1,200 @@
+<mvc:View controllerName="lma.fiori.controller.Landing"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:f="sap.f"
+    xmlns:grid="sap.ui.layout.cssgrid">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false">
+        
+        <!-- HERO SECTION -->
+        <HBox class="heroSection sapUiLargePadding" wrap="Wrap" justifyContent="SpaceBetween" alignItems="Center">
+            <!-- Left Hero Panel -->
+            <VBox class="sapUiLargeMarginEnd max-w-650" width="100%">
+                <HBox alignItems="Center" class="sapUiSmallMarginBottom">
+                    <VBox class="heroLeftGridPattern sapUiSmallMarginEnd">
+                        <VBox class="heroDot" /><VBox class="heroDot" /><VBox class="heroDot" /><VBox class="heroDot" />
+                    </VBox>
+                    <Text text="PROJECT LEAD MANAGEMENT SYSTEM" class="bold text-xs color-emerald-700" />
+                </HBox>
+                <Title text="Leads, follow-ups, and offers in one calm pipeline." level="H1" class="heroTitle sapUiMediumMarginBottom" />
+                <Text text="LMA gives organizations a structured way to capture leads, assign executives, track every activity, manage offers, and keep managers focused on what needs attention next." class="heroSubtitle sapUiMediumMarginBottom" />
+                
+                <!-- Action Buttons -->
+                <HBox class="sapUiMediumMarginBottom" wrap="Wrap">
+                    <Button text="Open Portal" press=".onOpenPortal" class="btnPrimary sapUiSmallMarginEnd sapUiTinyMarginBottom" />
+                    <Button text="View Services" press=".onNavTo('services')" class="btnSecondary sapUiTinyMarginBottom" />
+                </HBox>
+
+                <!-- Small Signal Cards -->
+                <HBox class="sapUiMediumMarginTop" wrap="Wrap" justifyContent="SpaceBetween">
+                    <VBox class="floatingBadge sapUiContentPadding sapUiTinyMarginEnd sapUiTinyMarginBottom" width="180px">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://shield" size="20px" class="color-emerald-700 sapUiTinyMarginBottom"/>
+                        <Text text="Organization-scoped access" class="semibold text-sm"/>
+                    </VBox>
+                    <VBox class="floatingBadge sapUiContentPadding sapUiTinyMarginEnd sapUiTinyMarginBottom" width="180px">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://activities" size="20px" class="color-emerald-700 sapUiTinyMarginBottom"/>
+                        <Text text="Follow-up discipline" class="semibold text-sm"/>
+                    </VBox>
+                    <VBox class="floatingBadge sapUiContentPadding sapUiTinyMarginBottom" width="180px">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://gift" size="20px" class="color-emerald-700 sapUiTinyMarginBottom"/>
+                        <Text text="Offer-ready workflows" class="semibold text-sm"/>
+                    </VBox>
+                </HBox>
+            </VBox>
+
+            <!-- Right Hero Panel (Pipeline Widget) -->
+            <VBox class="heroPipelineCard sapUiLargePadding max-w-420" width="100%">
+                <HBox justifyContent="SpaceBetween" alignItems="Center" class="sapUiMediumMarginBottom">
+                    <VBox>
+                        <Text text="PIPELINE" class="bold text-xs color-emerald-700" />
+                        <Title text="Lead Snapshot" level="H2" class="bold text-xl" />
+                    </VBox>
+                    <ObjectStatus text="Live" state="Success" />
+                </HBox>
+
+                <VBox class="sapUiSmallMarginBottom">
+                    <HBox class="pipelineStepBox sapUiSmallPadding sapUiSmallMarginBottom" alignItems="Center">
+                        <Text text="01" class="pipelineNumber sapUiSmallMarginEnd" />
+                        <VBox>
+                            <Text text="New" class="bold text-sm" />
+                            <Text text="Lead enters the system" class="text-xs color-slate-500" />
+                        </VBox>
+                    </HBox>
+                    <HBox class="pipelineStepBox sapUiSmallPadding sapUiSmallMarginBottom" alignItems="Center">
+                        <Text text="02" class="pipelineNumber sapUiSmallMarginEnd" />
+                        <VBox>
+                            <Text text="Contacted" class="bold text-sm" />
+                            <Text text="Executive reaches out" class="text-xs color-slate-500" />
+                        </VBox>
+                    </HBox>
+                    <HBox class="pipelineStepBox sapUiSmallPadding sapUiSmallMarginBottom" alignItems="Center">
+                        <Text text="03" class="pipelineNumber sapUiSmallMarginEnd" />
+                        <VBox>
+                            <Text text="Qualified" class="bold text-sm" />
+                            <Text text="Need and fit confirmed" class="text-xs color-slate-500" />
+                        </VBox>
+                    </HBox>
+                    <HBox class="pipelineStepBox sapUiSmallPadding" alignItems="Center">
+                        <Text text="04" class="pipelineNumber sapUiSmallMarginEnd" />
+                        <VBox>
+                            <Text text="Converted or Lost" class="bold text-sm" />
+                            <Text text="Outcome is recorded" class="text-xs color-slate-500" />
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </HBox>
+
+        <!-- PLATFORM MODULES SECTION -->
+        <VBox class="sectionWhite sapUiLargePadding">
+            <Text text="PLATFORM MODULES" class="bold text-xs color-emerald-700 sapUiTinyMarginBottom" />
+            <Title text="Built around the schema that runs the work." level="H2" class="bold text-2xl sapUiLargeMarginBottom" />
+
+            <grid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(280px, 1fr))" gridGap="1.5rem">
+                <!-- Lead Capture -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <VBox class="moduleIconBox bg-emerald-50 sapUiMediumMarginBottom">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://target-group" size="24px" class="color-emerald-700" />
+                    </VBox>
+                    <Title text="Lead Capture" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Create manual and imported leads with status, priority, source, and owner tracking." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Follow-ups -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <VBox class="moduleIconBox bg-teal-50 sapUiMediumMarginBottom">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://activity-assigned-to-me" size="24px" class="color-teal-700" />
+                    </VBox>
+                    <Title text="Follow-ups" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Track calls, SMS, email, in-person visits, notes, outcomes, and next follow-up dates." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Offers -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <VBox class="moduleIconBox bg-yellow-50 sapUiMediumMarginBottom">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://gift" size="24px" class="color-yellow-700" />
+                    </VBox>
+                    <Title text="Offers" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Manage discounts, combo offers, validity windows, assignments, and offer status." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Role Access -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <VBox class="moduleIconBox bg-slate-100 sapUiMediumMarginBottom">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://user-settings" size="24px" class="color-slate-700" />
+                    </VBox>
+                    <Title text="Role Access" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Use organization roles, modules, permissions, and overrides to keep access precise." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Dashboards -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <VBox class="moduleIconBox bg-cyan-50 sapUiMediumMarginBottom">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://grid" size="24px" class="color-cyan-700" />
+                    </VBox>
+                    <Title text="Dashboards" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Give managers and admins the pipeline visibility they need to move fast." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Locations -->
+                <VBox class="moduleCard sapUiLargePadding">
+                    <VBox class="moduleIconBox bg-red-50 sapUiMediumMarginBottom">
+                        <core:Icon xmlns:core="sap.ui.core" src="sap-icon://world" size="24px" class="color-red-700" />
+                    </VBox>
+                    <Title text="Locations" level="H3" class="bold text-lg sapUiTinyMarginBottom" />
+                    <Text text="Support country, state, postal code, and organization-level operating context." class="text-sm color-slate-600" />
+                </VBox>
+            </grid:CSSGrid>
+        </VBox>
+
+        <!-- ROLE FOCUS SECTION -->
+        <HBox class="sectionLightGreen sapUiLargePadding" wrap="Wrap" justifyContent="SpaceBetween" alignItems="Center">
+            <VBox class="sapUiLargeMarginEnd max-w-450" width="100%">
+                <Text text="ROLE FOCUSED" class="bold text-xs color-emerald-700 sapUiTinyMarginBottom" />
+                <Title text="Every user sees the work they own." level="H2" class="bold text-2xl sapUiMediumMarginBottom" />
+                <Text text="LMA is shaped around organization roles, modules, permissions, and manager reporting lines. The result is a focused workspace for each operating layer." class="text-sm color-slate-600" />
+            </VBox>
+
+            <grid:CSSGrid gridTemplateColumns="repeat(auto-fit, minmax(240px, 1fr))" gridGap="1rem" width="100%" class="max-w-700">
+                <!-- System Admin -->
+                <VBox class="roleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://business-objects-experience" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="System Admin" level="H3" class="bold text-base sapUiTinyMarginBottom" />
+                    <Text text="Controls organizations, modules, and the global operating setup." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Admin -->
+                <VBox class="roleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://person-placeholder" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Admin" level="H3" class="bold text-base sapUiTinyMarginBottom" />
+                    <Text text="Handles organization users, offers, and operational governance." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Manager -->
+                <VBox class="roleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://manager" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Manager" level="H3" class="bold text-base sapUiTinyMarginBottom" />
+                    <Text text="Tracks lead status, executive performance, and follow-up discipline." class="text-sm color-slate-600" />
+                </VBox>
+
+                <!-- Executive -->
+                <VBox class="roleCard sapUiLargePadding">
+                    <core:Icon xmlns:core="sap.ui.core" src="sap-icon://employee" size="24px" class="color-emerald-700 sapUiMediumMarginBottom" />
+                    <Title text="Executive" level="H3" class="bold text-base sapUiTinyMarginBottom" />
+                    <Text text="Works assigned leads, records activities, and keeps follow-ups moving." class="text-sm color-slate-600" />
+                </VBox>
+            </grid:CSSGrid>
+        </HBox>
+
+        <!-- bottom CTA SECTION -->
+        <VBox class="sectionDarkGreen sapUiLargePadding" alignItems="Center">
+            <core:Icon xmlns:core="sap.ui.core" src="sap-icon://accept" size="36px" color="#a7f3d0" class="sapUiMediumMarginBottom" />
+            <Title text="Ready to move the next lead forward?" level="H2" class="bold text-3xl sapUiMediumMarginBottom" style="color: white"/>
+            <Text text="Sign in to manage leads, update follow-ups, review offers, and keep the organization pipeline moving." class="text-sm sapUiMediumMarginBottom color-slate-400" style="max-width: 600px;"/>
+            <Button text="Go to Login" press=".onOpenPortal" class="btnCTA" />
+        </VBox>
+
+        <!-- Footer Fragment -->
+        <core:Fragment xmlns:core="sap.ui.core" fragmentName="lma.fiori.view.fragments.Footer" type="XML" />
+
+    </ScrollContainer>
+</mvc:View>

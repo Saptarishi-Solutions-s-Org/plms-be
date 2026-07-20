@@ -1,0 +1,30 @@
+<mvc:View
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+    <ScrollContainer height="100%" width="100%" vertical="true" horizontal="false">
+        
+        <VBox class="heroSection sapUiLargePadding">
+            <Title text="Privacy Policy" level="H1" class="heroTitle sapUiMediumMarginBottom" />
+            <Text text="Effective Date: July 20, 2026" class="color-slate-500" />
+        </VBox>
+
+        <VBox class="sectionWhite sapUiLargePadding" alignItems="Center">
+            <VBox width="100%" class="max-w-800">
+                <Title text="1. Information We Collect" level="H2" class="bold text-xl sapUiSmallMarginBottom" />
+                <Text text="We collect organization setup information, administrator email addresses, operational logs, lead attributes (name, phone, email, status, and source), activity entries (call notes, email logs, and SMS metadata), and details regarding marketing offers and discount configurations." class="color-slate-600 leading-7 text-sm sapUiMediumMarginBottom" />
+
+                <Title text="2. How We Use Information" level="H2" class="bold text-xl sapUiSmallMarginBottom" />
+                <Text text="We use this data solely to provide, operate, and maintain the LMA services, process authentication requests, validate regional address boundaries, synchronize realtime socket events, and enable managers to oversee executive follow-up operations." class="color-slate-600 leading-7 text-sm sapUiMediumMarginBottom" />
+
+                <Title text="3. Data Scoping and Security" level="H2" class="bold text-xl sapUiSmallMarginBottom" />
+                <Text text="We implement database-level partitioning to ensure that organization-specific leads, activities, and configurations are only accessible to authorized members within that organization. We utilize encryption, access control tokens, and regular auditing logs to prevent unauthorized access." class="color-slate-600 leading-7 text-sm sapUiMediumMarginBottom" />
+
+                <Title text="4. Updates to This Policy" level="H2" class="bold text-xl sapUiSmallMarginBottom" />
+                <Text text="We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the effective date." class="color-slate-600 leading-7 text-sm" />
+            </VBox>
+        </VBox>
+
+        <!-- Footer Fragment -->
+        <core:Fragment xmlns:core="sap.ui.core" fragmentName="lma.fiori.view.fragments.Footer" type="XML" />
+    </ScrollContainer>
+</mvc:View>
