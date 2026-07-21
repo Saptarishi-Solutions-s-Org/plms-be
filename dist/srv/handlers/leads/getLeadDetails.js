@@ -20,6 +20,8 @@ const getLeadDetailHandler = async (req) => {
          l.email              AS "email",
          l.phone              AS "phone",
          l.address            AS "city",
+         l.state_id           AS "stateId",
+         l.country_id         AS "countryId",
          s.name               AS "stateName",
          c.name               AS "countryName",
          l.postal_code        AS "postalCode",
