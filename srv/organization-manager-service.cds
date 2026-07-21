@@ -152,4 +152,17 @@ service ManagerDashboardService {
   email : String;
   phone : String;
  };
+
+ function getAssignedOffersForExecutive(executiveId: UUID) returns array of {
+  id                  : UUID;
+  title               : String;
+  code                : String;
+  description         : String;
+  status              : String;
+  discount_type       : String;
+  discount_amount     : Decimal(10, 2);
+  discount_percentage : Decimal(5, 2);
+  valid_from          : Date;
+  valid_to            : Date;
+ };
 }

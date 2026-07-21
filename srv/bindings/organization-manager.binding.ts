@@ -101,5 +101,13 @@ export const bindManagerDashboard = () => {
       modules: { lead: ["view"] },
     }),
   );
+
+  service.on(
+    "getAssignedOffersForExecutive",
+    withAuth(require("../handlers/organization-manager/getAssignedOffersForExecutive").getAssignedOffersForExecutiveHandler, {
+      roles: ["manager"],
+      modules: { offers: ["view"] },
+    }),
+  );
   
 };
