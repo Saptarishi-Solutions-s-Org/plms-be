@@ -70,6 +70,9 @@ const deactivateExecutiveHandler = async (req) => {
             reason: "executive-deactivated",
             userId: executiveId,
         });
+        (0, socket_1.emitToOrg)(orgId, events_1.LEAD_LIST_CHANGED, {
+            reason: "executive-deactivated",
+        });
         return {
             message: `Executive deactivated successfully. ${leadCount} leads reassigned to ${targetExecutiveRes.rows[0].name}`,
             executiveName: executiveRes.rows[0].name,

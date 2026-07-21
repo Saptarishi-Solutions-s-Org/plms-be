@@ -10,3 +10,4 @@ export const USER_DETAIL_CHANGED = "user:detail:changed";
 export const SESSION_EXPIRED = "session:expired";
 export const OFFER_LIST_CHANGED = "offer:list:changed";
 export const OFFER_DETAIL_CHANGED = "offer:detail:changed";
+export const SEGMENT_LIST_CHANGED = "segment:list:changed";

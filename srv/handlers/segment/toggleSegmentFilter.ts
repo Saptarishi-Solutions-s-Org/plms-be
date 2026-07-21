@@ -14,7 +14,7 @@ export const toggleSegmentFilterHandler = async (req: any) => {
         UPDATE crm_organizationsegmentfiltertypes 
         SET "default" = $1, modifiedat = NOW(), modifiedby = $2
         WHERE id = $3
-        RETURNING id;
+        RETURNING id, organization_id;
       `;
       params = [is_enabled, req.user.id, orgFilterId];
     } else {
@@ -22,7 +22,7 @@ export const toggleSegmentFilterHandler = async (req: any) => {
         UPDATE crm_organizationsegmentfiltertypes 
         SET "default" = $1, modifiedat = NOW(), modifiedby = $2
         WHERE id = $3 AND organization_id = $4
-        RETURNING id;
+        RETURNING id, organization_id;
       `;
       params = [is_enabled, req.user.id, orgFilterId, orgId];
     }
@@ -32,6 +32,16 @@ export const toggleSegmentFilterHandler = async (req: any) => {
     if (result.rows.length === 0) {
       return req.error(404, "Organization segment filter mapping not found.");
     }
+
+    const affectedOrgId = result.rows[0].organization_id;
+
+    // Emit event to notify the frontend
+    const { emitToOrg } = require("../../realtime/socket");
+    const { ORGANIZATION_DETAIL_CHANGED } = require("../../realtime/events");
+    emitToOrg(affectedOrgId, ORGANIZATION_DETAIL_CHANGED, {
+      reason: "segment-filter-updated",
+      orgId: affectedOrgId,
+    });
 
     return {
       message: `Filter status updated to ${is_enabled ? "enabled" : "disabled"}`

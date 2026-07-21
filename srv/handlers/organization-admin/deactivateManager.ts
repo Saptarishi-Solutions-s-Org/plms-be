@@ -1,6 +1,6 @@
 import { pool } from "../../lib/db";
 import { emitToOrg } from "../../realtime/socket";
-import { USER_DETAIL_CHANGED, USER_LIST_CHANGED } from "../../realtime/events";
+import { USER_DETAIL_CHANGED, USER_LIST_CHANGED, LEAD_LIST_CHANGED, SEGMENT_LIST_CHANGED } from "../../realtime/events";
 
 export const deactivateManagerHandler = async (req: any) => {
   const client = await pool.connect();
@@ -114,6 +114,12 @@ export const deactivateManagerHandler = async (req: any) => {
     emitToOrg(orgId, USER_DETAIL_CHANGED, {
       reason: "manager-deactivated",
       userId: managerId,
+    });
+    emitToOrg(orgId, LEAD_LIST_CHANGED, {
+      reason: "manager-deactivated",
+    });
+    emitToOrg(orgId, SEGMENT_LIST_CHANGED, {
+      reason: "manager-deactivated",
     });
     return {
       message: `Manager deactivated successfully. ${executiveCount} executives and ${segmentCount} segments reassigned to ${targetManagerRes.rows[0].name}`,

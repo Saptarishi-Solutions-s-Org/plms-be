@@ -83,6 +83,12 @@ const deactivateManagerHandler = async (req) => {
             reason: "manager-deactivated",
             userId: managerId,
         });
+        (0, socket_1.emitToOrg)(orgId, events_1.LEAD_LIST_CHANGED, {
+            reason: "manager-deactivated",
+        });
+        (0, socket_1.emitToOrg)(orgId, events_1.SEGMENT_LIST_CHANGED, {
+            reason: "manager-deactivated",
+        });
         return {
             message: `Manager deactivated successfully. ${executiveCount} executives and ${segmentCount} segments reassigned to ${targetManagerRes.rows[0].name}`,
             managerName: managerRes.rows[0].name,

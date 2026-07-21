@@ -63,6 +63,19 @@ const deactivateExecutiveForManagerHandler = async (req) => {
            modifiedat = NOW()
        WHERE id = $1`, [executiveId]);
         await client.query("COMMIT");
+        const { emitToOrg } = require("../../realtime/socket");
+        const { USER_LIST_CHANGED, USER_DETAIL_CHANGED, LEAD_LIST_CHANGED } = require("../../realtime/events");
+        emitToOrg(orgId, USER_LIST_CHANGED, {
+            reason: "executive-deactivated",
+            userId: executiveId,
+        });
+        emitToOrg(orgId, USER_DETAIL_CHANGED, {
+            reason: "executive-deactivated",
+            userId: executiveId,
+        });
+        emitToOrg(orgId, LEAD_LIST_CHANGED, {
+            reason: "executive-deactivated",
+        });
         return {
             message: `Executive deactivated successfully. ${leadCount} leads reassigned to ${targetExecutiveRes.rows[0].name}`,
             executiveName: executiveRes.rows[0].name,
