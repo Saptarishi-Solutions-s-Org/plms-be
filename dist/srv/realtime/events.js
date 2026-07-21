@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OFFER_DETAIL_CHANGED = exports.OFFER_LIST_CHANGED = exports.SESSION_EXPIRED = exports.USER_DETAIL_CHANGED = exports.USER_LIST_CHANGED = exports.LEAD_DETAIL_CHANGED = exports.LEAD_LIST_CHANGED = exports.PROFILE_CHANGED = exports.ORGANIZATION_DETAIL_CHANGED = exports.ORGANIZATION_LIST_CHANGED = exports.SYSTEM_ADMIN_DASHBOARD_CHANGED = void 0;
+exports.SEGMENT_LIST_CHANGED = exports.OFFER_DETAIL_CHANGED = exports.OFFER_LIST_CHANGED = exports.SESSION_EXPIRED = exports.USER_DETAIL_CHANGED = exports.USER_LIST_CHANGED = exports.LEAD_DETAIL_CHANGED = exports.LEAD_LIST_CHANGED = exports.PROFILE_CHANGED = exports.ORGANIZATION_DETAIL_CHANGED = exports.ORGANIZATION_LIST_CHANGED = exports.SYSTEM_ADMIN_DASHBOARD_CHANGED = void 0;
 exports.SYSTEM_ADMIN_DASHBOARD_CHANGED = "system-admin:dashboard:changed";
 exports.ORGANIZATION_LIST_CHANGED = "organization:list:changed";
 exports.ORGANIZATION_DETAIL_CHANGED = "organization:detail:changed";
@@ -12,3 +12,4 @@ exports.USER_DETAIL_CHANGED = "user:detail:changed";
 exports.SESSION_EXPIRED = "session:expired";
 exports.OFFER_LIST_CHANGED = "offer:list:changed";
 exports.OFFER_DETAIL_CHANGED = "offer:detail:changed";
+exports.SEGMENT_LIST_CHANGED = "segment:list:changed";
