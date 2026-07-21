@@ -9,24 +9,27 @@ export const exportOffersExecutiveHandler = async (req: any) => {
 
     const res = await pool.query(
       `SELECT DISTINCT
-         o.code                    AS "offerCode",
-         o.title                   AS "title",
-         o.description             AS "description",
-         o.is_global               AS "isGlobal",
-         o.status                  AS "status",
-         o.discount_type           AS "discountType",
-         o.discount_amount         AS "discountAmount",
-         o.discount_percentage     AS "discountPercentage",
-         o.max_discount_amount     AS "maxDiscountAmount",
-         o.combo_description       AS "comboDescription",
-         o.buy_quantity            AS "buyQuantity",
-         o.get_quantity            AS "getQuantity",
-         o.min_purchase_amount     AS "minPurchaseAmount",
-         o.discount_value          AS "discountValue",
-         o.flag_discount_amount    AS "flagDiscountAmount",
-         o.valid_from              AS "validFrom",
-         o.valid_to                AS "validTo",
-         o.createdat               AS "createdAt"
+         ROW_NUMBER() OVER (ORDER BY o.createdat DESC) AS "S.NO",
+         COALESCE(o.code, '-') AS "offerCode",
+         COALESCE(o.title, '-') AS "title",
+         COALESCE(o.description, '-') AS "description",
+         CASE
+            WHEN o.is_global THEN 'Yes'
+            ELSE 'No'
+         END AS "isGlobal",
+         COALESCE(o.status, '-') AS "status",
+         COALESCE(o.discount_type, '-') AS "discountType",
+         COALESCE(o.discount_amount::text, '-') AS "discountAmount",
+         COALESCE(o.discount_percentage::text, '-') AS "discountPercentage",
+         COALESCE(o.max_discount_amount::text, '-') AS "maxDiscountAmount",
+         COALESCE(o.combo_description, '-') AS "comboDescription",
+        COALESCE(o.buy_quantity::text, '-') AS "buyQuantity",
+        COALESCE(o.get_quantity::text, '-') AS "getQuantity",
+        COALESCE(o.min_purchase_amount::text, '-') AS "minPurchaseAmount",
+        COALESCE(o.discount_value::text, '-') AS "discountValue",
+        COALESCE(o.flag_discount_amount::text, '-') AS "flagDiscountAmount",
+        COALESCE(TO_CHAR(o.valid_from, 'DD/MM/YYYY'), '-') AS "validFrom",
+        COALESCE(TO_CHAR(o.valid_to, 'DD/MM/YYYY'), '-') AS "validTo",
 
        FROM crm_executiveofferassignment ea
        JOIN crm_offer o
