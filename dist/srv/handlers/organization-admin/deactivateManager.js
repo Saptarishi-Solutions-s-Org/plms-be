@@ -60,6 +60,14 @@ const deactivateManagerHandler = async (req) => {
          WHERE reporting_manager_id = $2
          AND organization_id = $3`, [targetManagerId, managerId, orgId]);
         }
+        // Reassign all segments to the target manager
+        const segmentRes = await client.query(`UPDATE crm_segment
+       SET createdby = $1,
+           modifiedby = $1,
+           modifiedat = NOW()
+       WHERE createdby = $2
+       AND organization_id = $3`, [targetManagerId, managerId, orgId]);
+        const segmentCount = segmentRes.rowCount || 0;
         // Deactivate the manager
         await client.query(`UPDATE crm_user
        SET is_active = false,
@@ -76,10 +84,11 @@ const deactivateManagerHandler = async (req) => {
             userId: managerId,
         });
         return {
-            message: `Manager deactivated successfully. ${executiveCount} executives reassigned to ${targetManagerRes.rows[0].name}`,
+            message: `Manager deactivated successfully. ${executiveCount} executives and ${segmentCount} segments reassigned to ${targetManagerRes.rows[0].name}`,
             managerName: managerRes.rows[0].name,
             targetManagerName: targetManagerRes.rows[0].name,
             executivesReassigned: executiveCount,
+            segmentsReassigned: segmentCount,
         };
     }
     catch (err) {
