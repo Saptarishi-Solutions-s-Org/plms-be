@@ -53,7 +53,8 @@ service OrganizationExecutiveService {
 
     action assignOffersToLeads(
         offerId: UUID,
-        leadIds: many UUID
+        leadIds: many UUID,
+        preview: Boolean
        ) returns {
         assignmentIds : many UUID;
         assignedCount : Integer;

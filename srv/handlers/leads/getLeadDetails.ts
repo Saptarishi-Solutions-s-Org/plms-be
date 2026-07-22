@@ -167,7 +167,7 @@ export const getLeadDetailHandler = async (req: any) => {
            so.segment_id
          FROM crm_segmentoffers so
          JOIN crm_offer o ON o.id = so.offer_id
-         WHERE so.segment_id = ANY($1) AND o.status = 'Active'
+         WHERE so.segment_id = ANY($1)
          ORDER BY o.title ASC`,
         [segmentIds]
       );

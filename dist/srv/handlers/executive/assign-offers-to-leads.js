@@ -157,7 +157,7 @@ const assignOfferToLeadHandler = async (req) => {
 };
 exports.assignOfferToLeadHandler = assignOfferToLeadHandler;
 const assignOffersToLeadsHandler = async (req) => {
-    const { offerId, leadIds } = req.data ?? {};
+    const { offerId, leadIds, preview } = req.data ?? {};
     const executiveId = req.user?.id;
     const orgId = req.user?.orgId;
     try {
@@ -195,6 +195,14 @@ const assignOffersToLeadsHandler = async (req) => {
             duplicateLeadIds.add(leadId);
         }
         const leadIdsToAssign = validLeadIds.filter((id) => !duplicateLeadIds.has(id));
+        if (preview) {
+            return {
+                assignmentIds: [],
+                assignedCount: leadIdsToAssign.length,
+                skippedCount: uniqueLeadIds.length - leadIdsToAssign.length,
+                message: "Preview successful",
+            };
+        }
         if (!leadIdsToAssign.length) {
             return {
                 assignmentIds: [],
