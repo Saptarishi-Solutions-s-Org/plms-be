@@ -196,10 +196,19 @@ export const getLeadDetailHandler = async (req: any) => {
       }
     }
 
+    const allOffers = [...offersRes.rows, ...segmentOffers];
+    const uniqueOffersMap = new Map();
+    for (const offer of allOffers) {
+      if (!uniqueOffersMap.has(offer.offerId)) {
+        uniqueOffersMap.set(offer.offerId, offer);
+      }
+    }
+    const finalOffers = Array.from(uniqueOffersMap.values());
+
     return {
       lead: leadInfo,
       activities: activitiesRes.rows,
-      offers: [...offersRes.rows, ...segmentOffers],
+      offers: finalOffers,
     };
   } catch (error: any) {
     console.error("getLeadDetail error:", error?.message ?? error);
