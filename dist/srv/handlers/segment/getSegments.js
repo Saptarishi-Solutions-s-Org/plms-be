@@ -86,7 +86,7 @@ const getSegmentsHandler = async (req) => {
           JOIN crm_leads l ON l.id = sl.lead_id
           WHERE sl.segment_id = $${countParams.length + 1} AND ${scopingSql}
         `;
-                countParams.unshift(segment.id); // Put segmentId at index 0 ($1)
+                countParams.push(segment.id); // Put segmentId at index 0 ($1)
                 const staticCountRes = await db_1.pool.query(staticCountQuery, countParams);
                 leadCount = parseInt(staticCountRes.rows[0].count) || 0;
             }
