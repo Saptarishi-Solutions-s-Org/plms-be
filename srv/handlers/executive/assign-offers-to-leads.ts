@@ -5,6 +5,79 @@ import {
   LEAD_DETAIL_CHANGED,
   OFFER_DETAIL_CHANGED,
 } from "../../realtime/events";
+import { buildFiltersQuery } from "../segment/queryHelper";
+
+const getLeadsWithOfferViaSegment = async (
+  client: any, 
+  leadIds: string[], 
+  offerId: string, 
+  orgId: string
+): Promise<Set<string>> => {
+  const leadsWithOffer = new Set<string>();
+
+  const segmentsRes = await client.query(
+    `SELECT s.id, s.type, s.name 
+     FROM crm_segment s
+     JOIN crm_segmentoffers so ON so.segment_id = s.id
+     WHERE so.offer_id = $1 AND s.organization_id = $2 AND s.is_active = true`,
+    [offerId, orgId]
+  );
+
+  if (segmentsRes.rows.length === 0) {
+    return leadsWithOffer;
+  }
+
+  for (const seg of segmentsRes.rows) {
+    if (seg.type === "Static") {
+      const checkRes = await client.query(
+        `SELECT lead_id FROM crm_segmentleads WHERE segment_id = $1 AND lead_id = ANY($2::text[])`,
+        [seg.id, leadIds]
+      );
+      for (const row of checkRes.rows) {
+        leadsWithOffer.add(row.lead_id);
+      }
+    } else {
+      // Dynamic segment
+      const filtersRes = await client.query(
+        `SELECT sf.filter_type_id, sf.operator, sf.value, sf.group_id, sf.logical_op, ft.name
+         FROM crm_segmentfilters sf
+         JOIN crm_segmentfiltertypes ft ON ft.id = sf.filter_type_id
+         WHERE sf.segment_id = $1`,
+        [seg.id]
+      );
+      const resolvedFilters = filtersRes.rows.map((row: any) => ({
+        filter_type_id: row.filter_type_id,
+        name: row.name,
+        operator: row.operator,
+        value: row.value,
+        group_id: row.group_id,
+        logical_op: row.logical_op
+      }));
+      
+      const params: any[] = [leadIds];
+      const conditionSql = buildFiltersQuery(resolvedFilters, params);
+      
+      const checkQuery = `
+        SELECT l.id 
+        FROM crm_leads l
+        LEFT JOIN crm_user ae ON ae.id = l.assigned_to_id
+        LEFT JOIN crm_state s ON s.id = l.state_id
+        LEFT JOIN crm_country c ON c.id = l.country_id
+        WHERE l.id = ANY($1::text[]) AND (${conditionSql})
+      `;
+      try {
+        const checkRes = await client.query(checkQuery, params);
+        for (const row of checkRes.rows) {
+          leadsWithOffer.add(row.id);
+        }
+      } catch (err) {
+        console.error(`Error checking dynamic segment ${seg.name} for leads:`, err);
+      }
+    }
+  }
+
+  return leadsWithOffer;
+};
 
 const ensureOfferCanBeAssigned = async (
   req: any,
@@ -90,6 +163,14 @@ export const assignOfferToLeadHandler = async (req: any) => {
       return req.reject(409, {
         code: "OFFER_ALREADY_ASSIGNED_TO_LEAD",
         message: "This offer is already assigned to this lead",
+      });
+    }
+
+    const segmentAssignedLeads = await getLeadsWithOfferViaSegment(pool, [leadId], offerId, orgId);
+    if (segmentAssignedLeads.has(leadId)) {
+      return req.reject(409, {
+        code: "OFFER_ALREADY_ASSIGNED_VIA_SEGMENT",
+        message: "This offer is already assigned to this lead through a segment",
       });
     }
 
@@ -188,6 +269,12 @@ export const assignOffersToLeadsHandler = async (req: any) => {
     const duplicateLeadIds = new Set(
       duplicateResult.rows.map((assignment) => assignment.lead_id),
     );
+    
+    const segmentAssignedLeads = await getLeadsWithOfferViaSegment(pool, validLeadIds, offerId, orgId);
+    for (const leadId of segmentAssignedLeads) {
+      duplicateLeadIds.add(leadId);
+    }
+
     const leadIdsToAssign = validLeadIds.filter(
       (id) => !duplicateLeadIds.has(id),
     );
