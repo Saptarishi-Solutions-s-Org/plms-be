@@ -20,14 +20,34 @@ const updateManagerOfferHandler = async (req) => {
         const { title, description = null, discount_type, valid_from, valid_to, discount_amount = null, discount_percentage = null, max_discount_amount = null, combo_description = null, buy_quantity = null, get_quantity = null, min_purchase_amount = null, discount_value = null, flag_discount_amount = null, } = data;
         await client.query("BEGIN");
         const existing = await client.query(`
-      SELECT id
-      FROM crm_offer
-      WHERE id = $1
-        AND organization_id = $2
-        AND createdby = $3
-        AND is_global = false
-      `, [id, orgId, managerId]);
+      SELECT o.id, o.is_global
+      FROM crm_offer o
+      WHERE o.id = $1
+        AND o.organization_id = $2
+      `, [id, orgId]);
         if (!existing.rows.length) {
+            await client.query("ROLLBACK");
+            return req.reject(404, "Offer not found");
+        }
+        if (existing.rows[0].is_global) {
+            await client.query("ROLLBACK");
+            return req.reject(403, "Cannot edit global offers");
+        }
+        const authorized = await client.query(`
+      SELECT 1
+      FROM crm_offer o
+      WHERE o.id = $1
+        AND (
+          o.createdby = $2
+          OR EXISTS (
+            SELECT 1
+            FROM crm_managerofferassignment moa
+            WHERE moa.offer_id = o.id
+              AND moa.user_id = $2
+          )
+        )
+      `, [id, managerId]);
+        if (!authorized.rows.length) {
             await client.query("ROLLBACK");
             return req.reject(404, "Offer not found");
         }
