@@ -7,7 +7,7 @@ import {
 
 export const updateUserHandler = async (req: any) => {
   try {
-    const { id, name, phone, is_active, state, country } = req.data;
+    const { id, name, phone, is_active, state, country, gender, dob } = req.data;
 
     const existing = await pool.query(
       `SELECT id, organization_id, is_active FROM crm_user WHERE id=$1`,
@@ -18,10 +18,6 @@ export const updateUserHandler = async (req: any) => {
       return req.error(404, "User not found");
     }
 
-    if (req.data.email) {
-      return req.error(400, "Email cannot be updated");
-    }
-
     await pool.query(
       `UPDATE crm_user
        SET name=$1,
@@ -29,14 +25,16 @@ export const updateUserHandler = async (req: any) => {
            is_active=$3,
            state_id=$4,
            country_id=$5,
+           gender=$6,
+           dob=$7,
            session_version = CASE
              WHEN is_active IS DISTINCT FROM $3 THEN session_version + 1
              ELSE session_version
            END,
            modifiedat=NOW(),
-           modifiedby=$6
-       WHERE id=$7`,
-      [name, phone, is_active, state, country, req.user.id, id],
+           modifiedby=$8
+       WHERE id=$9`,
+      [name, phone, is_active, state, country, gender, dob, req.user.id, id],
     );
 
     emitToSystemAdmins(ORGANIZATION_DETAIL_CHANGED, {

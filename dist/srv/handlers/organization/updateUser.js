@@ -6,13 +6,10 @@ const socket_1 = require("../../realtime/socket");
 const events_1 = require("../../realtime/events");
 const updateUserHandler = async (req) => {
     try {
-        const { id, name, phone, is_active, state, country } = req.data;
+        const { id, name, phone, is_active, state, country, gender, dob } = req.data;
         const existing = await db_1.pool.query(`SELECT id, organization_id, is_active FROM crm_user WHERE id=$1`, [id]);
         if (!existing.rows.length) {
             return req.error(404, "User not found");
-        }
-        if (req.data.email) {
-            return req.error(400, "Email cannot be updated");
         }
         await db_1.pool.query(`UPDATE crm_user
        SET name=$1,
@@ -20,13 +17,15 @@ const updateUserHandler = async (req) => {
            is_active=$3,
            state_id=$4,
            country_id=$5,
+           gender=$6,
+           dob=$7,
            session_version = CASE
              WHEN is_active IS DISTINCT FROM $3 THEN session_version + 1
              ELSE session_version
            END,
            modifiedat=NOW(),
-           modifiedby=$6
-       WHERE id=$7`, [name, phone, is_active, state, country, req.user.id, id]);
+           modifiedby=$8
+       WHERE id=$9`, [name, phone, is_active, state, country, gender, dob, req.user.id, id]);
         (0, socket_1.emitToSystemAdmins)(events_1.ORGANIZATION_DETAIL_CHANGED, {
             reason: "organization-admin-updated",
             orgId: existing.rows[0].organization_id,

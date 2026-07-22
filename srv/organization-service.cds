@@ -96,6 +96,8 @@ service OrganizationService {
     action   updateUser(id: UUID,
                         name: String,
                         phone: String,
+                        gender: String,
+                        dob: Date,
                         is_active: Boolean,
                         state: UUID,
                         country: UUID)           returns {

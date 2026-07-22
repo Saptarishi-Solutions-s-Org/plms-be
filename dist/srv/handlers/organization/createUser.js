@@ -20,6 +20,11 @@ const createUserHandler = async (req) => {
         if (!organizationId) {
             return req.error(400, "Organization is required");
         }
+        const emailCheck = await client.query(`SELECT id FROM crm_user WHERE email=$1`, [email]);
+        if (emailCheck.rows.length) {
+            await client.query("ROLLBACK");
+            return req.error(409, "Email is already in use by another user");
+        }
         const orgRes = await client.query(`SELECT name, code FROM crm_organization WHERE id = $1`, [organizationId]);
         if (!orgRes.rows.length) {
             return req.error(404, "Organization not found");
