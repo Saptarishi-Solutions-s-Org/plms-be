@@ -79,6 +79,18 @@ export const deactivateExecutiveForManagerHandler = async (req: any) => {
       );
     }
 
+    // Reassign all segments to the target executive
+    const segmentRes = await client.query(
+      `UPDATE crm_segment
+       SET createdby = $1,
+           modifiedby = $1,
+           modifiedat = NOW()
+       WHERE createdby = $2
+       AND organization_id = $3`,
+      [targetExecutiveId, executiveId, orgId]
+    );
+    const segmentCount = segmentRes.rowCount || 0;
+
     // Deactivate the executive
     await client.query(
       `UPDATE crm_user
@@ -91,11 +103,30 @@ export const deactivateExecutiveForManagerHandler = async (req: any) => {
 
     await client.query("COMMIT");
 
+    const { emitToOrg } = require("../../realtime/socket");
+    const { USER_LIST_CHANGED, USER_DETAIL_CHANGED, LEAD_LIST_CHANGED, SEGMENT_LIST_CHANGED } = require("../../realtime/events");
+
+    emitToOrg(orgId, USER_LIST_CHANGED, {
+      reason: "executive-deactivated",
+      userId: executiveId,
+    });
+    emitToOrg(orgId, USER_DETAIL_CHANGED, {
+      reason: "executive-deactivated",
+      userId: executiveId,
+    });
+    emitToOrg(orgId, LEAD_LIST_CHANGED, {
+      reason: "executive-deactivated",
+    });
+    emitToOrg(orgId, SEGMENT_LIST_CHANGED, {
+      reason: "executive-deactivated",
+    });
+
     return {
-      message: `Executive deactivated successfully. ${leadCount} leads reassigned to ${targetExecutiveRes.rows[0].name}`,
+      message: `Executive deactivated successfully. ${leadCount} leads and ${segmentCount} segments reassigned to ${targetExecutiveRes.rows[0].name}`,
       executiveName: executiveRes.rows[0].name,
       targetExecutiveName: targetExecutiveRes.rows[0].name,
       leadsReassigned: leadCount,
+      segmentsReassigned: segmentCount,
     };
   } catch (err) {
     await client.query("ROLLBACK");

@@ -1,6 +1,6 @@
 import { pool } from "../../lib/db";
 import { emitToOrg } from "../../realtime/socket";
-import { LEAD_LIST_CHANGED, USER_DETAIL_CHANGED, USER_LIST_CHANGED } from "../../realtime/events";
+import { LEAD_LIST_CHANGED, USER_DETAIL_CHANGED, USER_LIST_CHANGED, SEGMENT_LIST_CHANGED } from "../../realtime/events";
 
 export const deactivateExecutiveHandler = async (req: any) => {
   const client = await pool.connect();
@@ -78,6 +78,18 @@ export const deactivateExecutiveHandler = async (req: any) => {
       );
     }
 
+    const segmentRes = await client.query(
+      `UPDATE crm_segment
+       SET createdby = $1,
+           modifiedby = $1,
+           modifiedat = NOW()
+       WHERE createdby = $2
+       AND organization_id = $3`,
+      [targetExecutiveId, executiveId, orgId]
+    );
+    const segmentCount = segmentRes.rowCount || 0;
+
+
     // Deactivate the executive
     await client.query(
       `UPDATE crm_user
@@ -98,12 +110,19 @@ export const deactivateExecutiveHandler = async (req: any) => {
       reason: "executive-deactivated",
       userId: executiveId,
     });
+    emitToOrg(orgId, LEAD_LIST_CHANGED, {
+      reason: "executive-deactivated",
+    });
+    emitToOrg(orgId, SEGMENT_LIST_CHANGED, {
+      reason: "executive-deactivated",
+    });
 
     return {
-      message: `Executive deactivated successfully. ${leadCount} leads reassigned to ${targetExecutiveRes.rows[0].name}`,
+      message: `Executive deactivated successfully. ${leadCount} leads and ${segmentCount} segments reassigned to ${targetExecutiveRes.rows[0].name}`,
       executiveName: executiveRes.rows[0].name,
       targetExecutiveName: targetExecutiveRes.rows[0].name,
       leadsReassigned: leadCount,
+      segmentsReassigned: segmentCount,
     };
   } catch (err) {
     await client.query("ROLLBACK");
