@@ -88,6 +88,7 @@ service ManagerDashboardService {
                                   status: String,
                                   search: String,
                                   discountType: String,
+                                  scope: String,
                                   all: Boolean) returns {
   stats : {
     totalOffers    : Integer;

@@ -35,6 +35,16 @@ export const getOffersHandler = async (req: any) => {
     const discountTypeParams = normalizedDiscountTypes.length
       ? normalizedDiscountTypes
       : null;
+    const scopeFilter =
+      typeof req.data?.scope === "string" ? req.data.scope.trim() : "";
+    const normalizedScopes =
+      scopeFilter && scopeFilter.toLowerCase() !== "all"
+        ? decodeURIComponent(scopeFilter)
+            .split(",")
+            .map((scope) => scope.trim().toLowerCase())
+            .filter((scope) => scope === "global" || scope === "manager")
+        : [];
+    const scopeParams = normalizedScopes.length ? normalizedScopes : null;
 
     if (!orgId) {
       return req.error(401, "Unauthorized");
@@ -56,6 +66,7 @@ export const getOffersHandler = async (req: any) => {
       statusParams,
       searchParam,
       discountTypeParams,
+      scopeParams,
     ];
 
     let scopingFilter = "";
@@ -80,6 +91,7 @@ export const getOffersHandler = async (req: any) => {
           OR o.description ILIKE $3
         )
         AND ($4::text[] IS NULL OR LOWER(o.discount_type) = ANY($4::text[]))
+        AND ($5::text[] IS NULL OR (CASE WHEN o.is_global THEN 'global' ELSE 'manager' END) = ANY($5::text[]))
         ${scopingFilter}
     `;
 

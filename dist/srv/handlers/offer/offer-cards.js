@@ -10,10 +10,10 @@ const getsummarycards = async (req) => {
         }
         const query = `
       SELECT
-        COUNT(*)                                         AS "totalCount",
-        COUNT(*) FILTER (WHERE valid_to >= CURRENT_DATE) AS "activeCount",
-        COUNT(*) FILTER (WHERE valid_to < CURRENT_DATE)  AS "expiredCount",
-        COUNT(*) FILTER (WHERE is_global = true)         AS "globalCount"
+        COUNT(*)                                     AS "totalCount",
+        COUNT(*) FILTER (WHERE status = 'Active')     AS "activeCount",
+        COUNT(*) FILTER (WHERE status = 'Inactive')   AS "inactiveCount",
+        COUNT(*) FILTER (WHERE is_global = true)      AS "globalCount"
       FROM crm_offer
       WHERE is_global = true OR organization_id = $1
     `;
@@ -22,7 +22,7 @@ const getsummarycards = async (req) => {
         return {
             totalCount: parseInt(row.totalCount),
             activeCount: parseInt(row.activeCount),
-            inactiveCount: parseInt(row.inactive),
+            inactiveCount: parseInt(row.inactiveCount),
             globalCount: parseInt(row.globalCount),
         };
     }
