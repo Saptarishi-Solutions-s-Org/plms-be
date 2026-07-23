@@ -130,6 +130,7 @@ service OfferService {
                        status: String,
                        search: String,
                        discountType: String,
+                       scope: String,
                        all: Boolean)            returns {
         offers     : many OfferItem;
         pagination : PaginationMeta;

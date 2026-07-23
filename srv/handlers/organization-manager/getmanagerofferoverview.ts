@@ -36,6 +36,16 @@ export const getManagerOfferOverviewHandler = async (req: any) => {
     const discountTypeParams = normalizedDiscountTypes.length
       ? normalizedDiscountTypes
       : null;
+    const scopeFilter =
+      typeof req.data?.scope === "string" ? req.data.scope.trim() : "";
+    const normalizedScopes =
+      scopeFilter && scopeFilter.toLowerCase() !== "all"
+        ? decodeURIComponent(scopeFilter)
+            .split(",")
+            .map((scope) => scope.trim().toLowerCase())
+            .filter((scope) => scope === "global" || scope === "manager")
+        : [];
+    const scopeParams = normalizedScopes.length ? normalizedScopes : null;
 
     if (!orgId) {
       return req.error(400, "Organization ID missing");
@@ -87,8 +97,9 @@ export const getManagerOfferOverviewHandler = async (req: any) => {
           OR o.description ILIKE $4
         )
         AND ($5::text[] IS NULL OR LOWER(o.discount_type) = ANY($5::text[]))
+        AND ($6::text[] IS NULL OR (CASE WHEN o.is_global THEN 'global' ELSE 'manager' END) = ANY($6::text[]))
       ORDER BY o.createdat DESC
-      ${shouldReturnAll ? "" : "LIMIT $6 OFFSET $7"}
+      ${shouldReturnAll ? "" : "LIMIT $7 OFFSET $8"}
     `;
 
     const offersResult = await pool.query(offersQuery, [
@@ -97,6 +108,7 @@ export const getManagerOfferOverviewHandler = async (req: any) => {
       statusParams,
       searchParam,
       discountTypeParams,
+      scopeParams,
       ...(shouldReturnAll ? [] : [limit, offset]),
     ]);
 
@@ -119,6 +131,7 @@ export const getManagerOfferOverviewHandler = async (req: any) => {
             OR o.description ILIKE $4
           )
           AND ($5::text[] IS NULL OR LOWER(o.discount_type) = ANY($5::text[]))
+          AND ($6::text[] IS NULL OR (CASE WHEN o.is_global THEN 'global' ELSE 'manager' END) = ANY($6::text[]))
       )
       SELECT
         COUNT(*) AS total_count,
@@ -134,6 +147,7 @@ export const getManagerOfferOverviewHandler = async (req: any) => {
       statusParams,
       searchParam,
       discountTypeParams,
+      scopeParams,
     ]);
     const stats = statsResult.rows[0] || {};
 
