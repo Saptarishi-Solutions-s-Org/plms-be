@@ -152,14 +152,4 @@ service ReportDashboardService {
         };
     };
 
-    action   exportExecutives()                       returns many {
-        name           : String;
-        email          : String;
-        phone          : String;
-        status         : String;
-        assignedLeads  : Integer;
-        qualifiedLeads : Integer;
-        conversionRate : Decimal(5, 2);
-        assignedOffers : Integer;
-    };
 }

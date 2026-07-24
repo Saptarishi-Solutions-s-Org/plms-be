@@ -2,7 +2,6 @@ import cds from "@sap/cds";
 import { withAuth } from "../lib/withAuth";
 import { ReportDashboardHandler } from "../handlers/organization-reports/overview/stat-cards";
 import { leadSourceAnalyticsHandler } from "../handlers/organization-reports/overview/reports-leadsource-sourceconversionrate";
-import { exportExecutivesHandler } from "../handlers/organization-reports/exportExecutives";
 import { getReportLeadsHandler } from "../handlers/organization-reports/getReportLeads";
 import { getReportExecutivesHandler } from "../handlers/organization-reports/getReportExecutives";
 import { getReportExecutivePerformanceHandler } from "../handlers/organization-reports/getReportExecutivePerformance";
@@ -76,13 +75,6 @@ export const bindOrganizationReports = () => {
     withAuth(getReportLeadsHandler, {
       roles: ["admin", "manager", "executive"],
       modules: { reports: ["view"] },
-    }),
-  );
-  service.on(
-    "exportExecutives",
-    withAuth(exportExecutivesHandler, {
-      roles: ["manager"],
-      modules: { reports: ["export"] },
     }),
   );
 };

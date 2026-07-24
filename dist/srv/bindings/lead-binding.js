@@ -11,7 +11,6 @@ const getAllOrganizationLeads_1 = require("../handlers/leads/getAllOrganizationL
 const getExecutiveUsers_1 = require("../handlers/leads/getExecutiveUsers");
 const createLead_1 = require("../handlers/leads/createLead");
 const updateLead_1 = require("../handlers/leads/updateLead");
-const exportLeads_1 = require("../handlers/leads/exportLeads");
 const importLeads_1 = require("../handlers/leads/importLeads");
 const getLeadDetails_1 = require("../handlers/leads/getLeadDetails");
 const addLeadActivity_1 = require("../handlers/leads/addLeadActivity");
@@ -43,10 +42,6 @@ const bindLead = () => {
     service.on("bulkAssignLeads", (0, withAuth_1.withAuth)(updateLead_1.bulkAssignLeadsHandler, {
         roles: ["manager"],
         modules: { lead: ["update"] },
-    }));
-    service.on("exportLeads", (0, withAuth_1.withAuth)(exportLeads_1.exportLeadsHandler, {
-        roles: ["manager", "executive"],
-        modules: { lead: ["export"] },
     }));
     service.on("importLeads", (0, withAuth_1.withAuth)(importLeads_1.importLeadsHandler, {
         roles: ["manager", "executive"],

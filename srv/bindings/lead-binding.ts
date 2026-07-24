@@ -6,7 +6,6 @@ import { getAllOrganizationLeadsHandler } from "../handlers/leads/getAllOrganiza
 import { getExecutiveUsersHandler }  from "../handlers/leads/getExecutiveUsers";
 import { createLeadHandler }         from "../handlers/leads/createLead";
 import { bulkAssignLeadsHandler, updateLeadHandler } from "../handlers/leads/updateLead";
-import { exportLeadsHandler }        from "../handlers/leads/exportLeads";
 import { importLeadsHandler }        from "../handlers/leads/importLeads";
 import { getLeadDetailHandler }      from "../handlers/leads/getLeadDetails";     
 import { addLeadActivityHandler }    from "../handlers/leads/addLeadActivity";    
@@ -61,14 +60,6 @@ export const bindLead = () => {
     withAuth(bulkAssignLeadsHandler, {
       roles: ["manager"],
       modules: { lead: ["update"] },
-    }),
-  );
-
-  service.on(
-    "exportLeads",
-    withAuth(exportLeadsHandler, {
-      roles: ["manager", "executive"],
-      modules: { lead: ["export"] },
     }),
   );
 

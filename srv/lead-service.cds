@@ -131,23 +131,6 @@ service LeadService {
         assignedCount : Integer;
     };
 
-    action   exportLeads()                           returns many {
-        leadCode   : String;
-        name       : String;
-        gender     : String;
-        email      : String;
-        phone      : String;
-        city       : String;
-        state      : String;
-        country    : String;
-        postalCode : String;
-        leadSource : String;
-        status     : String;
-        priority   : String;
-        assignedTo : String;
-        notes      : String;
-    };
-
     action   importLeads(rows: many {
         name       : String;
         gender     : String;
