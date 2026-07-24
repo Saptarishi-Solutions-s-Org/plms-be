@@ -12,9 +12,6 @@ const update_manager_offer_1 = require("../handlers/offer/update-manager-offer")
 const getalloffers_1 = require("../handlers/offer/getalloffers");
 const toggle_status_1 = require("../handlers/offer/toggle-status");
 const edit_offer_1 = require("../handlers/offer/edit-offer");
-const export_offers_admin_1 = require("../handlers/offer/export-offers-admin");
-const export_offers_manager_1 = require("../handlers/offer/export-offers-manager");
-const export_offers_executive_1 = require("../handlers/offer/export-offers-executive");
 const get_managers_1 = require("../handlers/offer/get-managers");
 const offer_cards_1 = require("../handlers/offer/offer-cards");
 const get_executives_by_offer_1 = require("../handlers/offer/get-executives-by-offer");
@@ -58,24 +55,6 @@ const bindOffer = () => {
         roles: ["admin"],
         modules: {
             offers: ["update"],
-        },
-    }));
-    service.on("exportOffersAdmin", (0, withAuth_1.withAuth)(export_offers_admin_1.exportOffersAdminHandler, {
-        roles: ["admin"],
-        modules: {
-            offers: ["export"],
-        },
-    }));
-    service.on("exportOffersManager", (0, withAuth_1.withAuth)(export_offers_manager_1.exportOffersManagerHandler, {
-        roles: ["manager"],
-        modules: {
-            offers: ["export"],
-        },
-    }));
-    service.on("exportOffersExecutive", (0, withAuth_1.withAuth)(export_offers_executive_1.exportOffersExecutiveHandler, {
-        roles: ["executive"],
-        modules: {
-            offers: ["export"],
         },
     }));
     service.on("getManagers", (0, withAuth_1.withAuth)(get_managers_1.getManagersHandler, {

@@ -8,7 +8,6 @@ const cds_1 = __importDefault(require("@sap/cds"));
 const withAuth_1 = require("../lib/withAuth");
 const stat_cards_1 = require("../handlers/organization-reports/overview/stat-cards");
 const reports_leadsource_sourceconversionrate_1 = require("../handlers/organization-reports/overview/reports-leadsource-sourceconversionrate");
-const exportExecutives_1 = require("../handlers/organization-reports/exportExecutives");
 const getReportLeads_1 = require("../handlers/organization-reports/getReportLeads");
 const getReportExecutives_1 = require("../handlers/organization-reports/getReportExecutives");
 const getReportExecutivePerformance_1 = require("../handlers/organization-reports/getReportExecutivePerformance");
@@ -55,10 +54,6 @@ const bindOrganizationReports = () => {
     service.on("getReportLeads", (0, withAuth_1.withAuth)(getReportLeads_1.getReportLeadsHandler, {
         roles: ["admin", "manager", "executive"],
         modules: { reports: ["view"] },
-    }));
-    service.on("exportExecutives", (0, withAuth_1.withAuth)(exportExecutives_1.exportExecutivesHandler, {
-        roles: ["manager"],
-        modules: { reports: ["export"] },
     }));
 };
 exports.bindOrganizationReports = bindOrganizationReports;
