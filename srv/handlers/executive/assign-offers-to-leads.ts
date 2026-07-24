@@ -106,7 +106,8 @@ const ensureOfferCanBeAssigned = async (
 
   const offerStatus = String(statusCheck.rows[0]?.status || "").toLowerCase();
   if (offerStatus === "inactive" || offerStatus === "expired") {
-    return req.reject(409, {
+    return req.reject({
+      status: 409,
       code: "OFFER_INACTIVE",
       message: "Offer is either Inactive or Expired, Cannot Assign this Offer",
     });
@@ -160,7 +161,8 @@ export const assignOfferToLeadHandler = async (req: any) => {
     );
 
     if (duplicateCheck.rows.length) {
-      return req.reject(409, {
+      return req.reject({
+        status: 409,
         code: "OFFER_ALREADY_ASSIGNED_TO_LEAD",
         message: "This offer is already assigned to this lead",
       });
@@ -168,7 +170,8 @@ export const assignOfferToLeadHandler = async (req: any) => {
 
     const segmentAssignedLeads = await getLeadsWithOfferViaSegment(pool, [leadId], offerId, orgId);
     if (segmentAssignedLeads.has(leadId)) {
-      return req.reject(409, {
+      return req.reject({
+        status: 409,
         code: "OFFER_ALREADY_ASSIGNED_VIA_SEGMENT",
         message: "This offer is already assigned to this lead through a segment",
       });
@@ -210,6 +213,13 @@ export const assignOfferToLeadHandler = async (req: any) => {
       message: "Offer assigned to lead successfully",
     };
   } catch (error: any) {
+    // CAP's req.reject() throws its HTTP error.  Preserve expected client
+    // errors instead of converting them to an Internal Server Error.
+    const status = Number(error?.status ?? error?.statusCode ?? error?.code);
+    if (status >= 400 && status < 500) {
+      throw error;
+    }
+
     return req.reject(
       500,
       error?.message || "Failed to assign offer to lead",
@@ -354,6 +364,13 @@ export const assignOffersToLeadsHandler = async (req: any) => {
       message: "Offer assigned to leads successfully",
     };
   } catch (error: any) {
+    // CAP's req.reject() throws its HTTP error.  Preserve expected client
+    // errors instead of converting them to an Internal Server Error.
+    const status = Number(error?.status ?? error?.statusCode ?? error?.code);
+    if (status >= 400 && status < 500) {
+      throw error;
+    }
+
     return req.reject(
       500,
       error?.message || "Failed to assign offer to leads",
